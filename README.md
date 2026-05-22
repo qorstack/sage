@@ -15,9 +15,7 @@ AI coding tools generate code fast — but they don't understand your system. Th
 - [Install](#install)
 - [Connect your AI assistant](#connect-your-ai-assistant)
 - [5-minute first session](#5-minute-first-session)
-- [Multi-repo workspace setup](#multi-repo-workspace-setup)
-- [Share knowledge with team via git](#share-knowledge-with-team-via-git)
-- [Daily workflow](#daily-workflow)
+- [Team setup (multi-developer)](#team-setup-multi-developer)
 - [Why Knowlyx](#why-knowlyx)
 - [How it works](#how-it-works)
 - [Design properties](#design-properties)
@@ -250,149 +248,109 @@ knowlyx memory decide auth \
 
 ---
 
-## Multi-repo workspace setup
+## Team setup (multi-developer)
 
-Real products span multiple repos (api, web, mobile, worker, admin). Knowlyx tracks them as a single **workspace** with shared memory.
+Real products span multiple repos and multiple devs. Knowlyx is a **per-machine CLI tool** — every dev installs it locally, then connects to the same central workspace (a git repo holding the shared memory).
 
-### Tech lead (once)
+### 👑 Tech Lead — once per product
 
-```bash
-# 1. Create the central workspace
+```powershell
+# 1. Install knowlyx (Windows; macOS/Linux equivalents in the Install section)
+irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
+
+# 2. Create the central workspace
 knowlyx workspace create my-product
 
-# 2. Edit topology
-# macOS/Linux:
-$EDITOR ~/.knowlyx/workspaces/my-product/workspace.toml
-# Windows:
-notepad $env:USERPROFILE\.knowlyx\workspaces\my-product\workspace.toml
+# 3. Push it to a private git repo (any host — GitHub/GitLab/self-host)
+cd $env:USERPROFILE\.knowlyx\workspaces\my-product
+git init && git branch -M main && git add . && git commit -m "init"
+git remote add origin git@github.com:your-org/my-product-knowledge.git
+git push -u origin main
 ```
 
-Paste:
+That's the entire tech-lead setup. The `workspace.toml` topology auto-fills as each dev links their repo — you don't have to declare `[[repos]]` by hand.
 
-```toml
-name = "my-product"
+### 👨‍💻 Each developer — same commands for everyone
 
-[[repos]]
-name = "api"
-path = "../code/api"
-role = "backend"
-domains = ["billing", "auth"]
-critical = true
+```powershell
+# 1. Install knowlyx (one-time, same as tech lead)
+irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
 
-[[repos]]
-name = "web"
-path = "../code/web"
-role = "frontend"
-domains = ["checkout"]
+# 2. Clone the project repo you'll work on
+git clone git@github.com:your-org/api.git
+cd api
 
-[[repos]]
-name = "worker"
-path = "../code/worker"
-role = "worker"
-
-[[dependencies]]
-from = "web"
-to = "api"
-type = "api"
-
-[[dependencies]]
-from = "worker"
-to = "api"
-type = "event"
-```
-
-### Each developer (per repo)
-
-```bash
-cd ~/code/api
+# 3. Link this repo to the workspace
 knowlyx init --link my-product \
   --remote git@github.com:your-org/my-product-knowledge.git
-# auto-detects role + domains from package.json/pyproject.toml/etc
-# writes .knowlyx/config.toml — commit this to git
-git add .knowlyx/config.toml
-git commit -m "link to knowlyx workspace"
+
+# 4. Knowlyx auto-detects role + domains, auto-registers in workspace.toml.
+# If the shared knowledge isn't on this machine yet, it prints the exact
+# clone command — copy/paste and run it.
+git clone git@github.com:your-org/my-product-knowledge.git \
+          ~/.knowlyx/workspaces/my-product
+
+# 5. Wire up Claude Code (or Cursor/Cline/etc.) — once per repo
+claude mcp add knowlyx -- uvx knowlyx mcp --repo .
+
+# 6. Commit the link config so the next dev who clones is auto-connected
+git add .knowlyx/config.toml && git commit -m "link to knowlyx workspace" && git push
 ```
 
-The `--remote` flag records the URL of the shared knowledge repo inside
-`.knowlyx/config.toml`. When teammates clone `api`, Knowlyx already knows where
-to fetch the shared brain from — and prints the exact `git clone` command if
-the local workspace folder is missing.
+**~3 minutes from clone to working** — no docs to read; Knowlyx prints any missing setup steps as you go.
 
-Now every dev who clones `api` is automatically connected to `my-product`'s shared memory.
-
----
-
-## Share knowledge with team via git
-
-`~/.knowlyx/workspaces/my-product/` is just a folder of JSON + TOML. Push it to GitHub / GitLab / self-hosted — no infra needed.
-
-### Tech lead — git init + push
+### Daily workflow
 
 ```bash
-knowlyx sync init \
-  --workspace my-product \
-  --remote git@github.com:your-org/my-product-knowledge.git
+# Morning — pull the team's latest decisions
+git -C ~/.knowlyx/workspaces/my-product pull
 
-knowlyx sync push --workspace my-product -m "init"
-```
-
-### Each developer — clone shared knowledge
-
-When you clone a project repo that's already linked, Knowlyx prints the exact
-clone command on first use — you don't have to look up the URL:
-
-```text
-$ knowlyx memory list
-ℹ Shared knowledge for workspace 'my-product' is not on this machine.
-  Run:  git clone git@github.com:your-org/my-product-knowledge.git \
-                  ~/.knowlyx/workspaces/my-product
-```
-
-Copy that command and run it. Done.
-
-(The URL lives in each linked repo's `.knowlyx/config.toml` as
-`knowledge_remote`, so it travels with the repo.)
-
-Auth: uses your existing git auth (SSH key / HTTPS credential helper / `gh auth`). No Knowlyx-specific tokens needed.
-
-Full setup including self-hosted GitLab, conflict resolution, and permissions:
-**[docs/git-sync.md](docs/git-sync.md)**
-
-### Concurrency safety
-
-All writes to `memory.json` and `approvals.json` are protected by:
-
-- **Cross-platform file lock** (`fcntl` POSIX / `msvcrt` Windows)
-- **Atomic write** (write temp + `os.replace()`)
-- **Read-modify-write under lock** — concurrent saves never lose updates
-
-**Approve/reject fail-safe:** once an approval is REJECTED, it stays rejected. Subsequent approves are no-ops. Same rule applies in git sync conflict resolution.
-
----
-
-## Daily workflow
-
-```bash
-# Pull latest decisions before starting
-knowlyx sync pull --workspace my-product
-
-# Work normally — Claude/Cursor calls Knowlyx tools automatically.
-# When you make important decisions, save them:
-knowlyx memory decide billing \
-  "Use Stripe for subscriptions" \
+# Work normally — Claude/Cursor calls Knowlyx tools through MCP.
+# When a meaningful decision is made:
+knowlyx memory decide billing "Use Stripe for subscriptions" \
   --body "Stripe Billing for B2C, manual invoice for B2B over \$10k"
 
-# Push at end of day
-knowlyx sync push --workspace my-product -m "decisions from billing redesign"
+# End of day — push knowledge back
+cd ~/.knowlyx/workspaces/my-product
+git add . && git commit -m "decisions from billing redesign" && git push
 ```
 
-Recommended aliases (`.bashrc` / `.zshrc`):
+Convenience aliases (add to `.bashrc` / `.zshrc` / PowerShell `$PROFILE`):
 
 ```bash
-alias kw-pull='knowlyx sync pull --workspace my-product'
-alias kw-push='knowlyx sync push --workspace my-product'
-alias kw='knowlyx'
+alias kw-pull='git -C ~/.knowlyx/workspaces/my-product pull'
+alias kw-push='git -C ~/.knowlyx/workspaces/my-product add -A && git -C ~/.knowlyx/workspaces/my-product commit -m "knowledge update" && git -C ~/.knowlyx/workspaces/my-product push'
 ```
+
+```powershell
+# PowerShell profile
+function kw-pull { Push-Location $env:USERPROFILE\.knowlyx\workspaces\my-product; git pull; Pop-Location }
+function kw-push { Push-Location $env:USERPROFILE\.knowlyx\workspaces\my-product; git add -A; git commit -m "knowledge update"; git push; Pop-Location }
+```
+
+### Concurrency — what happens when two devs save at once
+
+| Situation | How Knowlyx handles it |
+|---|---|
+| Two devs save different memory entries simultaneously | ✅ git auto-merges (different IDs, no conflict) |
+| Two devs save the same logical decision (ID collision) | ✅ `knowlyx sync pull` auto-merges newer-wins by timestamp |
+| Dev A approves, Dev B rejects the same request | ✅ Fail-safe: **REJECTED stays rejected**, even on later approves |
+| Two processes write to memory.json simultaneously | ✅ Cross-platform file lock (`fcntl` POSIX / `msvcrt` Windows) + atomic write — no lost updates |
+
+Auth: uses your existing git auth (SSH key / HTTPS credential helper / `gh auth`). No Knowlyx-specific tokens needed. Works with GitHub, GitLab, Gitea, self-hosted Forgejo, etc.
+
+Full deep-dive (self-hosted GitLab, manual conflict resolution, branch protection):
+**[docs/git-sync.md](docs/git-sync.md)**
+
+### FAQ
+
+| Question | Answer |
+|---|---|
+| Does every dev install Knowlyx? | ✅ Yes — it's a CLI tool, per-machine |
+| Who creates the workspace? | ✅ Tech lead, once. Then `git push` |
+| Do other devs run `workspace create`? | ❌ No — they `git clone` the workspace that tech lead created |
+| Does workspace.toml need manual editing? | ❌ No — `knowlyx init --link` auto-registers each repo |
+| What if I forget to pull? | ⚠️ You'll save into a stale view; on `git push` you'll need to pull-merge first. Auto-merger handles common cases |
 
 ---
 
