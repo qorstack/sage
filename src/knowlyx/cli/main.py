@@ -930,10 +930,12 @@ def _init_knowledge_mode(target: Path, override_name: str = "") -> None:
     toml_path.write_text(_serialize(WorkspaceConfig(name=ws_name)), encoding="utf-8")
     register(ws_name, target)
     _write_skills_starter(target / "skills")
+    _write_getting_started(target, ws_name)
 
     console.print(f"[green]Created workspace home[/green] '{ws_name}' at {target}")
     console.print("  [green]+[/green] workspace.toml")
-    console.print("  [green]+[/green] skills/  (team-authored knowledge — see skills/README.md)")
+    console.print("  [green]+[/green] skills/             (team-authored knowledge — see skills/README.md)")
+    console.print("  [green]+[/green] GETTING_STARTED.md  (read this first — full next-step guide)")
     console.print("  [dim]memory.json    (created on first decision)[/dim]")
     console.print("  [dim]approvals.json (created on first approval)[/dim]")
     console.print(f"  Registered in: [cyan]{_registry_display_path()}[/cyan]")
@@ -990,11 +992,111 @@ tags: [ui, frontend]
 
 def _print_knowledge_next_steps(target: Path) -> None:
     git_url = _detect_git_remote(target)
-    console.print("\n[bold]Next:[/bold]")
+    console.print("\n[bold]Next steps:[/bold]")
+    console.print(
+        "  [bold]1.[/bold] Read [cyan]GETTING_STARTED.md[/cyan] — full walkthrough lives in this folder."
+    )
     if not git_url:
-        console.print("  • Push this folder to GitHub so teammates can clone it.")
-    console.print("  • In each working repo (sibling folders), run [cyan]knowlyx init[/cyan] —")
-    console.print("    it will auto-detect this knowledge home and link automatically.")
+        console.print(
+            "  [bold]2.[/bold] Push this folder to GitHub so teammates can clone it:"
+        )
+        console.print(
+            "       [dim]git add . && git commit -m \"chore: init knowlyx workspace\" && git push -u origin main[/dim]"
+        )
+    else:
+        console.print(
+            "  [bold]2.[/bold] Commit + push so teammates get it:"
+        )
+        console.print(
+            "       [dim]git add . && git commit -m \"chore: init knowlyx workspace\" && git push[/dim]"
+        )
+    console.print(
+        "  [bold]3.[/bold] In each working repo (sibling folder), run [cyan]knowlyx init[/cyan] —"
+    )
+    console.print(
+        "       it auto-detects this knowledge home and links automatically."
+    )
+
+
+def _write_getting_started(target: Path, ws_name: str) -> None:
+    """Drop GETTING_STARTED.md at the workspace root on first init."""
+    path = target / "GETTING_STARTED.md"
+    if path.exists():
+        return
+    path.write_text(
+        f"""# Welcome to your Knowlyx workspace '{ws_name}'
+
+This folder is your team's **shared brain**. Everything here syncs to GitHub so
+every dev (and every AI session) sees the same conventions, decisions, and
+approval history.
+
+## What was just created
+
+| File / folder      | Purpose                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| `workspace.toml`   | Topology — auto-updated when devs link their repos            |
+| `skills/`          | Team-authored knowledge files (markdown). See `skills/README.md` |
+| `memory.json`      | Decision log — created when you save the first one            |
+| `approvals.json`   | Audit trail — created when AI requests its first approval     |
+
+## What to do next
+
+### 1. Push this folder to GitHub (one-time)
+
+```bash
+git add .
+git commit -m "chore: init knowlyx workspace for {ws_name}"
+git push -u origin main
+```
+
+### 2. In each working repo (frontend, backend, etc.), run `knowlyx init`
+
+It will auto-detect this folder as a sibling and link automatically. No flags
+needed. The dev only needs to be in the same parent directory as this repo.
+
+### 3. Author your first skill — when you need it
+
+Skills tell the AI things it can't infer from code: UI style, money formatting,
+deploy quirks, business rules. Create `skills/<name>.md` with frontmatter:
+
+```markdown
+---
+name: billing
+description: Use when working on payments, orders, or money.
+tags: [billing, payments]
+---
+
+# Billing rules
+- Stripe only, never store raw card data
+- Idempotency-Key required on every POST/PUT/DELETE
+- Money as string, never JS Number
+```
+
+The AI sees skill descriptions via `analyze_intent` and pulls the body via
+`read_skill(name)` when relevant. See [skills/README.md](skills/README.md) for
+the full format reference.
+
+## Day-to-day workflow
+
+- **Tech lead / anyone**: write skills in `skills/*.md`, commit, push
+- **Other devs**: `git pull` in this folder → instantly see updated knowledge
+- **Verify Claude actually used Knowlyx**: in any linked repo, run
+  ```bash
+  knowlyx audit
+  ```
+  to see which MCP tools the AI called (last ~500 events, capped automatically)
+
+## Useful CLI commands
+
+```bash
+knowlyx workspace list             # all registered workspaces on this machine
+knowlyx memory list                # all decisions saved (when memory exists)
+knowlyx audit                      # AI tool-call log for the current repo
+knowlyx init --help                # all init options
+```
+""",
+        encoding="utf-8",
+    )
 
 
 def _init_link_mode(
@@ -1072,6 +1174,43 @@ def _init_link_mode(
             f"  Run:  [cyan]git clone {remote} {target_path}[/cyan]\n"
             f"  Then re-run [cyan]knowlyx init[/cyan] to auto-register."
         )
+
+    _print_link_next_steps(workspace_name)
+
+
+def _print_link_next_steps(workspace_name: str) -> None:
+    """Print concrete commands to run after linking a working repo."""
+    console.print("\n[bold]Next steps:[/bold]")
+    console.print(
+        "  [bold]1.[/bold] Register Knowlyx as an MCP server in this repo:"
+    )
+    console.print(
+        "       [dim]claude mcp add knowlyx -- uvx knowlyx mcp --repo .[/dim]"
+    )
+    console.print(
+        "  [bold]2.[/bold] In Claude Code, prompt as usual. Claude will call [cyan]analyze_intent[/cyan]"
+    )
+    console.print(
+        "       and discover skills/decisions from the workspace automatically."
+    )
+    console.print(
+        "  [bold]3.[/bold] After Claude runs, verify it actually used Knowlyx:"
+    )
+    console.print(
+        "       [dim]knowlyx audit[/dim]"
+    )
+    console.print(
+        f"  [dim]Workspace knowledge: see ../{Path(_workspace_home_path(workspace_name)).name}/GETTING_STARTED.md[/dim]"
+    )
+
+
+def _workspace_home_path(workspace_name: str) -> str:
+    """Return a display-friendly path to the workspace home folder."""
+    try:
+        from knowlyx.paths import workspace_dir
+        return str(workspace_dir(workspace_name))
+    except Exception:
+        return workspace_name
 
 
 def _init_suggest(target: Path, name: str) -> None:
