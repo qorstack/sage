@@ -89,8 +89,22 @@ def register_repo_in_workspace(
     if not toml_path.exists():
         return False, None
 
-    ws_dir = workspace_dir(workspace_name)
-    config = load(ws_dir)
+    # Load via the explicit workspace.toml path (not knowlyx.toml) so we read
+    # the central topology file the same one we're about to write back to.
+    config = _read_toml(toml_path, toml_path.parent)
+    # Preserve the workspace name from the toml (don't let load() default it
+    # to the folder name, which can be "tutorial-knowlyx-knowledge" instead
+    # of just "tutorial").
+    if not config.name or config.name == toml_path.parent.name:
+        config = WorkspaceConfig(
+            name=workspace_name,
+            version=config.version,
+            description=config.description,
+            repos=config.repos,
+            dependencies=config.dependencies,
+            global_conventions=config.global_conventions,
+            metadata=config.metadata,
+        )
 
     existing_idx = next((i for i, r in enumerate(config.repos) if r.name == repo.name), None)
     if existing_idx is not None:
@@ -111,7 +125,7 @@ def register_repo_in_workspace(
     else:
         config.repos.append(repo)
 
-    save(config, ws_dir)
+    toml_path.write_text(_serialize(config), encoding="utf-8")
     return True, toml_path
 
 

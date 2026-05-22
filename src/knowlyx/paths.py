@@ -40,14 +40,45 @@ def workspaces_root() -> Path:
 
 
 def workspace_dir(name: str) -> Path:
-    """Path to ~/.knowlyx/workspaces/<name>/ (does not create)."""
+    """
+    Path to the workspace folder for `name`.
+
+    Resolution: checks the registry (~/.knowlyx/registry.toml) first — if
+    the workspace is registered at a custom path (e.g. inside a cloned
+    knowledge repo) AND that path still exists, return it. Otherwise fall
+    back to the default ~/.knowlyx/workspaces/<name>/.
+
+    Does NOT create the directory.
+    """
+    # Local import to avoid circular dependency: registry.py imports knowlyx_home.
+    try:
+        from knowlyx.registry import get_path
+        registered = get_path(name)
+        if registered is not None and registered.exists():
+            return registered
+    except Exception:
+        pass
     return workspaces_root() / name
 
 
-def ensure_workspace_dir(name: str) -> Path:
-    """Create and return ~/.knowlyx/workspaces/<name>/."""
-    d = workspace_dir(name)
-    d.mkdir(parents=True, exist_ok=True)
+def ensure_workspace_dir(name: str, at: str | Path | None = None) -> Path:
+    """
+    Create and return the workspace folder for `name`.
+
+    If `at` is given, create the workspace there and register it. Otherwise
+    follow the same resolution as workspace_dir() (registry → default).
+    """
+    if at is not None:
+        d = Path(at).expanduser().resolve()
+        d.mkdir(parents=True, exist_ok=True)
+        try:
+            from knowlyx.registry import register
+            register(name, d)
+        except Exception:
+            pass
+    else:
+        d = workspace_dir(name)
+        d.mkdir(parents=True, exist_ok=True)
     (d / "scans").mkdir(exist_ok=True)
     (d / "packs").mkdir(exist_ok=True)
     return d

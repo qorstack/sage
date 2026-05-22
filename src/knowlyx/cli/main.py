@@ -3,12 +3,22 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+
+# Ensure unicode output works on Windows consoles that default to cp1252
+# (bash from MINGW64, cmd.exe without chcp 65001, etc.). Without this,
+# rich's Console blows up trying to render arrows / checkmarks / bullets.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+    except (AttributeError, ValueError):
+        pass
 
 app = typer.Typer(
     name="knowlyx",
@@ -786,85 +796,31 @@ def migrate(
 @app.command()
 def init(
     repo_path: str = typer.Option(".", "--repo", "-r"),
-    workspace_mode: bool = typer.Option(False, "--workspace", help="Init workspace folder (auto-detect repos as siblings)"),
-    name: str = typer.Option("", "--name", help="Workspace name (defaults to folder name)"),
-    link_to: str = typer.Option("", "--link", help="Link this repo to an existing central workspace"),
-    remote: str = typer.Option("", "--remote", help="Git URL of shared knowledge repo (recorded so teammates know where to clone)"),
+    workspace_mode: bool = typer.Option(False, "--workspace", help="Legacy: create knowlyx.toml in cwd"),
+    name: str = typer.Option("", "--name", help="Workspace name (overrides auto-detection)"),
+    link_to: str = typer.Option("", "--link", help="Force link mode to a specific workspace name"),
+    remote: str = typer.Option("", "--remote", help="Git URL of shared knowledge repo (overrides auto-detection)"),
+    knowledge: bool = typer.Option(False, "--knowledge", help="Force knowledge-home mode (set up this folder as the workspace home)"),
 ):
     """
-    Scaffold Knowlyx for a project.
+    Set up Knowlyx in this folder. Auto-detects whether this is a knowledge repo
+    or a working repo, and does the right thing.
 
     \b
-    knowlyx init                                          # scan repo + suggest setup
-    knowlyx init --workspace                              # legacy: create knowlyx.toml in cwd
-    knowlyx init --link my-product                        # link to existing local workspace
-    knowlyx init --link my-product --remote git@...:org/knowledge.git
-                                                          # link + record where teammates clone
-    """
-    from knowlyx.scanner.repo_scanner import RepoScanner
+    Common usage — just run with no flags:
+      cd tutorial-knowlyx-knowledge && knowlyx init   # becomes the workspace home
+      cd tutorial-knowlyx-service   && knowlyx init   # auto-links to sibling knowledge repo
+      cd tutorial-knowlyx-website   && knowlyx init   # auto-links too
 
+    \b
+    Explicit flags (override auto-detection):
+      knowlyx init --knowledge --name tutorial        # force knowledge home, custom name
+      knowlyx init --link tutorial --remote <git-url> # force link mode with explicit name
+      knowlyx init --workspace                        # legacy: write knowlyx.toml (single-repo)
+    """
     target = Path(repo_path).resolve()
 
-    if link_to:
-        from knowlyx.link.config import LinkConfig, save_link
-        from knowlyx.paths import workspace_dir, workspace_toml_path
-        from knowlyx.workspace.config_loader import register_repo_in_workspace
-        from knowlyx.workspace.schema import RepoConfig, RepoRole
-
-        ws_exists_locally = workspace_toml_path(link_to).exists()
-        if not ws_exists_locally and not remote:
-            console.print(f"[red]Workspace '{link_to}' not found locally and no --remote provided.[/red]")
-            console.print(f"Either: [cyan]knowlyx workspace create {link_to}[/cyan]")
-            console.print(f"Or:     [cyan]knowlyx init --link {link_to} --remote <git-url>[/cyan]")
-            raise typer.Exit(1)
-
-        # auto-detect role + domains + git_url
-        with console.status("[bold cyan]Auto-detecting role + domains…"):
-            scan = RepoScanner(target).scan()
-        inferred_role = _infer_role(scan.framework, scan.language)
-        inferred_domains = scan.domains[:6]
-        repo_git_url = _detect_git_remote(target)
-
-        # Write MINIMAL link config — only what travels with the repo.
-        # Knowlyx re-infers role+domains via scanner at analysis time, so we
-        # don't burden the dev with manual data entry here.
-        save_link(LinkConfig(
-            workspace=link_to,
-            knowledge_remote=remote,
-        ), target)
-        console.print(f"[green]Linked[/green] {target.name} → {link_to}")
-        console.print(f"  Detected role: [cyan]{inferred_role}[/cyan]  Domains: {', '.join(inferred_domains) or '(none)'}")
-        console.print("  Wrote: [cyan].knowlyx/config.toml[/cyan]  (just 2 lines — workspace + remote)")
-        if repo_git_url:
-            console.print(f"  Repo git URL: {repo_git_url}")
-        if remote:
-            console.print(f"  Knowledge remote: {remote}")
-
-        # Auto-register this repo into the workspace.toml of the local knowledge clone
-        if ws_exists_locally:
-            changed, written = register_repo_in_workspace(
-                link_to,
-                RepoConfig(
-                    name=target.name,
-                    git_url=repo_git_url,
-                    role=RepoRole(inferred_role) if inferred_role in [r.value for r in RepoRole] else RepoRole.UNKNOWN,
-                    domains=inferred_domains,
-                ),
-            )
-            if written and changed:
-                console.print(f"\n[green]✓[/green] Auto-registered in workspace.toml: {written}")
-                console.print("  [dim]Commit + push the knowledge repo to share this topology with the team.[/dim]")
-            elif written:
-                console.print(f"\n[dim]Repo already registered in {written}, no change.[/dim]")
-
-        if not ws_exists_locally and remote:
-            console.print(
-                f"\n[yellow]⚠ Shared knowledge not on this machine yet.[/yellow]\n"
-                f"  Run:  [cyan]git clone {remote} {workspace_dir(link_to)}[/cyan]\n"
-                f"  Then re-run [cyan]knowlyx init --link {link_to}[/cyan] to auto-register."
-            )
-        return
-
+    # Legacy single-file workspace mode
     if workspace_mode:
         from knowlyx.workspace.config_loader import init as ws_init
         cfg = ws_init(target, name=name)
@@ -872,7 +828,195 @@ def init(
         console.print("Add [[repos]] and [[dependencies]] sections to knowlyx.toml.")
         return
 
-    # default: scan + suggest
+    # Detect mode in priority order:
+    #   1. explicit --link wins
+    #   2. explicit --knowledge wins
+    #   3. has workspace.toml already → knowledge mode (re-sync)
+    #   4. folder name looks like a knowledge repo → knowledge mode
+    #   5. sibling *-knowledge folder exists → link mode
+    #   6. fall back to scan + suggest
+    if link_to:
+        _init_link_mode(target, workspace_name=link_to, remote=remote)
+        return
+
+    if knowledge or (target / "workspace.toml").exists() or _looks_like_knowledge_repo(target.name):
+        _init_knowledge_mode(target, override_name=name)
+        return
+
+    sibling = _find_knowledge_sibling(target)
+    if sibling is not None:
+        _init_link_mode(target, workspace_name="", remote=remote, sibling=sibling)
+        return
+
+    _init_suggest(target, name)
+
+
+def _looks_like_knowledge_repo(folder_name: str) -> bool:
+    n = folder_name.lower()
+    return n.endswith("-knowledge") or n.endswith("_knowledge") or n == "knowledge"
+
+
+def _derive_workspace_name(folder_name: str) -> str:
+    """
+    Strip common project-suffix conventions to derive a clean workspace name.
+
+    Examples:
+      tutorial-knowlyx-knowledge → tutorial
+      myapp-knowledge            → myapp
+      acme_knowledge             → acme
+      knowledge                  → knowledge  (no change)
+    """
+    n = folder_name
+    lowered = n.lower()
+    for suf in ("-knowledge", "_knowledge"):
+        if lowered.endswith(suf) and len(n) > len(suf):
+            n = n[: -len(suf)]
+            lowered = n.lower()
+            break
+    for suf in ("-knowlyx", "_knowlyx"):
+        if lowered.endswith(suf) and len(n) > len(suf):
+            n = n[: -len(suf)]
+            break
+    return n or folder_name
+
+
+def _find_knowledge_sibling(target: Path) -> Path | None:
+    """Look for a sibling folder that looks like a knowledge repo. None if 0 or >1 found."""
+    parent = target.parent
+    if not parent.exists() or parent == target:
+        return None
+    matches = [
+        p for p in parent.iterdir()
+        if p.is_dir() and p != target and _looks_like_knowledge_repo(p.name)
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def _init_knowledge_mode(target: Path, override_name: str = "") -> None:
+    """Set up `target` as the workspace home — create workspace files in place and register the path."""
+    from knowlyx.paths import ensure_workspace_dir
+    from knowlyx.registry import register
+    from knowlyx.workspace.config_loader import _serialize, load
+    from knowlyx.workspace.schema import WorkspaceConfig
+
+    ws_name = override_name or _derive_workspace_name(target.name)
+    toml_path = target / "workspace.toml"
+
+    if toml_path.exists():
+        existing = load(target)
+        ws_name = override_name or existing.name or ws_name
+        register(ws_name, target)
+        ensure_workspace_dir(ws_name, at=target)
+        console.print(f"[green]Refreshed workspace home[/green] '{ws_name}' at {target}")
+        console.print(f"  Registered in: [cyan]{_registry_display_path()}[/cyan]")
+        _print_knowledge_next_steps(target)
+        return
+
+    ensure_workspace_dir(ws_name, at=target)
+    toml_path.write_text(_serialize(WorkspaceConfig(name=ws_name)), encoding="utf-8")
+    register(ws_name, target)
+
+    console.print(f"[green]Created workspace home[/green] '{ws_name}' at {target}")
+    console.print("  [green]+[/green] workspace.toml")
+    console.print("  [dim]memory.json    (created on first decision)[/dim]")
+    console.print("  [dim]approvals.json (created on first approval)[/dim]")
+    console.print(f"  Registered in: [cyan]{_registry_display_path()}[/cyan]")
+    if override_name == "":
+        console.print("  [dim](workspace name derived from folder; override with --name)[/dim]")
+    _print_knowledge_next_steps(target)
+
+
+def _print_knowledge_next_steps(target: Path) -> None:
+    git_url = _detect_git_remote(target)
+    console.print("\n[bold]Next:[/bold]")
+    if not git_url:
+        console.print("  • Push this folder to GitHub so teammates can clone it.")
+    console.print("  • In each working repo (sibling folders), run [cyan]knowlyx init[/cyan] —")
+    console.print("    it will auto-detect this knowledge home and link automatically.")
+
+
+def _init_link_mode(
+    target: Path,
+    workspace_name: str,
+    remote: str,
+    sibling: Path | None = None,
+) -> None:
+    """Link `target` (a working repo) to a workspace. Either via explicit name or via a knowledge sibling."""
+    from knowlyx.link.config import LinkConfig, save_link
+    from knowlyx.paths import workspace_dir, workspace_toml_path
+    from knowlyx.registry import register
+    from knowlyx.scanner.repo_scanner import RepoScanner
+    from knowlyx.workspace.config_loader import register_repo_in_workspace
+    from knowlyx.workspace.schema import RepoConfig, RepoRole
+
+    # If a sibling knowledge repo was auto-detected, derive name + remote from it.
+    if sibling is not None:
+        workspace_name = workspace_name or _derive_workspace_name(sibling.name)
+        sibling_remote = _detect_git_remote(sibling)
+        if not remote:
+            remote = sibling_remote
+        register(workspace_name, sibling)
+        console.print(f"[dim]Auto-detected knowledge sibling: {sibling}[/dim]")
+        console.print(f"[dim]Workspace name: {workspace_name}[/dim]")
+
+    if not workspace_name:
+        console.print("[red]Could not determine workspace name. Pass --link <name>.[/red]")
+        raise typer.Exit(1)
+
+    ws_exists_locally = workspace_toml_path(workspace_name).exists()
+    if not ws_exists_locally and not remote and sibling is None:
+        console.print(f"[red]Workspace '{workspace_name}' not found locally and no --remote provided.[/red]")
+        console.print("Either: [cyan]knowlyx init --knowledge[/cyan] in the knowledge repo first,")
+        console.print(f"Or:     [cyan]knowlyx init --link {workspace_name} --remote <git-url>[/cyan]")
+        raise typer.Exit(1)
+
+    with console.status("[bold cyan]Auto-detecting role + domains…"):
+        scan = RepoScanner(target).scan()
+    inferred_role = _infer_role(scan.framework, scan.language)
+    inferred_domains = scan.domains[:6]
+    repo_git_url = _detect_git_remote(target)
+
+    save_link(LinkConfig(
+        workspace=workspace_name,
+        knowledge_remote=remote,
+    ), target)
+    console.print(f"[green]Linked[/green] {target.name} → {workspace_name}")
+    console.print(f"  Detected role: [cyan]{inferred_role}[/cyan]  Domains: {', '.join(inferred_domains) or '(none)'}")
+    console.print("  Wrote: [cyan].knowlyx/config.toml[/cyan]")
+    if repo_git_url:
+        console.print(f"  Repo git URL: {repo_git_url}")
+    if remote:
+        console.print(f"  Knowledge remote: {remote}")
+
+    if ws_exists_locally:
+        changed, written = register_repo_in_workspace(
+            workspace_name,
+            RepoConfig(
+                name=target.name,
+                git_url=repo_git_url,
+                role=RepoRole(inferred_role) if inferred_role in [r.value for r in RepoRole] else RepoRole.UNKNOWN,
+                domains=inferred_domains,
+            ),
+        )
+        if written and changed:
+            console.print(f"\n[green]✓[/green] Auto-registered in workspace.toml: {written}")
+            console.print("  [dim]Commit + push the knowledge repo to share this topology with the team.[/dim]")
+        elif written:
+            console.print(f"\n[dim]Repo already registered in {written}, no change.[/dim]")
+    elif remote:
+        target_path = workspace_dir(workspace_name)
+        console.print(
+            f"\n[yellow]⚠ Shared knowledge not on this machine yet.[/yellow]\n"
+            f"  Run:  [cyan]git clone {remote} {target_path}[/cyan]\n"
+            f"  Then re-run [cyan]knowlyx init[/cyan] to auto-register."
+        )
+
+
+def _init_suggest(target: Path, name: str) -> None:
+    from knowlyx.scanner.repo_scanner import RepoScanner
+
     with console.status("[bold cyan]Scanning repo…"):
         scan = RepoScanner(target).scan()
     role = _infer_role(scan.framework, scan.language)
@@ -884,14 +1028,20 @@ def init(
         f"[bold]Detected domains:[/bold] {', '.join(scan.domains) or '(none)'}",
         title="[bold green]Knowlyx Init[/bold green]",
     ))
-    console.print("\n[bold]Suggested next steps:[/bold]\n")
-    console.print("  1. Create central workspace:")
-    console.print(f"     [cyan]knowlyx workspace create {name or target.name}[/cyan]\n")
-    console.print("  2. Link this repo:")
-    suggested_link = f"knowlyx init --link {name or target.name}"
-    console.print(f"     [cyan]{suggested_link}[/cyan]\n")
-    console.print("  3. Add MCP server to .claude/settings.json:")
+    suggested = name or target.name
+    console.print("\n[bold]No knowledge repo detected nearby.[/bold] Pick one:\n")
+    console.print("  [bold]A.[/bold] This repo IS the knowledge home (tech-lead setup):")
+    console.print(f"     [cyan]knowlyx init --knowledge --name {suggested}[/cyan]\n")
+    console.print("  [bold]B.[/bold] Link to an existing workspace by name:")
+    console.print(f"     [cyan]knowlyx init --link {suggested} --remote <git-url>[/cyan]\n")
+    console.print("  [bold]C.[/bold] Clone the team's knowledge repo as a sibling first, then re-run [cyan]knowlyx init[/cyan].\n")
+    console.print("  [bold]MCP:[/bold] add knowlyx to .claude/settings.json:")
     console.print('     [dim]{"mcpServers": {"knowlyx": {"command": "uvx", "args": ["knowlyx", "mcp", "--repo", "."]}}}[/dim]')
+
+
+def _registry_display_path() -> str:
+    from knowlyx.paths import knowlyx_home
+    return str(knowlyx_home() / "registry.toml")
 
 
 def _detect_git_remote(repo_path: Path) -> str:
