@@ -300,7 +300,8 @@ def assets(
 @app.command()
 def memory(
     action: str = typer.Argument(..., help="list | recall | decide | forget"),
-    query: str = typer.Argument("", help="Search query or entry ID"),
+    query: str = typer.Argument("", help="For decide: domain. For recall: search query. For forget: entry ID."),
+    title_arg: str = typer.Argument("", help="For decide: title of the decision."),
     domain: str = typer.Option("", "--domain", "-d"),
     title: str = typer.Option("", "--title"),
     body: str = typer.Option("", "--body"),
@@ -329,7 +330,7 @@ def memory(
         t.add_column("Title")
         t.add_column("Approved", justify="center")
         for e in entries:
-            t.add_row(e.id, e.kind.value, e.domain, e.title, "[green]✓[/green]" if e.approved else "[yellow]pending[/yellow]")
+            t.add_row(e.id, e.kind.value, e.domain, e.title, "[green]+[/green]" if e.approved else "[yellow]pending[/yellow]")
         console.print(t)
 
     elif action == "recall":
@@ -342,10 +343,21 @@ def memory(
             console.print(Panel(m.body, title=f"[bold]{m.title}[/bold] [{m.domain}] [{m.kind.value}]"))
 
     elif action == "decide":
+        # Accept title from either the positional `title_arg` or the --title flag.
+        resolved_title = title or title_arg
         if not query or not body:
-            console.print("[red]Usage: knowlyx memory decide <domain> <title> --body <decision>[/red]")
+            console.print("[red]Usage:[/red] knowlyx memory decide <domain> \"<title>\" --body \"<decision>\"")
             raise typer.Exit(1)
-        entry = MemoryEntry(id="", kind=MemoryKind.TEAM_DECISION, domain=query, title=title or body[:60], body=body, approved=True, approved_by="team", repo_path=repo_path)
+        entry = MemoryEntry(
+            id="",
+            kind=MemoryKind.TEAM_DECISION,
+            domain=query,
+            title=resolved_title or body[:60],
+            body=body,
+            approved=True,
+            approved_by="team",
+            repo_path=repo_path,
+        )
         saved = store.save(entry)
         console.print(f"[green]Decision saved and approved[/green] — ID: {saved.id}")
 
