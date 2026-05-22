@@ -61,8 +61,8 @@ A complete 3-repo demo (knowledge + backend service + frontend website) with rea
 
 ```bash
 # 1. Install knowlyx (30 seconds, one-time)
-curl -fsSL https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.sh | bash
-# Windows: irm https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.ps1 | iex
+curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh | bash
+# Windows: irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
 
 # 2. Clone the shared knowledge into the expected path
 git clone https://github.com/SatangBudsai/tutorial-knowlyx-knowledge.git \
@@ -98,13 +98,13 @@ What you'll see (across 8 commits):
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh | bash
 ```
 
 **Windows PowerShell:**
 
 ```powershell
-irm https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
 ```
 
 ### One-line installer + workspace + Claude Code in one shot
@@ -112,7 +112,7 @@ irm https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.ps1 | iex
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.sh \
+curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh \
   | bash -s -- --workspace my-product --claude --repo .
 ```
 
@@ -120,7 +120,7 @@ curl -fsSL https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.sh \
 
 ```powershell
 $env:KNOWLYX_WORKSPACE="my-product"; $env:KNOWLYX_CLAUDE="1"
-irm https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
 ```
 
 ### Manual install (if you prefer)
@@ -537,7 +537,7 @@ These are guarantees Knowlyx makes by construction:
 PRs welcome — see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ```bash
-git clone https://github.com/knowlyx/knowlyx
+git clone https://github.com/SatangBudsai/knowlyx
 cd knowlyx
 uv sync --extra dev
 uv run pytest

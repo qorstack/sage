@@ -5,7 +5,7 @@ Thank you for considering contributing! Knowlyx is open source under MIT.
 ## Quick start
 
 ```bash
-git clone https://github.com/knowlyx/knowlyx
+git clone https://github.com/SatangBudsai/knowlyx
 cd knowlyx
 uv sync                  # install deps
 uv run pytest            # run tests
@@ -16,7 +16,7 @@ uv run ruff check src/   # lint
 
 ### Reporting bugs
 
-Open a [GitHub issue](https://github.com/knowlyx/knowlyx/issues) with:
+Open a [GitHub issue](https://github.com/SatangBudsai/knowlyx/issues) with:
 
 - What you ran (CLI command, MCP tool call, etc.)
 - What you expected
@@ -26,7 +26,7 @@ Open a [GitHub issue](https://github.com/knowlyx/knowlyx/issues) with:
 
 ### Proposing features
 
-Open a [GitHub Discussion](https://github.com/knowlyx/knowlyx/discussions) first to align on direction. Knowlyx has a clear thesis (cognitive enforcement before code generation) — features that don't fit will be politely declined.
+Open a [GitHub Discussion](https://github.com/SatangBudsai/knowlyx/discussions) first to align on direction. Knowlyx has a clear thesis (cognitive enforcement before code generation) — features that don't fit will be politely declined.
 
 ### Submitting PRs
 

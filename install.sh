@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Knowlyx one-line installer (macOS / Linux)
-#   curl -fsSL https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh | bash
 #
 # Or with workspace name + Claude Code registration:
-#   curl -fsSL https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.sh | bash -s -- --workspace my-product --claude
+#   curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh | bash -s -- --workspace my-product --claude
 
 set -euo pipefail
 

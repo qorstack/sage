@@ -355,7 +355,7 @@ knowlyx graph react_flow --repo /path/to/repo
 
 ```bash
 # Self-host
-git clone https://github.com/knowlyx/knowlyx
+git clone https://github.com/SatangBudsai/knowlyx
 cd knowlyx
 uv sync
 uv run knowlyx mcp --repo /path/to/your/project

@@ -1,9 +1,9 @@
 # Knowlyx one-line installer (Windows PowerShell)
-#   irm https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
 #
 # Or with workspace + Claude Code:
 #   $env:KNOWLYX_WORKSPACE = "my-product"; $env:KNOWLYX_CLAUDE = "1"
-#   irm https://raw.githubusercontent.com/knowlyx/knowlyx/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
