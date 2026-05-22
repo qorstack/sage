@@ -1,243 +1,251 @@
 # 14 — Real-world Usage Examples
 
-7 scenarios ที่เจอบ่อยจริง — แต่ละอันมี: situation, ปกติทำยังไง (เจ็บ), ใช้ Knowlyx ทำยังไง (หาย)
+7 scenarios ที่ dev ทั่วโลกเจอทุกวัน — ไม่ว่าทำ startup หรือ enterprise, ใช้ stack ไหนก็ตาม
 
-## Scenario 1: Junior dev ใหม่เข้าทีม
+## Scenario 1: "We already have a helper for that"
 
-**Situation:** Junior เพิ่ง clone repo backend ของบริษัท 80k LOC
+**Pain ที่เจอทุกทีม:** PR review comment ที่เจอบ่อยที่สุดในโลก
+
+**Situation:** AI gen `formatCurrency()` ใหม่ — ทั้งที่ team มี `utils/money.ts` อยู่แล้ว 2 ปี
 
 **ปกติ:**
-- ใช้เวลา 1-2 สัปดาห์อ่านโค้ด
-- ถาม senior 30 ครั้ง/วัน
-- ทำ PR แรก → review 2 รอบเพราะ miss convention
 
-**Knowlyx:**
-```bash
-$ knowlyx scan .
+- AI grep "currency" ไม่เจอเพราะไฟล์ชื่อ `money.ts`
+- Gen utility ซ้ำ
+- PR review: "we have utils/money.ts, please use that"
+- AI revert, rewrite
+- เสีย review cycle 1 รอบ
 
-Architecture: clean_architecture
-Domains: payment(critical), auth(critical), order, notification, webhook
-Frameworks: FastAPI, SQLAlchemy, Alembic
-Conventions: 18 detected
-  - Controllers in src/api/, services in src/domain/
-  - DB access only via repositories
-  - All payment calls require idempotency key
-Reusable assets: 67 (services: 12, utils: 28, schemas: 27)
-Forbidden: direct httpx (use src/clients/), print() (use logger)
-```
+**With Knowlyx:**
 
-5 นาที → เห็น mental model พื้นฐาน
-
-```bash
-$ knowlyx graph mermaid --repo . > arch.md
-$ knowlyx pack payment
-```
-
-→ entire onboarding ลดเหลือ 2-3 วัน
-
----
-
-## Scenario 2: AI assistant ทำ feature ใหม่
-
-**Situation:** PM บอก "เพิ่ม OTP login ใน web + api"
-
-**ปกติ (without Knowlyx):**
-- Cursor gen OTP module ใหม่
-- ลืม rate limit
-- ใช้ axios ตรง (มี generated client อยู่)
-- ไม่มี audit log
-- → review 3 รอบ, +2 วัน
-
-**With Knowlyx (Claude Code + MCP):**
-
-User พิมพ์ในchat: "เพิ่ม OTP login"
-
-Claude flow:
 ```text
-1. tool call: analyze_intent("เพิ่ม OTP login", "/path/to/repo")
-
-   Report returned:
-   - Intent: auth domain, action: add
-   - Cognition pack `otp`:
-     • expiry 5-10 min
-     • single-use
-     • max 3 retry → lockout 15 min
-     • notification provider required
-   - Conventions:
-     • Use src/api/generated/ for HTTP calls
-     • Add audit log via AuditService
-   - Reusable assets:
-     • OtpInput component (web/src/shared/components/)
-     • RateLimiter middleware (api/src/middleware/)
-   - Memory:
-     • "Twilio primary, Infobip fallback" (approved 2026-03-12)
-   - Risk: MEDIUM → WARN
-
-2. Claude writes:
-   - api: OtpService using RateLimiter + Twilio client
-   - web: form using OtpInput component + generated SwaggerClient.requestOtp
-   - audit logs at every step
-   - test: unit + integration
+analyze_intent("display product price formatted")
+  → reusable_assets[display]:
+    • utils/money.ts (formatCurrency, parseAmount) — used in 47 files
+    • hooks/useCurrency.ts (locale-aware)
+  → AI imports existing utility → first-try PR approved
 ```
-
-→ First-try correct, 30 นาที, review 1 รอบผ่าน
 
 ---
 
-## Scenario 3: Backend แก้ DTO กระทบหลาย repo
+## Scenario 2: AI ignores project conventions
 
-**Situation:** "เปลี่ยน PaymentDTO.amount จาก int → decimal"
+**Pain:** ทุก codebase มี convention ของตัวเอง — `CLAUDE.md` / `.cursorrules` / `AGENTS.md` ก็เขียน แต่ AI ลืม
+
+**Situation:** Codebase ใช้ TanStack Query สำหรับทุก data fetching แต่ AI gen code ใช้ `useState + useEffect + fetch`
 
 **ปกติ:**
-- Backend แก้, deploy
-- 30 นาทีต่อมา worker ตาย (deserialize error)
-- 1 ชม.ต่อมา admin chart พัง
-- Slack ระเบิด, rollback
+
+- AI อ่าน CLAUDE.md แค่บางครั้ง
+- Gen `useEffect(() => { fetch(...) })` pattern เก่า
+- Reviewer: "use useQuery please"
+- AI rewrite
+
+**With Knowlyx:**
+
+```text
+get_conventions(repo_path)
+  → Detected (from package.json + grep):
+    • @tanstack/react-query installed + used in 89 files
+    • forbidden: raw fetch in components
+    • pattern: useQuery for GET, useMutation for POST/PUT/DELETE
+  → MCP returns tool result (not markdown) — AI trusts it
+  → Generated code uses useQuery first-try
+```
+
+→ ใช้ได้กับทุก convention: ESLint rules, import order, naming, testing library choice
+
+---
+
+## Scenario 3: Database migration breaks downstream
+
+**Pain:** Universal across any team with microservices or shared DB
+
+**Situation:** Backend dev rename column `users.email` → `users.email_address`
+
+**ปกติ:**
+
+- Dev ทำ Alembic/Prisma migration
+- Deploy backend ✅
+- 5 นาทีต่อมา: analytics service crash (ETL อ่าน `email`)
+- 10 นาทีต่อมา: notification worker crash
+- 15 นาทีต่อมา: admin dashboard 500
+- Slack ระเบิด → rollback migration → painful
 
 **With Knowlyx:**
 
 ```bash
-$ knowlyx workspace impact api --change "PaymentDTO.amount int→decimal"
+$ knowlyx workspace impact api --change "rename users.email to email_address"
 
 Cascade affected:
-  ⚠️ worker (jobs/payment_retry.py)
-  ⚠️ web (regenerate swagger client)
-  ⚠️ admin (ChartJS amount parser)
+  ⚠️ analytics-service (queries users.email in 6 places)
+  ⚠️ notification-worker (templates reference {{email}})
+  ⚠️ admin-dashboard (CSV export column)
+  ⚠️ marketing-service (Segment integration)
 
 Risk: HIGH → submit approval
-
-Actions required (in order):
-  1. Update api DTO + migration
-  2. Regenerate Swagger
-  3. Update worker schema
-  4. Update admin parser
-  5. Deploy: api → worker → web/admin
+Suggested workflow:
+  1. Add new column, keep old (dual-write)
+  2. Migrate consumers one by one
+  3. Drop old column after all migrated
 ```
 
-Submit approval queue → tech lead approve → execute ตามลำดับ → zero incident
+→ Zero downtime migration, no firefight
 
 ---
 
-## Scenario 4: Tech lead บันทึก decision หลัง incident
+## Scenario 4: AI hallucinates imports/functions
 
-**Situation:** Incident webhook ทำงานซ้ำ → ตัดสินใจ "ทุก webhook ต้องมี event_id check"
+**Pain:** อันนี้ดังที่สุดในชุมชน AI coding — "AI made up a function that doesn't exist"
 
-**ปกติ:**
-- Post ใน Slack channel #engineering
-- เขียนใน Notion (ไม่มีใครอ่าน)
-- 3 เดือนต่อมา dev ใหม่เขียน webhook → ทำซ้ำเดิม
-
-**With Knowlyx:**
-
-```bash
-$ knowlyx memory decide webhook \
-    "Event ID idempotency required" \
-    --body "ทุก webhook handler ต้องเช็ค event_id duplicate ก่อน process (incident 2026-04-15 ปัญหา Stripe retry ทำให้ charge ซ้ำ 47 cases)" \
-    --repo /workspace/api
-```
-
-3 เดือนต่อมา dev ใหม่ขอ AI เพิ่ม webhook → `analyze_intent` → cognition report inject memory entry นี้อัตโนมัติ → AI gen code ที่ check idempotency → zero ซ้ำ incident
-
----
-
-## Scenario 5: AI พยายามทำของอันตราย
-
-**Situation:** Dev ขอ "rewrite auth middleware ให้ใช้ JWT แทน session"
+**Situation:** AI ขึ้นบรรทัด `import { validateEmail } from '@/utils/validators'` ทั้งที่ไม่มีไฟล์นี้
 
 **ปกติ:**
-- AI gen code, dev commit, deploy
-- Production: ทุก user ถูก logout
-- 200 support tickets/ชั่วโมง
+
+- Type error / import error ตอน run
+- Dev เสียเวลา debug → realize AI hallucinate
+- บอก AI fix → AI gen function ใหม่
+- บางครั้ง gen ซ้ำของที่มีอยู่อีก (กลับไป Scenario 1)
 
 **With Knowlyx:**
 
 ```text
-analyze_intent("rewrite auth middleware ให้ใช้ JWT แทน session")
-  → Risk: CRITICAL
-  → Decision: ASK
-  → Reasons:
-    - Critical domain: auth
-    - Touches: 12 endpoints, all middleware
-    - Breaking change: existing sessions invalidated
-    - Memory entry: "Session-based intentional choice 2025-10 due to PCI scope reduction"
+Before write → validate_generated_code(code, repo_path)
+  → Violations:
+    ❌ Import '@/utils/validators' does not exist
+    💡 Suggestion: '@/lib/validation' has validateEmail (used in 12 places)
+    💡 Or: 'zod' is installed — prefer z.string().email() for new code
 
-  → request_approval(...) auto-submitted
-
-[AI tells user]
-"⛔ CRITICAL change blocked. ดูเหตุผล:
-- Auth domain (critical)
-- จะ logout users ที่มี session อยู่
-- เคยมี decision (2025-10) เลือก session intentional เพราะ PCI
-
-Submitted approval queue. ต้องคุยกับ tech lead ก่อน"
+  → AI fixes before write → no hallucinated import ever committed
 ```
-
-→ Dev ไปคุย → realize เหตุผลเดิมยังใช้อยู่ → ไม่ทำ → ประหยัด disaster
 
 ---
 
-## Scenario 6: Onboarding repo ใหม่เข้า workspace
+## Scenario 5: Refactor touches more than expected
 
-**Situation:** บริษัท acquire startup → ต้อง integrate codebase
+**Pain:** "I'll just rename this function" → 2 hours later, found 47 callers
 
-**Knowlyx:**
+**Situation:** Junior dev ขอ AI "rename `processOrder()` to `submitOrder()`"
 
-```bash
-$ cd /workspace
-$ knowlyx workspace init
-  → detected: api/, web/, worker/, acquired-startup/
-  → generated knowlyx.toml
+**ปกติ:**
 
-$ vim knowlyx.toml
-# เพิ่ม [[dependencies]] ที่ knowlyx ไม่ detect
+- AI rename ในไฟล์ที่ user เปิดอยู่
+- Push, CI fail (12 ที่เรียกชื่อเก่า)
+- AI ค่อยๆไล่แก้
+- ลืม mock ใน test files
+- Rerun, fail again
 
-$ knowlyx workspace scan
-  → 4 repos scanned in 12s
-
-$ knowlyx workspace graph mermaid > arch.md
-$ knowlyx workspace impact acquired-startup --change "deprecate /v1 endpoints"
-  → ไม่มีอะไรกระทบ (good — independent)
-```
-
-หัวหน้าฝ่าย integration เห็น context ภายในวันเดียว
-
----
-
-## Scenario 7: AI self-review (Phase 4 — planned)
-
-**Situation:** AI เพิ่ง gen `PaymentBox.tsx` ใหม่
-
-**With Knowlyx Phase 4:**
+**With Knowlyx:**
 
 ```text
-[Before writing file]
-validate_generated_code(<PaymentBox code>, "/path/to/web", "typescript")
-
-Violations:
-  ❌ Duplicate of existing PaymentCard.tsx (95% similar)
-     → suggestion: import { PaymentCard } from '@/components/payment'
-  ❌ Uses arbitrary spacing p-[18px] (not in scale 4/8/16/24)
-     → suggestion: use p-4 or p-6
-  ⚠️ Direct axios.get('/api/...')
-     → suggestion: use SwaggerClient.payment.getStatus()
-  ❌ Missing dark mode classes
-     → suggestion: add dark: variants for bg, text
-
-Status: BLOCKED — fix violations before write
+analyze_intent("rename processOrder to submitOrder")
+  → impact:
+    • 12 production files import processOrder
+    • 8 test files reference it
+    • 3 mock fixtures
+    • 1 OpenAPI spec mentions it
+  → workflow:
+    1. Update implementation
+    2. Update all 12 imports (list provided)
+    3. Update tests (list provided)
+    4. Update mocks
+    5. Regenerate OpenAPI types
+  → AI does all in one pass, single PR
 ```
-
-→ AI fix แล้ว validate ใหม่ → pass → write file → first PR ผ่าน
 
 ---
 
-## สรุป pain → gain
+## Scenario 6: New dev onboarding
 
-| Pain (without) | Gain (with Knowlyx) |
-|---|---|
-| Onboarding 2 สัปดาห์ | 2 วัน |
-| AI gen ผิด review 3 รอบ | first-try correct |
-| Production incident จาก miss impact | block ก่อน deploy |
-| Decision หายในประวัติ Slack | persistent + auto-inject |
-| AI ทำของอันตราย | hard gate ผ่าน approval |
-| Integration repo ใหม่ chaotic | structured workflow |
-| AI gen duplicate code | self-review block |
+**Pain:** Every team has this — "where do I even start?"
+
+**Situation:** Junior joins, given Slack + Notion + 80k LOC repo
+
+**ปกติ:**
+
+- อ่าน README → ไม่ update แล้ว
+- ถาม senior 30 ครั้งวันแรก
+- 1-2 สัปดาห์กว่าจะกล้าเปิด PR
+- PR แรก review 3 รอบ
+
+**With Knowlyx:**
+
+```bash
+$ knowlyx scan .
+Languages: TypeScript, Python
+Frameworks: Next.js 15 (app router), FastAPI, Prisma
+Architecture: modular_monolith
+Domains: user, billing, content, analytics, admin
+Conventions: 23 detected
+  • App Router only (no pages/)
+  • Server Components default, "use client" explicit
+  • Forms: react-hook-form + zod
+  • Data fetching: TanStack Query (client) / direct Prisma (server)
+  • State: Zustand (no Redux)
+  • Styling: Tailwind only (no CSS modules, no styled-components)
+Reusable assets: 124
+  • UI: 47 (shadcn-based)
+  • Hooks: 31
+  • Utils: 28
+  • Server actions: 18
+Forbidden patterns:
+  • console.log (use logger)
+  • any type (use unknown + zod parse)
+  • direct DB in components (server actions only)
+
+$ knowlyx graph mermaid > docs/architecture.md
+```
+
+→ Day 1 = senior-level mental model. PR แรกผ่าน first review
+
+---
+
+## Scenario 7: Breaking API contract silently
+
+**Pain:** Universal สำหรับ team ที่มี frontend/backend แยก
+
+**Situation:** Backend เปลี่ยน response shape — `{ data: [...] }` → `[...]`
+
+**ปกติ:**
+
+- Backend dev คิดว่า "minor improvement"
+- Deploy backend
+- Frontend ทั้งหมดพัง production
+- ไม่มี TypeScript error เพราะ types เป็น `any` หลัง JSON parse
+
+**With Knowlyx:**
+
+```text
+analyze_intent("flatten API response remove data wrapper")
+  → impact:
+    • frontend consumers: 23 components use response.data
+    • generated TypeScript client needs regen
+    • mobile app (React Native) consumes same endpoint
+    • Postman collection used by QA
+  → memory recall: "API contract changes require 2-week deprecation"
+  → risk: HIGH → ASK
+  → suggested:
+    1. Add new endpoint /v2/...
+    2. Keep /v1 with deprecation header
+    3. Migrate consumers
+    4. Remove /v1 after 2 weeks
+```
+
+→ ไม่มี surprise breakage, frontend team รู้ตั้งแต่ก่อน backend แตะ code
+
+---
+
+## Summary: Universal pain → Knowlyx gain
+
+| Pain ที่เจอทุกที่ | Knowlyx solution |
+| --- | --- |
+| "We have a helper for that" | `get_reusable_assets` injects existing utilities |
+| AI ignores CLAUDE.md / cursorrules | MCP tool result (AI trusts > markdown) |
+| Migration breaks downstream | `get_cross_repo_impact` shows blast radius |
+| AI hallucinates imports | `validate_generated_code` blocks before write |
+| Refactor missing call sites | `get_impact_analysis` lists all callers |
+| Onboarding 2 weeks | `scan` + `graph` = 5 min mental model |
+| API contract silent break | Risk gate + deprecation workflow |
+
+**The common thread:** AI ปัจจุบันมี "code knowledge" แต่ไม่มี "system cognition"
+Knowlyx เติม cognition layer — ใช้ได้กับทุก stack, ทุก team size, ทุกอุตสาหกรรม

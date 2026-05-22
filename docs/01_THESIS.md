@@ -10,61 +10,62 @@
 
 ## What Knowlyx IS NOT
 
-❌ AI coding assistant (Cursor/Copilot/Cline ทำดีกว่าแล้ว)
-❌ Documentation generator
-❌ Code search tool
-❌ Linter
-❌ Memory store เฉยๆ
+- ❌ AI coding assistant (Cursor/Copilot/Cline ทำดีกว่าแล้ว)
+- ❌ Documentation generator
+- ❌ Code search tool
+- ❌ Linter
+- ❌ Memory store เฉยๆ
 
 ## What Knowlyx IS
 
-✅ **Enforcement layer** ที่ AI agents ต้องผ่านก่อนเขียน code
-✅ **System cognition runtime** ที่ตอบคำถามแทน human ว่า "ระบบนี้ทำงานยังไง, ทำไม, ถ้าแก้แล้วกระทบไหน"
-✅ **Decision gate** สำหรับ high-risk changes
+- ✅ **Enforcement layer** ที่ AI agents ต้องผ่านก่อนเขียน code
+- ✅ **System cognition runtime** ที่ตอบคำถามแทน human ว่า "ระบบนี้ทำงานยังไง, ทำไม, ถ้าแก้แล้วกระทบไหน"
+- ✅ **Decision gate** สำหรับ high-risk changes
 
 ## Why this matters
 
-AI tools ปัจจุบันมี 3 อาการ:
+AI tools ปัจจุบันมี 3 อาการที่ทุกทีมเจอ:
 
-1. **Generate ซ้ำของที่มีอยู่แล้ว** — เพราะไม่รู้ว่ามี `PaymentCard` component อยู่ ก็สร้าง `PaymentBox` ใหม่
-2. **ละเมิด architecture conventions** — เพราะอ่าน CLAUDE.md ไม่ครบ ก็เขียน `fetch()` ตรงๆ แทนที่จะใช้ generated Swagger client
-3. **Miss cross-repo impact** — แก้ `api` repo โดยไม่รู้ว่า `worker` repo consume DTO เดียวกัน
+1. **Generate ซ้ำของที่มีอยู่แล้ว** — AI gen `formatDate()` ใหม่ทั้งที่มี `utils/date.ts` อยู่แล้ว 2 ปี
+2. **ละเมิด architecture conventions** — อ่าน CLAUDE.md / .cursorrules ไม่ครบ ก็เขียน `useEffect + fetch` แทนที่จะใช้ TanStack Query ที่ team ใช้อยู่
+3. **Miss cross-service impact** — rename DB column โดยไม่รู้ว่า worker + analytics service อ่าน column เดิม
 
-Knowlyx แก้ทั้ง 3 ข้อด้วยการ **บังคับ AI ให้ call MCP tools ก่อน** ไม่ใช่หวังว่า AI จะอ่าน markdown
+Knowlyx แก้ทั้ง 3 ด้วยการ **บังคับ AI ให้ call MCP tools ก่อน** ไม่ใช่หวังว่า AI จะอ่าน markdown (ซึ่งหลักฐานชี้ว่า AI ignore บ่อย)
 
 ## Core insight
 
 AI ไม่ต้องการ **perfect memory** หรือ **full context**
 
 AI ต้องการ **system intuition** แบบ senior engineer:
-- "เออ feature นี้น่าจะเกี่ยวกับ payment domain"
-- "payment เกี่ยว webhook + audit + notification"
-- "มี shared `PaymentCard` แล้วนะ"
-- "เปลี่ยนตรงนี้อาจกระทบ worker"
 
-→ Knowlyx ให้ intuition นี้แบบ structured ผ่าน MCP
+- "อันนี้น่าจะอยู่ใน billing domain"
+- "billing เกี่ยวกับ webhook + audit + invoicing"
+- "มี shared `MoneyInput` component อยู่แล้ว"
+- "เปลี่ยน schema นี้อาจกระทบ background worker"
+
+→ Knowlyx ให้ intuition นี้แบบ structured ผ่าน MCP tools
 
 ## Differentiator vs ตลาด
 
-| Tool | Approach |
-|---|---|
-| AgentMemory / ctx0 / MemLayer | Persistent memory layer |
-| Aictx | Repo context layer |
-| **Knowlyx** | **Enforced cognition pipeline** (memory + reasoning + impact + risk + workflow) |
+| Tool                          | Approach                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| AgentMemory / ctx0 / MemLayer | Persistent memory layer                                                         |
+| Aictx                         | Repo context layer                                                              |
+| **Knowlyx**                   | **Enforced cognition pipeline** (memory + reasoning + impact + risk + workflow) |
 
 ตลาดส่วนใหญ่ solve "memory"
 Knowlyx solve **"cognition + enforcement"** — ยังไม่มีใครทำดีจริง
 
 ## Real-world usage
 
-**Scenario:** Dev บอก AI "เพิ่ม OTP login"
+**Scenario:** Dev บอก AI "add password reset flow"
 
-| Without Knowlyx | With Knowlyx |
-|---|---|
-| AI grep "auth" → เขียน OTP module ใหม่ | AI call `analyze_intent("เพิ่ม OTP login")` |
-| ลืม rate limit | ได้ cognition pack `otp` → expiry, single-use, max retry, lockout |
-| ใช้ axios ตรงๆ | ได้ conventions → ต้องใช้ generated client |
-| ไม่รู้ว่ามี `OtpInput` component | ได้ reusable assets → reuse `OtpInput` |
-| ไม่รู้ว่าต้อง notify ทาง SMS provider เจ้าไหน | ได้ memory → "บริษัทใช้ Twilio, fallback Infobip" |
+| Without Knowlyx                              | With Knowlyx                                                                |
+| -------------------------------------------- | --------------------------------------------------------------------------- |
+| AI grep "password" → เขียน reset module ใหม่ | AI call `analyze_intent("add password reset flow")`                         |
+| ลืม rate limit                               | ได้ cognition pack `auth` → token expiry, single-use, rate limit, audit log |
+| ใช้ raw fetch                                | ได้ conventions → ใช้ TanStack Query + generated client                     |
+| ไม่รู้ว่ามี `EmailTemplate` component        | ได้ reusable assets → reuse existing                                        |
+| ไม่รู้ว่าทีมเลือก email provider เจ้าไหน     | ได้ memory → "team uses SendGrid, fallback SES" (approved by team)          |
 
-→ จาก "AI เขียน OTP ผิด → human review 30 นาที" เหลือ "AI เขียนถูก first try"
+→ จาก "AI gen ผิด → human review 30 นาที" เหลือ "AI gen ถูก first try"

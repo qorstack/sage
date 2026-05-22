@@ -7,7 +7,7 @@
 ## Files
 
 | File | หน้าที่ |
-|---|---|
+| --- | --- |
 | `repo_scanner.py` | ตรวจ language, framework, architecture pattern, domains, API clients, forbidden patterns |
 | `convention_detector.py` | ตรวจ naming, imports, architecture, lint, test patterns |
 | `asset_detector.py` | ตรวจ reusable components/hooks/utils/services + tag ตาม domain |
@@ -30,7 +30,7 @@
 
 ### Domains (จาก folder names + keywords)
 
-`auth`, `payment`, `order`, `user`, `notification`, `webhook`, `worker`, `audit`, `inventory`, `shipping` ฯลฯ
+`auth`, `billing`, `user`, `notification`, `webhook`, `worker`, `audit`, `search`, `analytics`, `admin` ฯลฯ
 
 ### Reusable Assets
 
@@ -48,9 +48,9 @@
 ### Forbidden Patterns
 
 - `console.log` ใน production code
-- Direct `fetch`/`axios` เมื่อมี generated client
+- Direct `fetch`/`axios` เมื่อมี TanStack Query / generated client
 - Hardcoded secrets
-- Skipped migrations
+- `any` type ใน TypeScript
 
 ## Implementation tech
 
@@ -65,9 +65,9 @@ ScanResult(
     repo_path="/path/to/repo",
     languages=["python", "typescript"],
     frameworks=["fastapi", "nextjs"],
-    architecture="clean_architecture",
-    domains=["payment", "auth", "webhook"],
-    api_clients=["generated/swagger"],
+    architecture="modular_monolith",
+    domains=["billing", "auth", "notification"],
+    api_clients=["openapi-generated"],
     conventions=[Convention(...), ...],
     assets=[Asset(...), ...],
     forbidden_patterns=[...],
@@ -89,8 +89,8 @@ uv run knowlyx scan /path/to/repo
 # Output:
 # Languages: python, typescript
 # Frameworks: fastapi, nextjs
-# Architecture: clean_architecture
-# Domains: payment, auth, webhook, user (4)
+# Architecture: modular_monolith
+# Domains: billing, auth, notification, user (4)
 # Conventions: 12 detected
 # Reusable assets: 47 (components: 23, hooks: 8, utils: 16)
 # Forbidden patterns: 3 violations
@@ -102,12 +102,13 @@ from knowlyx.scanner import RepoScanner
 
 scanner = RepoScanner()
 result = scanner.scan("/path/to/repo")
-print(result.architecture)  # "clean_architecture"
-print([a.name for a in result.assets if a.domain == "payment"])
-# ['PaymentCard', 'usePaymentStatus', 'paymentFormatter']
+print(result.architecture)  # "modular_monolith"
+print([a.name for a in result.assets if a.domain == "billing"])
+# ['InvoiceCard', 'usePricing', 'formatCurrency']
 ```
 
 **Scenario จริง:** Onboard repo ใหม่
+
 1. Dev clone repo เข้ามา
 2. `uv run knowlyx scan .` → เห็นภาพรวมใน 3 วินาที (architecture, domains, conventions)
 3. ไม่ต้องอ่าน README 30 หน้า

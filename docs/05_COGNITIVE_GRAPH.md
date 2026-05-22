@@ -7,25 +7,25 @@ NetworkX DiGraph ที่เก็บ relationships ของทุกอย่
 ## Files
 
 | File | หน้าที่ |
-|---|---|
+| --- | --- |
 | `cognitive_graph.py` | สร้าง/query graph + built-in cascade rules |
 | `exporter.py` | export เป็น React Flow JSON / Mermaid / DOT |
 
 ## Node types
 
 | Kind | ตัวอย่าง |
-|---|---|
-| `domain` | `payment`, `auth`, `webhook` |
-| `component` | `PaymentCard`, `LoginForm` |
-| `hook` | `usePaymentStatus`, `useAuth` |
-| `util` | `paymentFormatter`, `dateParser` |
-| `service` | `PaymentService`, `AuthService` |
-| `convention` | `"must use generated client"` |
+| --- | --- |
+| `domain` | `billing`, `auth`, `webhook` |
+| `component` | `InvoiceCard`, `LoginForm` |
+| `hook` | `usePricing`, `useAuth` |
+| `util` | `formatCurrency`, `parseDate` |
+| `service` | `BillingService`, `AuthService` |
+| `convention` | `"use TanStack Query for data fetching"` |
 
 ## Edge types
 
 | Type | ความหมาย |
-|---|---|
+| --- | --- |
 | `belongs_to` | asset → domain |
 | `impacts` | domain → downstream domains (cascade) |
 | `enforced_by` | code → convention rule |
@@ -36,25 +36,26 @@ NetworkX DiGraph ที่เก็บ relationships ของทุกอย่
 ฝังไว้ใน `cognitive_graph.py` — ใช้แม้ยังไม่มี data:
 
 ```text
-payment   → webhook, audit, notification, order
-auth      → user, audit, notification
-order     → payment, inventory, shipping
-otp       → auth, notification, audit
-webhook   → audit, worker
-worker    → queue, audit
+billing       → invoice, audit, notification, subscription
+auth          → user, audit, notification, session
+subscription  → billing, notification, feature_flag
+webhook       → audit, worker
+worker        → queue, audit
+search        → indexer, analytics
 ```
 
-→ แตะ `payment` รู้เลยว่ากระทบ `webhook + audit + notification + order`
+→ แตะ `billing` รู้เลยว่ากระทบ `invoice + audit + notification + subscription`
 
 ## Graph exporter
 
 | Format | use case |
-|---|---|
+| --- | --- |
 | `react_flow` | drop-in `<ReactFlow nodes={} edges={} />` สำหรับ Phase 4 UI |
 | `mermaid` | paste ใน markdown / GitHub / Notion |
 | `dot` | render ด้วย Graphviz (`dot -Tpng graph.dot > graph.png`) |
 
 Node styling อัตโนมัติตาม kind:
+
 - domain = purple
 - backend = blue
 - frontend = violet
@@ -78,20 +79,21 @@ uv run knowlyx graph react_flow --repo /path/to/repo --json > graph.json
 
 ```mermaid
 graph TD
-  payment[💰 payment]
+  billing[💰 billing]
   webhook[🪝 webhook]
   audit[📋 audit]
   notification[📨 notification]
-  PaymentCard[PaymentCard.tsx]
+  InvoiceCard[InvoiceCard.tsx]
 
-  payment -->|impacts| webhook
-  payment -->|impacts| audit
-  payment -->|impacts| notification
-  PaymentCard -.->|belongs_to| payment
+  billing -->|impacts| webhook
+  billing -->|impacts| audit
+  billing -->|impacts| notification
+  InvoiceCard -.->|belongs_to| billing
 ```
 
 **Scenario จริง:** Onboarding presentation
+
 - Engineer ใหม่เข้าทีม
-- Lead เปิด Notion → embed Mermaid graph ของ payment domain
-- เห็น 1 นาทีเข้าใจว่า payment touches อะไรบ้าง
+- Lead เปิด Notion → embed Mermaid graph ของ billing domain
+- เห็น 1 นาทีเข้าใจว่า billing touches อะไรบ้าง
 - ไม่ต้องวาด whiteboard

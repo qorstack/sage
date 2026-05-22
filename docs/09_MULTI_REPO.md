@@ -2,7 +2,7 @@
 
 📂 [src/knowlyx/workspace/](../src/knowlyx/workspace/)
 
-โปรเจกต์จริงไม่ใช่ repo เดียว — มี api + web + worker + admin + mobile
+โปรเจกต์จริงไม่ใช่ repo เดียว — มี api + web + mobile + worker + admin
 Knowlyx ต้องเห็นทั้งหมดและรู้ว่าใครคุยกับใคร
 
 ## knowlyx.toml
@@ -16,7 +16,7 @@ name = "my-product"
 name = "api"
 path = "./api"
 role = "backend"
-domains = ["payment", "auth", "user"]
+domains = ["billing", "auth", "user"]
 critical = true
 
 [[repos]]
@@ -25,10 +25,15 @@ path = "./web"
 role = "frontend"
 
 [[repos]]
+name = "mobile"
+path = "./mobile"
+role = "frontend"
+
+[[repos]]
 name = "worker"
 path = "./worker"
 role = "worker"
-domains = ["payment", "notification"]
+domains = ["billing", "notification"]
 
 [[repos]]
 name = "admin"
@@ -37,6 +42,11 @@ role = "frontend"
 
 [[dependencies]]
 from = "web"
+to = "api"
+type = "api"
+
+[[dependencies]]
+from = "mobile"
 to = "api"
 type = "api"
 
@@ -56,6 +66,7 @@ type = "api"
 Scan ทุก repo **parallel** → build cross-repo NetworkX graph
 
 **Inferred edges อัตโนมัติ:**
+
 - Frontend ที่มี generated API client (เจอ `src/api/generated/`) → backend
 - Worker ที่ share domain กับ source repo → source repo
 - Declared dependencies จาก `knowlyx.toml`
@@ -68,17 +79,17 @@ Output: รายการ repo ที่กระทบ + criticality
 ```python
 analyzer.analyze(
     changed_repo="api",
-    change="เปลี่ยน PaymentDTO.amount จาก int → decimal"
+    change="rename users.email to email_address"
 )
 # →
 # {
 #   "directly_affected": ["api"],
-#   "cascade_affected": ["web", "worker", "admin"],
+#   "cascade_affected": ["web", "mobile", "worker", "admin"],
 #   "critical_repos_affected": ["api"],
 #   "actions_required": [
-#     "regenerate Swagger client in web",
-#     "update worker deserialization",
-#     "test admin payment charts"
+#     "regenerate OpenAPI client in web/mobile",
+#     "update worker email template references",
+#     "update admin CSV export schema"
 #   ]
 # }
 ```
@@ -93,7 +104,7 @@ knowlyx workspace init
 knowlyx workspace scan
 
 # Cross-repo impact
-knowlyx workspace impact api --change "fix payment DTO"
+knowlyx workspace impact api --change "rename users.email column"
 
 # Graph
 knowlyx workspace graph
@@ -104,45 +115,51 @@ knowlyx workspace graph mermaid
 ## MCP tools
 
 | Tool | use |
-|---|---|
+| --- | --- |
 | `get_workspace_context(workspace_path)` | overview ทุก repo |
 | `get_cross_repo_impact(changed_repo, change, workspace_path)` | blast radius |
 | `export_graph("react_flow", workspace_path=...)` | visualize |
 
 ## Real-world usage
 
-**Scenario:** Backend dev จะแก้ DTO
+**Scenario:** Backend dev จะ rename DB column
 
 ```bash
-$ knowlyx workspace impact api --change "change PaymentDTO.amount int→decimal"
+$ knowlyx workspace impact api --change "rename users.email → email_address"
 
 Workspace: my-product
 Changed repo: api (CRITICAL)
 
 Directly affected:
-  - api/src/payment/dto.py
-  - api/src/payment/service.py
+  - api/src/auth/repository.py
+  - api/src/user/repository.py
+  - api/migrations/
 
 Cascade affected:
-  ⚠️ web (consumer via generated client)
+  ⚠️ web (OpenAPI consumer)
     → must regenerate: npm run gen:api
-    → must test: src/checkout/, src/refund/
-  ⚠️ worker (consumer via event payload)
-    → must update: jobs/payment_retry.py deserialization
-    → fields touched: amount
+    → must test: src/profile/, src/settings/
 
-  ℹ️ admin (consumer)
-    → ChartJS payment dashboard uses amount as int — will break
+  ⚠️ mobile (React Native, OpenAPI consumer)
+    → must regenerate + ship new app version
+    → backward compat needed (old app still in production)
+
+  ⚠️ worker (email templates)
+    → templates reference {{user.email}}
+    → must update: templates/welcome.html, templates/password_reset.html
+
+  ℹ️ admin (CSV export)
+    → column header "email" → "email_address"
+    → may break customer integrations using exports
 
 Actions required:
-  1. Update api DTO + migration
-  2. Regenerate Swagger spec
-  3. Update worker schema
-  4. Update admin chart parser
-  5. Deploy in order: api → worker → web/admin
+  1. Add new column, dual-write period
+  2. Migrate consumers (mobile last — old app compat)
+  3. Drop old column after 30 days
+  4. Document column rename in CHANGELOG
 
 Risk: HIGH → recommend approval queue
 ```
 
-→ ก่อน Knowlyx: dev ลืม update worker → production crash 2 ชม.
-→ หลัง Knowlyx: เห็นชัดก่อนเริ่ม
+→ ก่อน Knowlyx: dev ลืม update mobile → users on old app version พัง production
+→ หลัง Knowlyx: เห็นชัดก่อนเริ่ม + plan rollout safe

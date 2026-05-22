@@ -6,7 +6,7 @@
 
 ## ทำไม MCP-first ไม่ใช่ markdown-first
 
-**ปัญหา:** Claude/Codex/Cursor *ignore* markdown files บ่อย — แม้จะใส่ใน CLAUDE.md ก็ตาม
+**ปัญหา:** Claude/Codex/Cursor *ignore* markdown files บ่อย — แม้จะใส่ใน CLAUDE.md / .cursorrules / AGENTS.md ก็ตาม
 
 **Solution:** ทำเป็น **tool** — AI ตอบ tool result ได้ดีกว่าและเชื่อถือกว่า file content
 
@@ -55,7 +55,7 @@ uv run knowlyx mcp --sse --port 8765 --repo /path/to/repo
 ### Phase 1 — Cognitive Analysis (8)
 
 | Tool | use |
-|---|---|
+| --- | --- |
 | `analyze_intent(request, repo_path)` | **call first** — full CognitionReport |
 | `get_conventions(repo_path)` | rules AI ต้องตาม |
 | `get_reusable_assets(domain, repo_path)` | assets ที่มีอยู่ |
@@ -68,7 +68,7 @@ uv run knowlyx mcp --sse --port 8765 --repo /path/to/repo
 ### Phase 2 — Memory + Approval (6)
 
 | Tool | use |
-|---|---|
+| --- | --- |
 | `remember_business_context(domain, title, body, repo_path)` | AI propose memory (need approve) |
 | `approve_memory(entry_id, approved_by, repo_path)` | human approves |
 | `recall_context(query, domain, repo_path)` | fuzzy search approved memory |
@@ -79,7 +79,7 @@ uv run knowlyx mcp --sse --port 8765 --repo /path/to/repo
 ### Phase 3 — Workspace + Graph + Approval Queue (8)
 
 | Tool | use |
-|---|---|
+| --- | --- |
 | `get_workspace_context(workspace_path)` | multi-repo overview |
 | `get_cross_repo_impact(changed_repo, change, workspace_path)` | cross-repo blast radius |
 | `export_graph(format, repo_path, workspace_path)` | react_flow/mermaid/dot |
@@ -108,35 +108,35 @@ For EVERY user request that touches code:
 
 ## Real-world usage
 
-**Scenario:** Dev ใน Claude Code พิมพ์ "เพิ่ม endpoint refund payment"
+**Scenario:** Dev ใน Claude Code พิมพ์ "add refund endpoint"
 
 ```text
 [Claude]
-1. tool: analyze_intent("เพิ่ม endpoint refund payment", "/path/to/api")
-   ← decision: ASK (HIGH risk — payment domain + DB change)
-   ← packs: payment (idempotency required, never trust client amount, audit log)
-   ← memory: "ทุก refund ต้องผ่าน finance approval >$1000" (team_decision)
-   ← assets: PaymentService.refund() stub exists in src/payment/service.py
+1. tool: analyze_intent("add refund endpoint", "/path/to/api")
+   ← decision: ASK (HIGH risk — billing domain + DB write)
+   ← packs: billing (idempotency required, audit log, amount validation)
+   ← memory: "refunds over $1000 require finance approval" (team_decision)
+   ← assets: BillingService.charge() exists, refund() stub in src/billing/service.py
 
 2. tool: request_approval(
      title="Add refund endpoint",
-     description="POST /payments/{id}/refund — needs DB + finance flow",
+     description="POST /charges/{id}/refund — needs DB + finance flow",
      risk_level="HIGH",
-     domain="payment"
+     domain="billing"
    )
    ← request_id: abc-123
 
 [Claude tells user]
-"⚠️ Risk: HIGH — payment domain + DB change + finance approval flow.
+"⚠️ Risk: HIGH — billing domain + DB change + finance approval flow.
 Submitted approval request abc-123. Run `knowlyx approval show abc-123`
-และ approve ก่อนผมจะเขียน code"
+and approve before I write the code."
 
 [User runs]
 $ knowlyx approval approve abc-123
 
 [Claude]
 3. tool: check_approval("abc-123") → approved
-4. Writes code reusing PaymentService.refund() with idempotency key,
+4. Writes code reusing BillingService.refund() stub with idempotency key,
    audit log, finance check >$1000
 ```
 

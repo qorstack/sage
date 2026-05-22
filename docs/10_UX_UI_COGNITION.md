@@ -11,6 +11,7 @@ AI gen UI ปัจจุบัน → modal style ไม่ตรง design sys
 ## สิ่งที่ต้อง detect
 
 ### Design tokens
+
 - Color palette (Tailwind config, CSS vars)
 - Spacing scale (4/8/16/24 vs arbitrary)
 - Font sizes (xs/sm/base/lg/xl scale)
@@ -18,6 +19,7 @@ AI gen UI ปัจจุบัน → modal style ไม่ตรง design sys
 - Shadow scale
 
 ### Component patterns
+
 - Modal: `<Dialog>` raw หรือ `<Sheet>` from shared/ui?
 - Form: react-hook-form + zod? formik? plain useState?
 - Table: TanStack? raw `<table>`? ag-grid?
@@ -25,21 +27,25 @@ AI gen UI ปัจจุบัน → modal style ไม่ตรง design sys
 - Date picker: react-day-picker? mui? native?
 
 ### Layout patterns
+
 - Page structure (header/sidebar/content)
 - Grid system (CSS grid vs flex vs container queries)
 - Responsive breakpoints
 
 ### Interaction patterns
+
 - Loading states (skeleton vs spinner vs progress)
 - Empty states (illustration + CTA)
 - Error states (inline vs toast vs page)
 - Confirmation (modal vs inline vs toast undo)
 
 ### Dark mode
+
 - class-based (`next-themes`) vs media query
-- Token approach (CSS vars vs Tailwind dark:)
+- Token approach (CSS vars vs Tailwind `dark:`)
 
 ### Animation
+
 - Library (framer-motion / motion / CSS only)
 - Common durations / easings
 
@@ -56,41 +62,45 @@ src/knowlyx/design/
 ## New MCP tools
 
 | Tool | use |
-|---|---|
+| --- | --- |
 | `get_design_system(repo_path)` | tokens + components + patterns |
 | `validate_ui_code(code, repo_path)` | check violations before write |
 | `get_design_patterns(component_type, repo_path)` | how this team builds modals/forms/etc |
 
 ## Real-world usage (planned)
 
-**Scenario:** Dev ขอ "create payment confirmation modal"
+**Scenario:** Dev ขอ "create settings page"
 
 ```text
 [Claude]
 1. tool: get_design_system("/path/to/web")
    ← spacing: 4/8/16/24 scale only
-   ← modal: use <Sheet> from @/components/ui/sheet (NOT raw Dialog)
+   ← page layout: <AppShell> wrapper required
+   ← form: react-hook-form + zod (NOT formik, NOT plain state)
    ← button: <Button variant="primary"> (NOT custom)
-   ← form: react-hook-form + zod
-   ← dark mode: class-based
+   ← input: <Input> from @/components/ui/input
+   ← dark mode: class-based via next-themes
 
-2. tool: get_reusable_assets("payment")
-   ← PaymentSummary component exists
+2. tool: get_reusable_assets("settings")
+   ← SettingsLayout component exists
+   ← useUpdateProfile mutation hook exists
 
 3. Writes:
-   <Sheet>
-     <SheetContent className="p-6">
-       <PaymentSummary {...} />
-       <Button variant="primary" onClick={confirm}>ยืนยัน</Button>
-     </SheetContent>
-   </Sheet>
+   <AppShell>
+     <SettingsLayout>
+       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+         <Input {...register("name")} />
+         <Button variant="primary" type="submit">Save</Button>
+       </form>
+     </SettingsLayout>
+   </AppShell>
 
 [Validation pre-write]
 4. tool: validate_ui_code(<above>, "/path/to/web")
-   ← ✅ uses Sheet
+   ← ✅ uses AppShell + SettingsLayout
    ← ✅ uses Button variant
-   ← ✅ spacing in scale (p-6 = 24px)
-   ← ✅ reuses PaymentSummary
+   ← ✅ spacing in scale (space-y-6 = 24px)
+   ← ✅ react-hook-form + Input pattern
 ```
 
 → First-try UI ตรง design system, no rework

@@ -1,91 +1,98 @@
 # 02 — Problems Knowlyx Solves
 
-7 ปัญหา core ที่ AI coding tools ปัจจุบันแก้ไม่ได้
+7 ปัญหา core ที่ AI coding tools ปัจจุบันแก้ไม่ได้ — เจอกันทุกทีมทั่วโลก
 
 ## P1 — Business Understanding
 
-**ปัญหา:** AI ไม่รู้ว่า "OTP login" ในบริษัทนี้ต้องมีอะไรบ้าง — expiry, retry policy, lockout, provider
+**ปัญหา:** AI ไม่รู้ว่า "password reset" ในทีมนี้ต้องมีอะไรบ้าง — token expiry, rate limit, audit log, email provider
 
 **Knowlyx แก้:** Cognition Packs (built-in 7 domains) + Memory (team-specific)
 
 **ตัวอย่าง:**
+
 ```text
-Request: "เพิ่ม OTP login"
-→ Pack `otp` inject: expiry 5-10min, single-use, max retry, lockout
-→ Memory inject: "เราใช้ Twilio + fallback Infobip" (approved by team)
+Request: "add password reset"
+→ Pack `auth` inject: token expiry 15min, single-use, rate limit, audit log
+→ Memory inject: "team uses SendGrid, fallback SES" (approved decision)
 ```
 
 ## P2 — Architecture Awareness
 
-**ปัญหา:** AI เขียน `fetch('/api/...')` ทั้งที่บริษัทมี generated Swagger client
+**ปัญหา:** AI เขียน `fetch('/api/...')` ทั้งที่ codebase ใช้ TanStack Query + generated TypeScript client
 
-**Knowlyx แก้:** `ConventionDetector` ตรวจ architecture pattern + forbidden patterns
+**Knowlyx แก้:** `ConventionDetector` ตรวจ stack + forbidden patterns
 
 **ตัวอย่าง:**
+
 ```text
-Detected:
-- architecture: clean_architecture
-- frontend must use: src/api/generated/
-- forbidden: direct axios/fetch
-- enforce: controller → service → repository
+Detected (from package.json + usage):
+- architecture: modular_monolith
+- data layer: TanStack Query (used in 89 files)
+- forbidden: raw fetch in components
+- enforce: server actions for mutations
 ```
 
 ## P3 — UX/UI Pattern Cognition
 
 **ปัญหา:** AI gen modal ที่ spacing, color, dark mode ไม่ตรงกับ design system ที่ใช้อยู่
 
-**Knowlyx แก้:** Design cognition (Phase 4) — ตรวจ tailwind tokens, component patterns, spacing system
+**Knowlyx แก้:** Design cognition (Phase 4) — ตรวจ Tailwind config, shared/ui components, spacing scale
 
 **ตัวอย่าง:**
+
 ```text
 Detected:
 - spacing scale: 4/8/16/24 (no arbitrary values)
-- modal pattern: <Sheet> from shared/ui (not raw Dialog)
+- modal pattern: <Dialog> from @/components/ui (NOT raw HTML)
 - dark mode: class-based via next-themes
+- forms: react-hook-form + zod
 ```
 
 ## P4 — Reuse Awareness
 
-**ปัญหา:** AI สร้าง `PaymentBox.tsx` ใหม่ทั้งที่มี `PaymentCard.tsx` อยู่แล้ว
+**ปัญหา:** AI สร้าง `formatCurrency()` ใหม่ทั้งที่มี `utils/money.ts` อยู่แล้ว — comment ที่เจอบ่อยที่สุดใน PR review
 
 **Knowlyx แก้:** `AssetDetector` + `get_reusable_assets(domain)`
 
 **ตัวอย่าง:**
+
 ```text
-Request: "add payment summary card"
-→ assets[payment]:
-  - PaymentCard.tsx (used in 8 places)
-  - usePaymentStatus.ts (hook)
-  - paymentFormatter.ts (util)
-→ AI: "reuse PaymentCard instead of creating new"
+Request: "display product price"
+→ assets[billing]:
+  - utils/money.ts (formatCurrency, parseAmount) — used in 47 files
+  - hooks/useCurrency.ts (locale-aware)
+  - components/PriceTag.tsx
+→ AI: "reuse existing instead of creating new"
 ```
 
 ## P5 — Impact Awareness
 
-**ปัญหา:** AI แก้ DTO ใน api repo โดยไม่รู้ว่า worker repo + frontend repo consume
+**ปัญหา:** AI rename `users.email` → `users.email_address` โดยไม่รู้ว่า worker + analytics + admin dashboard อ่าน column เดิม
 
 **Knowlyx แก้:** `ImpactAnalyzer` + cross-repo graph + cascade rules
 
 **ตัวอย่าง:**
+
 ```text
-Change: "เปลี่ยน PaymentDTO.amount จาก int → decimal"
+Change: "rename users.email → email_address"
 → Impact:
-  - api/payment-service ✓
-  - worker/payment-retry-job ⚠️ (deserialize fail)
-  - web/checkout (Swagger client regen needed)
-  - admin/dashboard (chart breaks)
-→ Decision: ASK (cross-repo critical)
+  - api/src/auth/ ✓ (direct)
+  - worker/email_templates ⚠️ (references {{email}})
+  - analytics/etl ⚠️ (SELECT email FROM users)
+  - admin/csv_export ⚠️ (column header)
+→ Decision: ASK (cross-service breakage)
 ```
 
 ## P6 — AI Intent Safety
 
-**ปัญหา:** AI run `DROP TABLE` หรือ delete migration โดยไม่ pause ให้ human ดูก่อน
+**ปัญหา:** AI run destructive migration หรือ rewrite auth middleware โดยไม่ pause ให้ human ดูก่อน
 
 **Knowlyx แก้:** `RiskScorer` + `ApprovalQueue` — decision: `proceed/warn/ask/reject`
 
 **ตัวอย่าง:**
+
 ```text
-Request: "rewrite auth middleware"
+Request: "rewrite auth middleware to use JWT"
 → Risk: HIGH (touches auth + sessions + 12 dependent endpoints)
 → Decision: ASK
 → Knowlyx submit approval gate
@@ -95,27 +102,29 @@ Request: "rewrite auth middleware"
 
 ## P7 — Multi-Repo System Awareness
 
-**ปัญหา:** บริษัทจริงมี api + web + worker + admin + mobile — AI เห็นแค่ repo เดียว
+**ปัญหา:** Real product = api + web + mobile + worker + admin — AI เห็นแค่ repo เดียว
 
 **Knowlyx แก้:** Workspace (`knowlyx.toml`) + cross-repo graph + inferred dependencies
 
 **ตัวอย่าง:**
+
 ```text
 Workspace: knowlyx.toml
-→ scan: api, web, worker, admin (parallel)
+→ scan: api, web, mobile, worker, admin (parallel)
 → inferred edges:
   - web → api (generated client detected)
-  - worker → api (shared domain: payment)
+  - mobile → api (OpenAPI consumer)
+  - worker → api (shared schema)
   - admin → api (declared)
-→ AI ถาม "fix payment scan 501" → ได้คำตอบครบทุก repo
+→ AI ถาม "change /users response shape" → ได้คำตอบครบทุก consumer
 ```
 
 ## ปัญหาที่ Knowlyx ยังไม่แก้ (Phase 4+)
 
-| Problem | ใคร solve อยู่บ้าง |
-|---|---|
+| Problem | Status |
+| --- | --- |
 | Business conflict detection (feature ใหม่ขัด policy เก่า) | ❌ ยังไม่มีใครทำดี |
-| Business evolution (track ว่า rule เปลี่ยนเมื่อไหร่ ทำไม) | ❌ |
+| Business evolution (track ว่า rule เปลี่ยนเมื่อไหร่/ทำไม) | ❌ |
 | AI self-review ก่อน submit code | 🟡 บางตัวเริ่ม |
 | Design system enforcement | ❌ |
 

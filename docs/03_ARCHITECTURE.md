@@ -34,15 +34,16 @@
 ## Layers
 
 | # | Layer | Package | Responsibility | Status |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | **Scanner** | [scanner/](../src/knowlyx/scanner/) | อ่าน repo, infer language/framework/architecture/conventions/assets | ✅ |
 | 2 | **Cognitive Graph** | [graph/](../src/knowlyx/graph/) | NetworkX DiGraph + cascade rules + exporter | ✅ |
 | 3 | **Memory** | [memory/](../src/knowlyx/memory/) | FileStore + Qdrant fallback + human approval | ✅ |
-| 4 | **Cognition Packs** | [packs/](../src/knowlyx/packs/) | Built-in domain knowledge (auth/otp/payment/...) | ✅ |
+| 4 | **Cognition Packs** | [packs/](../src/knowlyx/packs/) | Built-in domain knowledge | ✅ |
 | 5 | **Reasoning** | [reasoning/](../src/knowlyx/reasoning/) | Intent/Impact/Risk analyzers + engine | ✅ |
 | 6 | **Enforcement** | [mcp/](../src/knowlyx/mcp/) | FastMCP server, 20 tools | ✅ |
 
 Surfaces ที่ exposing layer เหล่านี้:
+
 - [cli/](../src/knowlyx/cli/) — Typer CLI (ทุก command)
 - [api/](../src/knowlyx/api/) — FastAPI REST (Phase 1 routes only — Phase 2-3 ยังขาด)
 - [workspace/](../src/knowlyx/workspace/) — Multi-repo orchestrator
@@ -51,16 +52,16 @@ Surfaces ที่ exposing layer เหล่านี้:
 ## Core data flow
 
 ```text
-User: "fix payment scan 501"
+User: "add rate limiting to /login endpoint"
   │
   ▼
-IntentAnalyzer       → IntentAnalysis(domain=payment, action=fix, requirements=[...])
+IntentAnalyzer       → IntentAnalysis(domain=auth, action=add, requirements=[...])
   │
   ▼
-ImpactAnalyzer       → ImpactAnalysis(domains=[payment,webhook,audit], files=[...], cascade_risks=[...])
+ImpactAnalyzer       → ImpactAnalysis(domains=[auth,audit], files=[...], cascade_risks=[...])
   │
   ▼
-RiskScorer           → RiskAssessment(level=HIGH, decision=ASK)
+RiskScorer           → RiskAssessment(level=MEDIUM, decision=WARN)
   │
   ▼
 ReasoningEngine      → CognitionReport(intent, impact, risk, plan, reusable_assets, conventions, packs, memory)
