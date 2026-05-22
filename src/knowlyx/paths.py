@@ -80,7 +80,7 @@ def ensure_workspace_dir(name: str, at: str | Path | None = None) -> Path:
         d = workspace_dir(name)
         d.mkdir(parents=True, exist_ok=True)
     (d / "scans").mkdir(exist_ok=True)
-    (d / "packs").mkdir(exist_ok=True)
+    (d / "skills").mkdir(exist_ok=True)
     return d
 
 
@@ -102,6 +102,11 @@ def workspace_clones_path(name: str) -> Path:
 
 def workspace_scans_dir(name: str) -> Path:
     return workspace_dir(name) / "scans"
+
+
+def workspace_skills_dir(name: str) -> Path:
+    """User-authored knowledge skills (markdown + frontmatter)."""
+    return workspace_dir(name) / "skills"
 
 
 def list_workspaces() -> list[str]:

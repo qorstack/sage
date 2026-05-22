@@ -917,15 +917,63 @@ def _init_knowledge_mode(target: Path, override_name: str = "") -> None:
     ensure_workspace_dir(ws_name, at=target)
     toml_path.write_text(_serialize(WorkspaceConfig(name=ws_name)), encoding="utf-8")
     register(ws_name, target)
+    _write_skills_starter(target / "skills")
 
     console.print(f"[green]Created workspace home[/green] '{ws_name}' at {target}")
     console.print("  [green]+[/green] workspace.toml")
+    console.print("  [green]+[/green] skills/  (team-authored knowledge — see skills/README.md)")
     console.print("  [dim]memory.json    (created on first decision)[/dim]")
     console.print("  [dim]approvals.json (created on first approval)[/dim]")
     console.print(f"  Registered in: [cyan]{_registry_display_path()}[/cyan]")
     if override_name == "":
         console.print("  [dim](workspace name derived from folder; override with --name)[/dim]")
     _print_knowledge_next_steps(target)
+
+
+def _write_skills_starter(skills_dir: Path) -> None:
+    """Drop a README into skills/ on first init so authors see the format."""
+    skills_dir.mkdir(parents=True, exist_ok=True)
+    readme = skills_dir / "README.md"
+    if readme.exists():
+        return
+    readme.write_text(
+        '''# Skills — team-authored knowledge
+
+Drop `<name>.md` files here. Each file is a "skill" — a piece of knowledge
+the AI should consult when working in a related area (UI style, money
+formatting, deploy quirks, anything that isn't obvious from the code).
+
+## File format
+
+```markdown
+---
+name: ui-style
+description: Use when building or editing UI components — covers Tailwind, design tokens, and shared components.
+tags: [ui, frontend]
+---
+
+# UI Style Guide
+
+- Use Tailwind v4 utility classes; no inline `style={}`
+- Money: format as `THB X,XXX.XX`
+- All buttons must use `<Button>` from `src/components/ui/Button.tsx`
+- Dark mode: respect `prefers-color-scheme`
+```
+
+## How the AI uses them
+
+1. `analyze_intent` returns `available_skills` (every skill's name + description)
+2. The AI scans descriptions and calls `read_skill(name)` on anything relevant
+3. The AI follows the skill's guidance when writing code
+
+## Authoring tips
+
+- Keep descriptions specific — they're how the AI decides relevance
+- Body is free markdown — lists, code blocks, examples all welcome
+- Commit + push: skills live in the knowledge repo and sync with the team
+''',
+        encoding="utf-8",
+    )
 
 
 def _print_knowledge_next_steps(target: Path) -> None:
@@ -1074,6 +1122,75 @@ def _infer_role(framework: str, language: str) -> str:
     if lg in ("typescript", "javascript"):
         return "frontend"
     return "backend"
+
+
+@app.command()
+def audit(
+    action: str = typer.Argument("show", help="show | clear | path"),
+    repo_path: str = typer.Option(".", "--repo", "-r"),
+    limit: int = typer.Option(30, "--limit", "-n", help="How many most-recent events to show"),
+    tool_filter: str = typer.Option("", "--tool", help="Only show events for this tool (e.g. analyze_intent)"),
+    json_output: bool = typer.Option(False, "--json", help="Print raw JSONL instead of a table"),
+):
+    """
+    Inspect which Knowlyx MCP tools the AI has called in this repo.
+
+    The audit log is a single capped JSONL file at .knowlyx/audit.log (last
+    ~500 events, oldest dropped automatically). No log rotation needed.
+
+    \b
+    knowlyx audit                       # last 30 events as a table
+    knowlyx audit --limit 100           # last 100
+    knowlyx audit --tool analyze_intent # only this tool
+    knowlyx audit --json                # raw JSON lines for scripting
+    knowlyx audit clear                 # delete the log
+    knowlyx audit path                  # print the log file path
+    """
+    from knowlyx import audit as _audit
+
+    if action == "path":
+        print(_audit._audit_path(repo_path))
+        return
+
+    if action == "clear":
+        if _audit.clear(repo_path):
+            console.print("[green]Audit log cleared.[/green]")
+        else:
+            console.print("[yellow]No audit log to clear.[/yellow]")
+        return
+
+    if action != "show":
+        console.print(f"[red]Unknown action '{action}'.[/red] Use: show | clear | path")
+        raise typer.Exit(1)
+
+    events = _audit.read(repo_path, limit=max(limit, 1))
+    if tool_filter:
+        events = [e for e in events if e.get("tool") == tool_filter]
+
+    if json_output:
+        for e in events:
+            print(json.dumps(e, ensure_ascii=False))
+        return
+
+    if not events:
+        console.print("[yellow]No audit events yet.[/yellow]  [dim](The AI hasn't called any Knowlyx tools in this repo, or the log was cleared.)[/dim]")
+        return
+
+    t = Table(title=f"Knowlyx audit — last {len(events)} event(s)", show_header=True)
+    t.add_column("When (UTC)", style="dim", width=20)
+    t.add_column("Tool", style="cyan")
+    t.add_column("Args")
+    for e in events:
+        args = e.get("args") or {}
+        rendered = ", ".join(f"{k}={_short(v)}" for k, v in args.items())
+        t.add_row(e.get("ts", ""), e.get("tool", ""), rendered or "[dim](none)[/dim]")
+    console.print(t)
+    console.print(f"\n[dim]Log file: {_audit._audit_path(repo_path)}  (capped at ~500 lines)[/dim]")
+
+
+def _short(v: object, max_len: int = 60) -> str:
+    s = str(v)
+    return s if len(s) <= max_len else s[:max_len] + "…"
 
 
 @app.command(name="commit-check")

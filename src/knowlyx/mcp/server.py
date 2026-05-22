@@ -17,26 +17,31 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+from knowlyx import audit
 from knowlyx.graph.cognitive_graph import CognitiveGraph
 from knowlyx.memory.schema import MemoryEntry, MemoryKind
 from knowlyx.memory.store import create_store
 from knowlyx.packs.builtin import get_pack, get_packs_for_domains
 from knowlyx.reasoning.engine import ReasoningEngine
 from knowlyx.scanner.repo_scanner import RepoScanner
+from knowlyx.skills import load_workspace_skills, read_skill as _read_skill
 
 mcp = FastMCP(
     name="knowlyx",
     instructions=(
         "Knowlyx is a cognitive enforcement layer. Mandatory workflow for ANY code change:\n"
         "\n"
-        "1. analyze_intent(request) — FIRST. Returns rule-based decision + impact + risk.\n"
-        "2. If decision is 'ask' or 'reject' → call request_approval() and wait.\n"
-        "3. get_domain_knowledge(domain) — read related memory. If synthesis is stale,\n"
+        "1. analyze_intent(request) — FIRST. Returns rule-based decision + impact + risk +\n"
+        "   `available_skills` (team-authored knowledge files: name + description).\n"
+        "2. Scan `available_skills`. For every skill whose description sounds relevant to\n"
+        "   the task, call read_skill(name) and follow its guidance.\n"
+        "3. If decision is 'ask' or 'reject' → call request_approval() and wait.\n"
+        "4. get_domain_knowledge(domain) — read related memory. If synthesis is stale,\n"
         "   YOU must distill themes/conflicts/open-questions and call save_synthesis().\n"
-        "4. get_reusable_assets(domain) — reuse before creating.\n"
-        "5. assess_risk_in_context(request) — you may UPGRADE the rule-based decision\n"
+        "5. get_reusable_assets(domain) — reuse before creating.\n"
+        "6. assess_risk_in_context(request) — you may UPGRADE the rule-based decision\n"
         "   if historical context (memory) warrants it. You may NEVER downgrade it.\n"
-        "6. validate_generated_code(code) — BEFORE writing. Fix all blockers, re-validate.\n"
+        "7. validate_generated_code(code) — BEFORE writing. Fix all blockers, re-validate.\n"
         "\n"
         "Rule: Knowlyx decisions are AUTHORITATIVE. You may only make them stricter, never looser.\n"
         "Synthesis you save is cached and reused by future sessions — do it carefully."
@@ -65,6 +70,35 @@ def _get_store(repo_path: str):
     return store
 
 
+def _workspace_name_for(repo_path: str) -> str | None:
+    """Resolve the workspace name this repo is linked to. None if not linked."""
+    try:
+        from knowlyx.link.resolver import resolve_workspace
+        res = resolve_workspace(repo_path)
+        return res.workspace_name if res else None
+    except Exception:
+        return None
+
+
+def _available_skills_summary(repo_path: str) -> list[dict[str, Any]]:
+    """Return [{name, description, tags}] for every skill in the workspace.
+
+    These are the team's authored knowledge files. analyze_intent surfaces
+    them as a menu — Claude scans descriptions and calls read_skill() on the
+    ones that sound relevant to the current task.
+    """
+    ws_name = _workspace_name_for(repo_path)
+    if not ws_name:
+        return []
+    try:
+        return [
+            {"name": s.name, "description": s.description, "tags": s.tags}
+            for s in load_workspace_skills(ws_name)
+        ]
+    except Exception:
+        return []
+
+
 # ==================================================================
 # Phase 1 Tools — Cognitive analysis
 # ==================================================================
@@ -82,6 +116,7 @@ def analyze_intent(request: str, repo_path: str = ".") -> str:
     """
     engine, scan, _, store = _get_engine(repo_path)
     report = engine.analyze(request)
+    audit.log(repo_path, "analyze_intent", request=request, decision=report.risk.decision.value, domain=report.intent.detected_domain)
 
     # pull cognition packs for affected domains
     all_domains = [report.intent.detected_domain] + report.impact.affected_domains
@@ -132,6 +167,7 @@ def analyze_intent(request: str, repo_path: str = ".") -> str:
             for m in memories
             if m.approved  # only surface human-approved memories
         ],
+        "available_skills": _available_skills_summary(repo_path),
         "suggested_plan": report.suggested_plan,
         "architecture": scan.architecture.value,
         "language": scan.language,
@@ -185,6 +221,7 @@ def get_conventions(repo_path: str = ".") -> str:
     These are rules AI MUST follow when generating code.
     Violating them causes architecture drift and review cost.
     """
+    audit.log(repo_path, "get_conventions")
     _, scan, _, _ = _get_engine(repo_path)
     return json.dumps(
         {
@@ -209,6 +246,7 @@ def get_reusable_assets(domain: str = "", repo_path: str = ".") -> str:
     Check this BEFORE creating new files — reuse what already exists.
     Filter by domain (e.g. 'payment', 'auth', 'user') or leave empty for all.
     """
+    audit.log(repo_path, "get_reusable_assets", domain=domain)
     _, scan, graph, _ = _get_engine(repo_path)
     if domain:
         raw = graph.get_assets_for_domain(domain) + graph.find_reusable(domain)
@@ -434,6 +472,7 @@ def recall_context(query: str, domain: str = "", repo_path: str = ".") -> str:
 
     Only returns human-approved memories.
     """
+    audit.log(repo_path, "recall_context", query=query, domain=domain)
     store = _get_store(repo_path)
     results = store.search(query, domain=domain, limit=8)
     approved = [r for r in results if r.approved]
@@ -652,6 +691,7 @@ def request_approval(
         impact_summary=[s.strip() for s in impact_summary.split(",") if s.strip()],
         warnings=[w.strip() for w in warnings.split(",") if w.strip()],
     ))
+    audit.log(repo_path, "request_approval", title=title, risk_level=risk_level, domain=domain, request_id=req.id)
     return json.dumps({
         "status": "pending",
         "id": req.id,
@@ -673,7 +713,9 @@ def check_approval(request_id: str, repo_path: str = ".") -> str:
     queue = get_queue(repo_path)
     req = queue.get(request_id)
     if not req:
+        audit.log(repo_path, "check_approval", request_id=request_id, status="not_found")
         return json.dumps({"error": f"Approval request '{request_id}' not found."})
+    audit.log(repo_path, "check_approval", request_id=request_id, status=req.status.value)
     return json.dumps({
         "id": req.id,
         "status": req.status.value,
@@ -730,6 +772,7 @@ def get_domain_knowledge(domain: str, repo_path: str = ".") -> str:
     entries = [e for e in store.all() if e.domain == domain and e.approved]
     synthesis = store.get_synthesis(domain) if hasattr(store, "get_synthesis") else None
     stale = store.synthesis_stale(domain) if hasattr(store, "synthesis_stale") else True
+    audit.log(repo_path, "get_domain_knowledge", domain=domain, entries=len(entries), synthesis_stale=bool(stale))
 
     return json.dumps({
         "domain": domain,
@@ -789,6 +832,7 @@ def save_synthesis(
         open_questions=open_questions or [],
         synthesized_by="ai",
     )
+    audit.log(repo_path, "save_synthesis", domain=domain, themes=len(key_themes))
     return json.dumps({"status": "cached", "domain": domain, "synthesis": saved}, indent=2, ensure_ascii=False)
 
 
@@ -924,6 +968,7 @@ def validate_generated_code(code: str, repo_path: str = ".", language: str = "")
         if report.has_blockers else
         "Validation passed. You may write the code."
     )
+    audit.log(repo_path, "validate_generated_code", language=language or scan.language, code_len=len(code), has_blockers=report.has_blockers)
     return json.dumps(out, indent=2, ensure_ascii=False)
 
 
@@ -956,4 +1001,72 @@ def list_approvals(status_filter: str = "pending", repo_path: str = ".") -> str:
             }
             for r in entries
         ],
+    }, indent=2, ensure_ascii=False)
+
+
+# ==================================================================
+# Skills — team-authored knowledge (markdown files in workspace/skills/)
+# ==================================================================
+
+
+@mcp.tool()
+def list_skills(repo_path: str = ".") -> str:
+    """
+    List every team-authored skill (knowledge file) in the workspace.
+
+    Skills are markdown files at <workspace>/skills/*.md with frontmatter
+    (name + description). The descriptions tell you when each one applies —
+    scan them and call read_skill(name) on any that sound relevant before
+    writing code. Skills are how the team encodes conventions: UI style,
+    money formatting, error handling patterns, deployment quirks, anything
+    that an AI must know but isn't obvious from the code.
+    """
+    ws_name = _workspace_name_for(repo_path)
+    if not ws_name:
+        audit.log(repo_path, "list_skills", workspace=None, count=0)
+        return json.dumps({
+            "workspace": None,
+            "skills": [],
+            "note": "This repo is not linked to a workspace. Run `knowlyx init` first.",
+        }, indent=2, ensure_ascii=False)
+    skills = load_workspace_skills(ws_name)
+    audit.log(repo_path, "list_skills", workspace=ws_name, count=len(skills))
+    return json.dumps({
+        "workspace": ws_name,
+        "count": len(skills),
+        "skills": [
+            {"name": s.name, "description": s.description, "tags": s.tags}
+            for s in skills
+        ],
+    }, indent=2, ensure_ascii=False)
+
+
+@mcp.tool()
+def read_skill(name: str, repo_path: str = ".") -> str:
+    """
+    Return the full body of a single team-authored skill by name.
+
+    Call this after list_skills (or after seeing `available_skills` in
+    analyze_intent) when a skill's description sounds relevant to the
+    current task. The body is markdown — follow its guidance when writing
+    code in the affected area.
+    """
+    ws_name = _workspace_name_for(repo_path)
+    if not ws_name:
+        audit.log(repo_path, "read_skill", name=name, found=False, reason="not_linked")
+        return json.dumps({"error": "Repo not linked to a workspace."}, indent=2)
+    skill = _read_skill(ws_name, name)
+    if skill is None:
+        audit.log(repo_path, "read_skill", name=name, found=False)
+        return json.dumps({
+            "error": f"Skill '{name}' not found",
+            "hint": "Call list_skills to see what's available.",
+        }, indent=2)
+    audit.log(repo_path, "read_skill", name=name, found=True)
+    return json.dumps({
+        "name": skill.name,
+        "description": skill.description,
+        "tags": skill.tags,
+        "body": skill.body,
+        "source": skill.source_path,
     }, indent=2, ensure_ascii=False)
