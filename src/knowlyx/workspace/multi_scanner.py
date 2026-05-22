@@ -70,37 +70,67 @@ class WorkspaceScanResult:
 
 
 class WorkspaceScanner:
-    def __init__(self, config: WorkspaceConfig) -> None:
+    def __init__(self, config: WorkspaceConfig, persist_cache: bool = False) -> None:
         self.config = config
+        self.persist_cache = persist_cache
 
     def scan(self) -> WorkspaceScanResult:
-        result = WorkspaceScanResult(workspace_name=self.config.name)
+        from knowlyx.cache.scan_cache import ScanCache
 
-        # 1. scan each repo individually
+        result = WorkspaceScanResult(workspace_name=self.config.name)
+        cache = ScanCache(self.config.name)
+
+        # 1. scan each repo — use cache when repo isn't physically present
         for repo_cfg in self.config.repos:
             path = Path(repo_cfg.path)
-            if not path.exists():
-                result.errors[repo_cfg.name] = f"Path not found: {repo_cfg.path}"
-                continue
-            try:
-                scanner = RepoScanner(path)
-                scan = scanner.scan()
-                # inject declared domains if scanner missed them
-                for d in repo_cfg.domains:
-                    if d not in scan.domains:
-                        scan.domains.append(d)
-                graph = CognitiveGraph()
-                graph.build(scan)
-                result.repos.append(RepoState(
-                    name=repo_cfg.name,
-                    path=str(path),
-                    role=repo_cfg.role.value,
-                    scan=scan,
-                    graph=graph,
-                    critical=repo_cfg.critical,
-                ))
-            except Exception as e:
-                result.errors[repo_cfg.name] = str(e)
+            scan: ScanResult | None = None
+            source = "fresh"
+
+            if path.exists():
+                try:
+                    scanner = RepoScanner(path)
+                    scan = scanner.scan()
+                    if self.persist_cache:
+                        cache.save(repo_cfg.name, scan)
+                except Exception as e:
+                    # fresh scan failed — try cache as fallback
+                    cached = cache.load(repo_cfg.name)
+                    if cached:
+                        scan = cached
+                        source = "cache (fresh scan failed)"
+                        result.errors[repo_cfg.name] = f"used cache; fresh scan error: {e}"
+                    else:
+                        result.errors[repo_cfg.name] = str(e)
+                        continue
+            else:
+                # repo not on disk — try cache
+                cached = cache.load(repo_cfg.name)
+                if cached:
+                    scan = cached
+                    source = "cache (repo not on disk)"
+                else:
+                    result.errors[repo_cfg.name] = (
+                        f"Path not found and no cached scan: {repo_cfg.path}. "
+                        f"Clone the repo or run `knowlyx workspace scan --persist` "
+                        f"on a machine that has it."
+                    )
+                    continue
+
+            # inject declared domains if scanner missed them
+            for d in repo_cfg.domains:
+                if d not in scan.domains:
+                    scan.domains.append(d)
+            graph = CognitiveGraph()
+            graph.build(scan)
+            scan.metadata.setdefault("scan_source", source)
+            result.repos.append(RepoState(
+                name=repo_cfg.name,
+                path=str(path),
+                role=repo_cfg.role.value,
+                scan=scan,
+                graph=graph,
+                critical=repo_cfg.critical,
+            ))
 
         # 2. build cross-repo graph
         result.cross_repo_graph = self._build_cross_repo_graph(result)

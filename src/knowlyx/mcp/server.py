@@ -130,6 +130,23 @@ def analyze_intent(request: str, repo_path: str = ".") -> str:
         "framework": scan.framework,
     }
 
+    # persist cognition stamp for commit-check
+    try:
+        stamp_dir = Path(repo_path) / ".knowlyx"
+        stamp_dir.mkdir(parents=True, exist_ok=True)
+        stamp = {
+            "request": request,
+            "decision": report.risk.decision.value,
+            "risk_level": report.risk.level.value,
+            "domain": report.intent.detected_domain,
+            "timestamp": __import__("datetime").datetime.utcnow().isoformat(),
+        }
+        (stamp_dir / "last_cognition.json").write_text(
+            json.dumps(stamp, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+    except Exception:
+        pass  # don't fail the tool if we can't persist
+
     decision = report.risk.decision.value
     if decision == "reject":
         output["HALT"] = (
@@ -674,6 +691,36 @@ def reject_request(request_id: str, reason: str = "", reviewed_by: str = "human"
     if not req:
         return json.dumps({"error": f"Request '{request_id}' not found."})
     return json.dumps({"status": "rejected", "id": req.id, "reason": reason}, indent=2)
+
+
+@mcp.tool()
+def validate_generated_code(code: str, repo_path: str = ".", language: str = "") -> str:
+    """
+    AI self-review: call this BEFORE writing/editing any code file.
+
+    Returns violations + suggestions detected against repo conventions:
+    - Hallucinated imports (paths that don't exist)
+    - Duplicate of existing reusable assets (reuse instead of recreate)
+    - Forbidden patterns from project conventions
+    - Hardcoded secrets (Stripe, AWS, GitHub, passwords)
+    - Convention violations
+
+    If `has_blockers` is true, DO NOT write the code. Fix the violations
+    in-memory and call validate_generated_code again.
+    """
+    from knowlyx.validation.code_validator import CodeValidator
+
+    _, scan, _, _ = _get_engine(repo_path)
+    validator = CodeValidator(scan)
+    report = validator.validate(code, language=language or scan.language)
+    out = report.to_dict()
+    out["instruction"] = (
+        "Fix all 'block' severity violations before writing. "
+        "Re-call validate_generated_code to verify."
+        if report.has_blockers else
+        "Validation passed. You may write the code."
+    )
+    return json.dumps(out, indent=2, ensure_ascii=False)
 
 
 @mcp.tool()

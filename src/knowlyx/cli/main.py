@@ -349,10 +349,11 @@ def pack(
 
 @app.command()
 def workspace(
-    action: str = typer.Argument(..., help="init | create | list | scan | impact | graph"),
+    action: str = typer.Argument(..., help="init | create | list | scan | impact | graph | cache"),
     target: str = typer.Argument("", help="Workspace name | repo name | format"),
     change: str = typer.Option("", "--change", "-c", help="Change description (for impact)"),
     workspace_path: str = typer.Option(".", "--workspace", "-w"),
+    persist: bool = typer.Option(False, "--persist", help="Save scans into central cache (for scan action)"),
     json_output: bool = typer.Option(False, "--json"),
 ):
     """
@@ -416,8 +417,31 @@ def workspace(
         console.print("[yellow]No repos in knowlyx.toml. Add [[repos]] entries first.[/yellow]")
         raise typer.Exit(1)
 
+    if action == "cache":
+        from knowlyx.cache.scan_cache import ScanCache
+        from knowlyx.link.resolver import resolve_workspace
+        res = resolve_workspace(workspace_path)
+        ws_name = res.workspace_name if res else config.name
+        cache = ScanCache(ws_name)
+        names = cache.list_cached()
+        if json_output:
+            print(json.dumps([cache.metadata(n) for n in names], indent=2))
+            return
+        if not names:
+            console.print(f"[yellow]No cached scans for workspace '{ws_name}'.[/yellow]")
+            console.print("Run [cyan]knowlyx workspace scan --persist[/cyan] on a machine with the repos cloned.")
+            return
+        t = Table(title=f"Cached scans — {ws_name}", show_header=True)
+        t.add_column("Repo", style="bold")
+        t.add_column("Cached at")
+        for n in names:
+            md = cache.metadata(n) or {}
+            t.add_row(n, md.get("cached_at", "?"))
+        console.print(t)
+        return
+
     if action == "scan":
-        scanner = WorkspaceScanner(config)
+        scanner = WorkspaceScanner(config, persist_cache=persist)
         with console.status("[bold cyan]Scanning workspace…"):
             ws = scanner.scan()
         summary = ws.summary()
@@ -713,6 +737,236 @@ def migrate(
     console.print(f"[green]{verb}[/green] {moved_approvals} approval entries → {target_approvals}")
     if not dry_run:
         console.print(f"\n[dim]Original files preserved at {legacy_dir}. Delete manually when satisfied.[/dim]")
+
+
+@app.command()
+def init(
+    repo_path: str = typer.Option(".", "--repo", "-r"),
+    workspace_mode: bool = typer.Option(False, "--workspace", help="Init workspace folder (auto-detect repos as siblings)"),
+    name: str = typer.Option("", "--name", help="Workspace name (defaults to folder name)"),
+    link_to: str = typer.Option("", "--link", help="Link this repo to an existing central workspace"),
+):
+    """
+    Scaffold Knowlyx for a project.
+
+    \b
+    knowlyx init                       # scan repo + suggest setup
+    knowlyx init --workspace           # legacy: create knowlyx.toml in cwd
+    knowlyx init --link my-product     # link this repo to central workspace
+    """
+    from knowlyx.scanner.repo_scanner import RepoScanner
+
+    target = Path(repo_path).resolve()
+
+    if link_to:
+        from knowlyx.link.config import LinkConfig, save_link
+        from knowlyx.paths import workspace_toml_path
+        if not workspace_toml_path(link_to).exists():
+            console.print(f"[red]Workspace '{link_to}' not found.[/red]")
+            console.print(f"Run: [cyan]knowlyx workspace create {link_to}[/cyan]")
+            raise typer.Exit(1)
+        # auto-detect role + domains
+        with console.status("[bold cyan]Auto-detecting role + domains…"):
+            scan = RepoScanner(target).scan()
+        role = _infer_role(scan.framework, scan.language)
+        save_link(LinkConfig(
+            workspace=link_to,
+            repo_name=target.name,
+            role=role,
+            domains=scan.domains[:6],
+        ), target)
+        console.print(f"[green]Linked[/green] {target.name} → {link_to}")
+        console.print(f"  Role: {role}, Domains: {', '.join(scan.domains[:6]) or '(none)'}")
+        console.print(f"  Commit [cyan].knowlyx/config.toml[/cyan] to git so teammates get linked automatically.")
+        return
+
+    if workspace_mode:
+        from knowlyx.workspace.config_loader import init as ws_init
+        cfg = ws_init(target, name=name)
+        console.print(f"[green]Created[/green] knowlyx.toml for workspace '{cfg.name}'")
+        console.print("Add [[repos]] and [[dependencies]] sections to knowlyx.toml.")
+        return
+
+    # default: scan + suggest
+    with console.status("[bold cyan]Scanning repo…"):
+        scan = RepoScanner(target).scan()
+    role = _infer_role(scan.framework, scan.language)
+    console.print(Panel(
+        f"[bold]Folder:[/bold] {target.name}\n"
+        f"[bold]Stack:[/bold] {scan.language} / {scan.framework}\n"
+        f"[bold]Architecture:[/bold] {scan.architecture.value}\n"
+        f"[bold]Suggested role:[/bold] [cyan]{role}[/cyan]\n"
+        f"[bold]Detected domains:[/bold] {', '.join(scan.domains) or '(none)'}",
+        title="[bold green]Knowlyx Init[/bold green]",
+    ))
+    console.print("\n[bold]Suggested next steps:[/bold]\n")
+    console.print(f"  1. Create central workspace:")
+    console.print(f"     [cyan]knowlyx workspace create {name or target.name}[/cyan]\n")
+    console.print(f"  2. Link this repo:")
+    suggested_link = f"knowlyx init --link {name or target.name}"
+    console.print(f"     [cyan]{suggested_link}[/cyan]\n")
+    console.print(f"  3. Add MCP server to .claude/settings.json:")
+    console.print('     [dim]{"mcpServers": {"knowlyx": {"command": "uvx", "args": ["knowlyx", "mcp", "--repo", "."]}}}[/dim]')
+
+
+def _infer_role(framework: str, language: str) -> str:
+    fw = (framework or "").lower()
+    lg = (language or "").lower()
+    if any(k in fw for k in ("next", "react", "vue", "svelte", "angular", "remix", "nuxt")):
+        return "frontend"
+    if any(k in fw for k in ("fastapi", "django", "flask", "nestjs", "express", "spring", "rails", "gin", "fiber")):
+        return "backend"
+    if any(k in fw for k in ("celery", "bullmq", "sidekiq")):
+        return "worker"
+    if lg in ("typescript", "javascript"):
+        return "frontend"
+    return "backend"
+
+
+@app.command(name="commit-check")
+def commit_check(
+    repo_path: str = typer.Option(".", "--repo", "-r"),
+    strict: bool = typer.Option(False, "--strict", help="Fail on any warning, not just blockers"),
+    stale_minutes: int = typer.Option(60, "--stale-minutes", help="Cognition older than this is considered stale"),
+):
+    """
+    Gate commits: ensure AI ran analyze_intent recently and the decision allows proceeding.
+
+    \b
+    knowlyx commit-check              # warns only
+    knowlyx commit-check --strict     # exits 1 on any issue
+    """
+    from datetime import datetime, timedelta
+
+    stamp_path = Path(repo_path) / ".knowlyx" / "last_cognition.json"
+    if not stamp_path.exists():
+        msg = "No cognition stamp found. AI should call `analyze_intent` before coding."
+        console.print(f"[yellow]⚠ {msg}[/yellow]")
+        if strict:
+            raise typer.Exit(1)
+        return
+
+    try:
+        stamp = json.loads(stamp_path.read_text(encoding="utf-8"))
+    except Exception as e:
+        console.print(f"[red]Invalid cognition stamp:[/red] {e}")
+        raise typer.Exit(1 if strict else 0)
+
+    # check freshness
+    ts = stamp.get("timestamp", "")
+    try:
+        when = datetime.fromisoformat(ts.replace("Z", ""))
+        age = datetime.utcnow() - when
+        if age > timedelta(minutes=stale_minutes):
+            msg = f"Cognition stamp is stale ({int(age.total_seconds() / 60)} min old). Re-run analyze_intent."
+            console.print(f"[yellow]⚠ {msg}[/yellow]")
+            if strict:
+                raise typer.Exit(1)
+    except ValueError:
+        pass
+
+    decision = stamp.get("decision", "")
+    risk = stamp.get("risk_level", "")
+    request = stamp.get("request", "")
+
+    if decision == "reject":
+        console.print(f"[red]✗ Last cognition REJECTED:[/red] {request}")
+        console.print("[red]Do not commit. Address the rejection reason and re-analyze.[/red]")
+        raise typer.Exit(1)
+
+    if decision == "ask":
+        console.print(f"[yellow]⚠ Last cognition requires APPROVAL:[/yellow] {request}")
+        console.print(f"   Risk: {risk}. Run [cyan]knowlyx approval list[/cyan] and ensure it's approved.")
+        if strict:
+            raise typer.Exit(1)
+        return
+
+    console.print(f"[green]✓ Cognition OK[/green] — decision: {decision}, risk: {risk}")
+    console.print(f"   Request: {request}")
+
+
+@app.command()
+def sync(
+    action: str = typer.Argument(..., help="init | pull | push | status"),
+    workspace_name: str = typer.Option("", "--workspace", "-w", help="Workspace name (auto-detect from cwd if linked)"),
+    remote: str = typer.Option("", "--remote", help="Remote URL (for init)"),
+    branch: str = typer.Option("main", "--branch"),
+    message: str = typer.Option("knowlyx: update knowledge", "--message", "-m"),
+    no_auto_resolve: bool = typer.Option(False, "--no-auto-resolve", help="Don't auto-merge JSON conflicts"),
+):
+    """
+    Sync the central workspace via git (GitHub/GitLab/self-hosted).
+
+    \b
+    knowlyx sync init --remote git@github.com:org/x-product-knowledge.git
+    knowlyx sync pull
+    knowlyx sync push -m "decision: use stripe billing"
+    knowlyx sync status
+    """
+    from knowlyx.link.resolver import resolve_workspace
+    from knowlyx.sync.git_sync import GitSync
+
+    if not workspace_name:
+        res = resolve_workspace(".")
+        if res:
+            workspace_name = res.workspace_name
+        else:
+            console.print("[red]No workspace specified and current dir is not linked.[/red]")
+            console.print("Pass [cyan]--workspace <name>[/cyan] or run [cyan]knowlyx link <name>[/cyan].")
+            raise typer.Exit(1)
+
+    sync_obj = GitSync(workspace_name)
+
+    if action == "init":
+        sync_obj.init(remote_url=remote, branch=branch)
+        st = sync_obj.status()
+        console.print(f"[green]Initialized[/green] git sync for workspace [bold]{workspace_name}[/bold]")
+        console.print(f"  Path: {st.path}")
+        if st.has_remote:
+            console.print(f"  Remote: {st.remote_url}")
+            console.print(f"\nNext: [cyan]knowlyx sync push[/cyan]")
+        else:
+            console.print("  Remote: [yellow](none — pass --remote to set one)[/yellow]")
+        return
+
+    if action == "status":
+        st = sync_obj.status()
+        if not sync_obj.is_git_repo():
+            console.print(f"[yellow]Workspace '{workspace_name}' is not git-initialized.[/yellow]")
+            console.print(f"Run: [cyan]knowlyx sync init --remote <url>[/cyan]")
+            return
+        console.print(Panel(
+            f"[bold]Workspace:[/bold] {st.workspace}\n"
+            f"[bold]Path:[/bold] {st.path}\n"
+            f"[bold]Branch:[/bold] {st.branch}\n"
+            f"[bold]Remote:[/bold] {st.remote_url or '(none)'}\n"
+            f"[bold]Ahead/Behind:[/bold] {st.ahead}/{st.behind}\n"
+            f"[bold]Dirty:[/bold] {'yes' if st.dirty else 'no'}\n"
+            f"[bold]Unmerged:[/bold] {', '.join(st.unmerged) if st.unmerged else 'none'}",
+            title="[bold]Sync Status[/bold]",
+        ))
+        return
+
+    if action == "pull":
+        ok, msg = sync_obj.pull(auto_resolve=not no_auto_resolve)
+        if ok:
+            console.print(f"[green]✓[/green] {msg}")
+        else:
+            console.print(f"[red]✗[/red] {msg}")
+            raise typer.Exit(1)
+        return
+
+    if action == "push":
+        ok, msg = sync_obj.push(message=message)
+        if ok:
+            console.print(f"[green]✓[/green] {msg}")
+        else:
+            console.print(f"[red]✗[/red] {msg}")
+            raise typer.Exit(1)
+        return
+
+    console.print(f"[red]Unknown action '{action}'[/red]. Use: init | pull | push | status")
+    raise typer.Exit(1)
 
 
 @app.command()

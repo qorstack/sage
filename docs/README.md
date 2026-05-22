@@ -1,41 +1,24 @@
-# Knowlyx Docs
+# Knowlyx Documentation
 
-> **Cognitive enforcement layer for AI software development.**
-> AI ต้องเข้าใจระบบก่อนจะแตะ code
+User documentation. For internal design specs see [`../internal/`](../internal/).
 
-เอกสารชุดนี้แบ่งเป็นไฟล์ย่อย เพื่อให้ AI อ่านได้ทีละไฟล์โดยไม่ context ค้าง อ่านเรียงตามเลขนำหน้า
+## Getting started
 
-## ลำดับการอ่าน
+- [Quick start](quickstart.md) — install + first session in 5 min
+- [CLI reference](cli.md) — every command
+- [MCP integration](mcp.md) — Claude Code, Cursor, Cline setup
 
-### 🧭 Vision & Why
-1. [01_THESIS.md](01_THESIS.md) — แก่นความคิด + ปรัชญา
-2. [02_PROBLEMS.md](02_PROBLEMS.md) — ปัญหาที่ Knowlyx แก้
+## Concepts
 
-### 🏗️ Architecture
-3. [03_ARCHITECTURE.md](03_ARCHITECTURE.md) — 6 layers รวม
-4. [04_SCANNER.md](04_SCANNER.md) — Layer 1: อ่าน repo
-5. [05_COGNITIVE_GRAPH.md](05_COGNITIVE_GRAPH.md) — Layer 2: relationships
-6. [06_MEMORY.md](06_MEMORY.md) — Layer 3: persistent memory
-7. [07_REASONING.md](07_REASONING.md) — Layer 5: Intent→Impact→Risk
-8. [08_MCP_INTEGRATION.md](08_MCP_INTEGRATION.md) — Layer 6: enforcement via MCP
-9. [09_MULTI_REPO.md](09_MULTI_REPO.md) — Workspace + cross-repo
-10. [10_UX_UI_COGNITION.md](10_UX_UI_COGNITION.md) — Design pattern detection (Phase 4)
+- [Architecture](architecture.md) — 6 layers + data flow
+- [Cognition packs](cognition-packs.md) — built-in domain knowledge
 
-### ⚙️ Build & Ship
-11. [11_STACK.md](11_STACK.md) — Tech stack
-12. [12_ROADMAP.md](12_ROADMAP.md) — Phase 1-4 status
-13. [13_IMPLEMENTATION_GUIDE.md](13_IMPLEMENTATION_GUIDE.md) — step-by-step ต่อจากนี้
-14. [14_USAGE_EXAMPLES.md](14_USAGE_EXAMPLES.md) — ตัวอย่างใช้งานจริง 7 scenarios
-15. [15_DISTRIBUTED_KNOWLEDGE.md](15_DISTRIBUTED_KNOWLEDGE.md) — central workspace + per-repo link (Phase 4.A ✅)
-16. [16_GIT_SYNC_SETUP.md](16_GIT_SYNC_SETUP.md) — step-by-step sync workspace ผ่าน GitHub/GitLab
+## Multi-repo
 
-## สถานะปัจจุบัน (2026-05-22)
+- [Multi-repo workspace](multi-repo.md) — `knowlyx.toml` + cross-repo impact
+- [Distributed knowledge](distributed-knowledge.md) — central store + per-repo link
+- [Git sync](git-sync.md) — share workspace via GitHub/GitLab
 
-| Phase | สถานะ |
-|---|---|
-| Phase 1 — System Understanding | ✅ code เสร็จ, tests ยังไม่ run |
-| Phase 2 — Memory + Cognition Packs | ✅ code เสร็จ |
-| Phase 3 — Workspace + Graph + Approval | ✅ code เสร็จ |
-| Phase 4 — AI Self-Review + Design Cognition | 🔵 ยังไม่เริ่ม |
+## In practice
 
-ดู [12_ROADMAP.md](12_ROADMAP.md) ฉบับเต็ม
+- [Usage examples](usage-examples.md) — 7 real-world scenarios
