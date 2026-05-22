@@ -349,8 +349,8 @@ def pack(
 
 @app.command()
 def workspace(
-    action: str = typer.Argument(..., help="init | scan | impact | graph"),
-    target: str = typer.Argument("", help="Repo name (for impact) or format (for graph)"),
+    action: str = typer.Argument(..., help="init | create | list | scan | impact | graph"),
+    target: str = typer.Argument("", help="Workspace name | repo name | format"),
     change: str = typer.Option("", "--change", "-c", help="Change description (for impact)"),
     workspace_path: str = typer.Option(".", "--workspace", "-w"),
     json_output: bool = typer.Option(False, "--json"),
@@ -359,9 +359,11 @@ def workspace(
     Multi-repo workspace commands.
 
     \b
-    knowlyx workspace init                        # create knowlyx.toml
+    knowlyx workspace init                        # create knowlyx.toml in cwd (legacy)
+    knowlyx workspace create my-product           # create central workspace at ~/.knowlyx/workspaces/
+    knowlyx workspace list                        # list all central workspaces
     knowlyx workspace scan                        # scan all repos
-    knowlyx workspace impact payment-service -c "fix payment scan 501"
+    knowlyx workspace impact api -c "rename users.email"
     knowlyx workspace graph                       # print mermaid diagram
     knowlyx workspace graph react_flow --json     # React Flow JSON
     """
@@ -372,6 +374,41 @@ def workspace(
         cfg = init(workspace_path)
         console.print(f"[green]Created[/green] knowlyx.toml for workspace '{cfg.name}'")
         console.print("Edit knowlyx.toml to add [[repos]] and [[dependencies]] sections.")
+        return
+
+    if action == "create":
+        if not target:
+            console.print("[red]Provide workspace name:[/red] knowlyx workspace create <name>")
+            raise typer.Exit(1)
+        from knowlyx.paths import ensure_workspace_dir, workspace_toml_path
+        from knowlyx.workspace.schema import WorkspaceConfig
+        from knowlyx.workspace.config_loader import _serialize
+        ws_dir = ensure_workspace_dir(target)
+        toml_path = workspace_toml_path(target)
+        if toml_path.exists():
+            console.print(f"[yellow]Workspace '{target}' already exists[/yellow] at {ws_dir}")
+            raise typer.Exit(0)
+        toml_path.write_text(_serialize(WorkspaceConfig(name=target)), encoding="utf-8")
+        console.print(f"[green]Created central workspace[/green] '{target}'")
+        console.print(f"  Path: {ws_dir}")
+        console.print(f"  Topology: {toml_path}")
+        console.print(f"  Memory: {ws_dir / 'memory.json'}")
+        console.print(f"  Approvals: {ws_dir / 'approvals.json'}")
+        console.print(f"\nNext: in each repo, run [cyan]knowlyx link {target}[/cyan]")
+        return
+
+    if action == "list":
+        from knowlyx.paths import knowlyx_home, list_workspaces
+        names = list_workspaces()
+        if json_output:
+            print(json.dumps({"home": str(knowlyx_home()), "workspaces": names}, indent=2))
+            return
+        console.print(f"[bold]Central workspaces[/bold] at {knowlyx_home()}")
+        if not names:
+            console.print("  [dim](none — run `knowlyx workspace create <name>` to add one)[/dim]")
+            return
+        for n in names:
+            console.print(f"  • [cyan]{n}[/cyan]")
         return
 
     config = load(workspace_path)
@@ -555,6 +592,127 @@ def graph(
         print(json.dumps(GraphExporter.to_react_flow(g), indent=2))
     else:
         console.print(f"[red]Unknown format '{format}'[/red]. Use: mermaid | dot | react_flow")
+
+
+@app.command()
+def link(
+    workspace_name: str = typer.Argument(..., help="Central workspace to link this repo to"),
+    repo_path: str = typer.Option(".", "--repo", "-r"),
+    repo_name: str = typer.Option("", "--name", help="Override repo name (defaults to folder name)"),
+    role: str = typer.Option("unknown", "--role", help="backend | frontend | worker | gateway | shared | infra"),
+    domains: str = typer.Option("", "--domains", help="Comma-separated domains"),
+    critical: bool = typer.Option(False, "--critical", help="Mark as critical repo"),
+):
+    """
+    Link this repo to a central workspace so memory + approvals + topology are shared.
+
+    \b
+    knowlyx link my-product --role backend --domains billing,auth --critical
+    """
+    from knowlyx.link.config import LinkConfig, save_link
+    from knowlyx.paths import workspace_dir, workspace_toml_path
+
+    if not workspace_toml_path(workspace_name).exists():
+        console.print(f"[red]Workspace '{workspace_name}' does not exist.[/red]")
+        console.print(f"Create it first: [cyan]knowlyx workspace create {workspace_name}[/cyan]")
+        raise typer.Exit(1)
+
+    cfg = LinkConfig(
+        workspace=workspace_name,
+        repo_name=repo_name,
+        role=role,
+        domains=[d.strip() for d in domains.split(",") if d.strip()],
+        critical=critical,
+    )
+    written = save_link(cfg, repo_path)
+    console.print(f"[green]Linked[/green] {Path(repo_path).resolve().name} → workspace '{workspace_name}'")
+    console.print(f"  Config: {written}  [dim](commit this to git)[/dim]")
+    console.print(f"  Shared store: {workspace_dir(workspace_name)}")
+
+
+@app.command()
+def unlink(
+    repo_path: str = typer.Option(".", "--repo", "-r"),
+):
+    """Remove this repo's link to a central workspace (deletes .knowlyx/config.toml)."""
+    from knowlyx.paths import repo_link_config_path
+
+    path = repo_link_config_path(repo_path)
+    if not path.exists():
+        console.print("[yellow]No link config found.[/yellow]")
+        raise typer.Exit(0)
+    path.unlink()
+    console.print(f"[green]Unlinked[/green] {path}")
+
+
+@app.command()
+def migrate(
+    repo_path: str = typer.Option(".", "--repo", "-r"),
+    workspace_name: str = typer.Option("", "--workspace", "-w", help="Target workspace (must exist)"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+):
+    """
+    Migrate legacy per-repo .knowlyx/{memory,approvals}.json into a central workspace.
+
+    \b
+    1. knowlyx workspace create my-product
+    2. knowlyx link my-product --repo /path/to/api
+    3. knowlyx migrate --repo /path/to/api
+    """
+    import json as _json
+    from knowlyx.link.config import load_link
+    from knowlyx.paths import workspace_approvals_path, workspace_memory_path
+
+    legacy_dir = Path(repo_path) / ".knowlyx"
+    legacy_memory = legacy_dir / "memory.json"
+    legacy_approvals = legacy_dir / "approvals.json"
+
+    if not legacy_memory.exists() and not legacy_approvals.exists():
+        console.print("[yellow]Nothing to migrate.[/yellow] No legacy .knowlyx/memory.json or approvals.json found.")
+        raise typer.Exit(0)
+
+    if not workspace_name:
+        link = load_link(repo_path)
+        if not link:
+            console.print("[red]No workspace specified and no link config found.[/red]")
+            console.print("Either pass --workspace <name> or run `knowlyx link <name>` first.")
+            raise typer.Exit(1)
+        workspace_name = link.workspace
+
+    target_memory = workspace_memory_path(workspace_name)
+    target_approvals = workspace_approvals_path(workspace_name)
+
+    moved_memory = 0
+    moved_approvals = 0
+
+    if legacy_memory.exists():
+        src = _json.loads(legacy_memory.read_text(encoding="utf-8") or "{}")
+        dst = _json.loads(target_memory.read_text(encoding="utf-8")) if target_memory.exists() else {}
+        # merge: existing target wins on id collision (safer)
+        for k, v in src.items():
+            if k not in dst:
+                dst[k] = v
+                moved_memory += 1
+        if not dry_run:
+            target_memory.parent.mkdir(parents=True, exist_ok=True)
+            target_memory.write_text(_json.dumps(dst, indent=2, default=str), encoding="utf-8")
+
+    if legacy_approvals.exists():
+        src = _json.loads(legacy_approvals.read_text(encoding="utf-8") or "{}")
+        dst = _json.loads(target_approvals.read_text(encoding="utf-8")) if target_approvals.exists() else {}
+        for k, v in src.items():
+            if k not in dst:
+                dst[k] = v
+                moved_approvals += 1
+        if not dry_run:
+            target_approvals.parent.mkdir(parents=True, exist_ok=True)
+            target_approvals.write_text(_json.dumps(dst, indent=2, default=str), encoding="utf-8")
+
+    verb = "Would migrate" if dry_run else "Migrated"
+    console.print(f"[green]{verb}[/green] {moved_memory} memory entries → {target_memory}")
+    console.print(f"[green]{verb}[/green] {moved_approvals} approval entries → {target_approvals}")
+    if not dry_run:
+        console.print(f"\n[dim]Original files preserved at {legacy_dir}. Delete manually when satisfied.[/dim]")
 
 
 @app.command()

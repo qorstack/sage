@@ -58,7 +58,33 @@
 | Error handling edge cases | permission denied, binary files, symlinks |
 | API docs verify (`/docs`) | FastAPI auto-gen แต่ไม่เคย check |
 
-## 🔵 Phase 4 — ยังไม่เริ่ม
+## ✅ Phase 4.A — Distributed Knowledge (code complete)
+
+- [x] `src/knowlyx/paths.py` — central path resolver + KNOWLYX_HOME env
+- [x] `src/knowlyx/link/` — per-repo `.knowlyx/config.toml` + auto-resolver
+- [x] Memory store auto-resolves central workspace (backward compatible)
+- [x] Approval queue auto-resolves central workspace (backward compatible)
+- [x] Workspace config_loader falls back to central path
+- [x] CLI: `workspace create/list`, `link`, `unlink`, `migrate`
+- [x] Tests: `test_paths.py`, `test_link.py`
+- [ ] ⚠️ run `uv sync && pytest` to verify (environment doesn't have uv yet)
+
+ดูรายละเอียดทั้งหมดที่ [15_DISTRIBUTED_KNOWLEDGE.md](15_DISTRIBUTED_KNOWLEDGE.md)
+
+## 🔵 Phase 4.B — Workspace-aware analysis (not started)
+
+- [ ] Persistent scan cache at `~/.knowlyx/workspaces/<name>/scans/<repo>.json`
+- [ ] `WorkspaceScanner` reads cached scan when repo not on disk
+- [ ] `ImpactAnalyzer` cross-repo answers work even with single clone
+- [ ] CLI: `knowlyx workspace scan --all --persist` (for CI/tech lead)
+
+## 🔵 Phase 4.C — Git sync (not started)
+
+- [ ] `src/knowlyx/sync/git_sync.py` — pull/push central store to git remote
+- [ ] CLI: `knowlyx sync init/pull/push/status`
+- [ ] Conflict resolution: timestamp-based merge for memory.json
+
+## 🔵 Phase 4 — Original (still planned)
 
 ### 4.1 AI Self-Review
 AI ตรวจ code ของตัวเองก่อน submit

@@ -11,11 +11,41 @@ _DEFAULT_FILENAME = "knowlyx.toml"
 
 
 def load(workspace_path: str | Path = ".") -> WorkspaceConfig:
-    """Load knowlyx.toml from workspace_path. Returns empty config if not found."""
+    """
+    Load knowlyx.toml from workspace_path. Returns empty config if not found.
+
+    Resolution order:
+    1. If workspace_path/knowlyx.toml exists → load that (legacy/sibling layout)
+    2. Else if workspace_path (or ancestor) is a linked repo → load central
+       ~/.knowlyx/workspaces/<name>/workspace.toml
+    3. Else return empty config named after the folder
+    """
     root = Path(workspace_path).resolve()
     toml_file = root / _DEFAULT_FILENAME
+    if toml_file.exists():
+        return _read_toml(toml_file, root)
+
+    # Try central lookup via link config
+    from knowlyx.link.resolver import resolve_workspace
+    res = resolve_workspace(workspace_path)
+    if res is not None:
+        central = res.workspace_dir / "workspace.toml"
+        if central.exists():
+            return _read_toml(central, res.workspace_dir)
+
+    return WorkspaceConfig(name=root.name)
+
+
+def load_central(workspace_name: str) -> WorkspaceConfig:
+    """Load workspace.toml directly from ~/.knowlyx/workspaces/<name>/."""
+    from knowlyx.paths import workspace_dir, workspace_toml_path
+    toml_file = workspace_toml_path(workspace_name)
     if not toml_file.exists():
-        return WorkspaceConfig(name=root.name)
+        return WorkspaceConfig(name=workspace_name)
+    return _read_toml(toml_file, workspace_dir(workspace_name))
+
+
+def _read_toml(toml_file: Path, root: Path) -> WorkspaceConfig:
     try:
         import tomllib  # Python 3.11+
         data = tomllib.loads(toml_file.read_text(encoding="utf-8"))

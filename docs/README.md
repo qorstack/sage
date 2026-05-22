@@ -26,6 +26,7 @@
 12. [12_ROADMAP.md](12_ROADMAP.md) — Phase 1-4 status
 13. [13_IMPLEMENTATION_GUIDE.md](13_IMPLEMENTATION_GUIDE.md) — step-by-step ต่อจากนี้
 14. [14_USAGE_EXAMPLES.md](14_USAGE_EXAMPLES.md) — ตัวอย่างใช้งานจริง 7 scenarios
+15. [15_DISTRIBUTED_KNOWLEDGE.md](15_DISTRIBUTED_KNOWLEDGE.md) — central workspace + per-repo link (Phase 4.A ✅)
 
 ## สถานะปัจจุบัน (2026-05-22)
 

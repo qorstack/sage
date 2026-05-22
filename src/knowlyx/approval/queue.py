@@ -125,4 +125,15 @@ class ApprovalQueue:
 
 
 def get_queue(repo_path: str = ".") -> ApprovalQueue:
-    return ApprovalQueue(Path(repo_path) / ".knowlyx" / "approvals.json")
+    """
+    Resolve approval queue path.
+
+    If repo (or ancestor) has .knowlyx/config.toml, use the central
+    workspace queue at ~/.knowlyx/workspaces/<name>/approvals.json
+    — shared across all repos in the same workspace.
+    Otherwise fall back to legacy per-repo .knowlyx/approvals.json.
+    """
+    from knowlyx.link.resolver import resolve_workspace_or_legacy
+
+    _, approvals_path, _mode = resolve_workspace_or_legacy(repo_path)
+    return ApprovalQueue(approvals_path)

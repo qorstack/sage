@@ -226,8 +226,18 @@ class QdrantMemoryStore(MemoryStore):
 
 
 def create_store(repo_path: str = ".", qdrant_url: str = "", qdrant_api_key: str = "") -> MemoryStore:
-    """Return the best available store for the given repo."""
-    memory_path = Path(repo_path) / ".knowlyx" / "memory.json"
+    """
+    Return the best available store for the given repo.
+
+    Resolution order:
+    1. If repo has .knowlyx/config.toml (or any ancestor does), use the
+       central workspace store at ~/.knowlyx/workspaces/<name>/memory.json
+       — shared across all repos in the same workspace.
+    2. Otherwise fall back to legacy per-repo .knowlyx/memory.json.
+    """
+    from knowlyx.link.resolver import resolve_workspace_or_legacy
+
+    memory_path, _, _mode = resolve_workspace_or_legacy(repo_path)
     if qdrant_url:
         return QdrantMemoryStore(url=qdrant_url, api_key=qdrant_api_key, fallback_path=str(memory_path))
     return FileMemoryStore(store_path=str(memory_path))
