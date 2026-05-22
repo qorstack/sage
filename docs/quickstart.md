@@ -79,15 +79,55 @@ Now any future `analyze_intent` for auth-related work will surface this memory t
 
 ## 6. (Optional) Set up a multi-repo workspace
 
-If your product spans multiple repos:
+If your product spans multiple repos, Knowlyx treats one of them as the **knowledge home** (the "shared brain") and auto-links the rest.
 
-```bash
-knowlyx workspace create my-product
-cd ~/code/api && knowlyx link my-product --role backend --critical
-cd ~/code/web && knowlyx link my-product --role frontend
+### Recommended layout
+
+```text
+~/code/myproduct/
+  myproduct-knowledge/   ← workspace home (workspace.toml, memory.json live here)
+  myproduct-api/         ← backend (working repo)
+  myproduct-web/         ← frontend (working repo)
 ```
 
-Memory + decisions are now shared across all linked repos. To share with your team, see [git-sync.md](git-sync.md).
+Naming convention: the knowledge repo's folder name ends with `-knowledge`. Knowlyx uses this to auto-derive the workspace name (strips `-knowledge` and `-knowlyx` suffixes).
+
+### Tech lead — initialize the workspace home
+
+```bash
+mkdir -p ~/code/myproduct/myproduct-knowledge && cd ~/code/myproduct/myproduct-knowledge
+git init   # or: git clone <empty-team-repo> .
+knowlyx init
+```
+
+This creates `workspace.toml`, `packs/`, `scans/` in the folder and registers the path in `~/.knowlyx/registry.toml`. Push to a shared remote so teammates can clone it.
+
+### Each dev — link a working repo
+
+```bash
+cd ~/code/myproduct/myproduct-api
+knowlyx init
+```
+
+That's it. Knowlyx auto-detects the `-knowledge` sibling, reads its git remote, writes a 2-line `.knowlyx/config.toml`, and auto-registers this repo in the workspace's `workspace.toml`.
+
+### Joining from a fresh machine
+
+```bash
+cd ~/code/myproduct
+git clone <team-knowledge-repo-url> myproduct-knowledge
+git clone <team-api-repo-url>       myproduct-api
+cd myproduct-api && knowlyx init    # auto-links via the sibling
+```
+
+Memory + decisions + approvals are now shared across all linked repos. To share with your team, see [git-sync.md](git-sync.md).
+
+### Override auto-detection
+
+```bash
+knowlyx init --knowledge --name myproduct   # force this folder to be the workspace home, custom name
+knowlyx init --link myproduct --remote <git-url>   # force link mode (no sibling needed)
+```
 
 ## Next
 
