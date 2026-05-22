@@ -23,6 +23,7 @@ def _load_engine(repo_path: str):
     from knowlyx.reasoning.engine import ReasoningEngine
     from knowlyx.scanner.repo_scanner import RepoScanner
 
+    _print_workspace_hint(repo_path)
     scanner = RepoScanner(repo_path)
     with console.status("[bold cyan]Scanning repository…"):
         scan = scanner.scan()
@@ -30,6 +31,17 @@ def _load_engine(repo_path: str):
     graph.build(scan)
     engine = ReasoningEngine(scan, graph)
     return engine, scan, graph
+
+
+def _print_workspace_hint(repo_path: str) -> None:
+    """Print a one-line setup hint if the shared knowledge isn't on this machine."""
+    try:
+        from knowlyx.link.resolver import workspace_setup_hint
+        hint = workspace_setup_hint(repo_path)
+        if hint:
+            console.print(f"[yellow]ℹ {hint}[/yellow]")
+    except Exception:
+        pass  # never let hint logic break the command
 
 
 # ------------------------------------------------------------------
@@ -274,6 +286,7 @@ def memory(
     """
     from knowlyx.memory.schema import MemoryEntry, MemoryKind
     from knowlyx.memory.store import create_store
+    _print_workspace_hint(repo_path)
     store = create_store(repo_path)
 
     if action == "list":
@@ -623,19 +636,23 @@ def link(
     role: str = typer.Option("unknown", "--role", help="backend | frontend | worker | gateway | shared | infra"),
     domains: str = typer.Option("", "--domains", help="Comma-separated domains"),
     critical: bool = typer.Option(False, "--critical", help="Mark as critical repo"),
+    remote: str = typer.Option("", "--remote", help="Git URL of the shared knowledge repo (e.g. git@github.com:org/x-knowledge.git)"),
 ):
     """
     Link this repo to a central workspace so memory + approvals + topology are shared.
 
     \b
-    knowlyx link my-product --role backend --domains billing,auth --critical
+    knowlyx link my-product --role backend --domains billing,auth --critical \\
+                            --remote git@github.com:org/my-product-knowledge.git
     """
     from knowlyx.link.config import LinkConfig, save_link
     from knowlyx.paths import workspace_dir, workspace_toml_path
 
-    if not workspace_toml_path(workspace_name).exists():
-        console.print(f"[red]Workspace '{workspace_name}' does not exist.[/red]")
-        console.print(f"Create it first: [cyan]knowlyx workspace create {workspace_name}[/cyan]")
+    ws_exists_locally = workspace_toml_path(workspace_name).exists()
+    if not ws_exists_locally and not remote:
+        console.print(f"[red]Workspace '{workspace_name}' does not exist locally and no --remote provided.[/red]")
+        console.print(f"Either: [cyan]knowlyx workspace create {workspace_name}[/cyan]")
+        console.print(f"Or:     [cyan]knowlyx link {workspace_name} --remote <git-url>[/cyan]  (clone shared knowledge)")
         raise typer.Exit(1)
 
     cfg = LinkConfig(
@@ -644,11 +661,19 @@ def link(
         role=role,
         domains=[d.strip() for d in domains.split(",") if d.strip()],
         critical=critical,
+        knowledge_remote=remote,
     )
     written = save_link(cfg, repo_path)
     console.print(f"[green]Linked[/green] {Path(repo_path).resolve().name} → workspace '{workspace_name}'")
     console.print(f"  Config: {written}  [dim](commit this to git)[/dim]")
     console.print(f"  Shared store: {workspace_dir(workspace_name)}")
+    if remote:
+        console.print(f"  Knowledge remote: {remote}")
+    if not ws_exists_locally and remote:
+        console.print(
+            f"\n[yellow]⚠ Shared knowledge not on this machine yet.[/yellow]\n"
+            f"  Run:  [cyan]git clone {remote} {workspace_dir(workspace_name)}[/cyan]"
+        )
 
 
 @app.command()
@@ -743,14 +768,17 @@ def init(
     workspace_mode: bool = typer.Option(False, "--workspace", help="Init workspace folder (auto-detect repos as siblings)"),
     name: str = typer.Option("", "--name", help="Workspace name (defaults to folder name)"),
     link_to: str = typer.Option("", "--link", help="Link this repo to an existing central workspace"),
+    remote: str = typer.Option("", "--remote", help="Git URL of shared knowledge repo (recorded so teammates know where to clone)"),
 ):
     """
     Scaffold Knowlyx for a project.
 
     \b
-    knowlyx init                       # scan repo + suggest setup
-    knowlyx init --workspace           # legacy: create knowlyx.toml in cwd
-    knowlyx init --link my-product     # link this repo to central workspace
+    knowlyx init                                          # scan repo + suggest setup
+    knowlyx init --workspace                              # legacy: create knowlyx.toml in cwd
+    knowlyx init --link my-product                        # link to existing local workspace
+    knowlyx init --link my-product --remote git@...:org/knowledge.git
+                                                          # link + record where teammates clone
     """
     from knowlyx.scanner.repo_scanner import RepoScanner
 
@@ -758,10 +786,12 @@ def init(
 
     if link_to:
         from knowlyx.link.config import LinkConfig, save_link
-        from knowlyx.paths import workspace_toml_path
-        if not workspace_toml_path(link_to).exists():
-            console.print(f"[red]Workspace '{link_to}' not found.[/red]")
-            console.print(f"Run: [cyan]knowlyx workspace create {link_to}[/cyan]")
+        from knowlyx.paths import workspace_dir, workspace_toml_path
+        ws_exists_locally = workspace_toml_path(link_to).exists()
+        if not ws_exists_locally and not remote:
+            console.print(f"[red]Workspace '{link_to}' not found locally and no --remote provided.[/red]")
+            console.print(f"Either: [cyan]knowlyx workspace create {link_to}[/cyan]")
+            console.print(f"Or:     [cyan]knowlyx init --link {link_to} --remote <git-url>[/cyan]")
             raise typer.Exit(1)
         # auto-detect role + domains
         with console.status("[bold cyan]Auto-detecting role + domains…"):
@@ -772,10 +802,18 @@ def init(
             repo_name=target.name,
             role=role,
             domains=scan.domains[:6],
+            knowledge_remote=remote,
         ), target)
         console.print(f"[green]Linked[/green] {target.name} → {link_to}")
         console.print(f"  Role: {role}, Domains: {', '.join(scan.domains[:6]) or '(none)'}")
+        if remote:
+            console.print(f"  Knowledge remote: {remote}")
         console.print("  Commit [cyan].knowlyx/config.toml[/cyan] to git so teammates get linked automatically.")
+        if not ws_exists_locally and remote:
+            console.print(
+                f"\n[yellow]⚠ Shared knowledge not on this machine yet.[/yellow]\n"
+                f"  Run:  [cyan]git clone {remote} {workspace_dir(link_to)}[/cyan]"
+            )
         return
 
     if workspace_mode:

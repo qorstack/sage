@@ -305,12 +305,18 @@ type = "event"
 
 ```bash
 cd ~/code/api
-knowlyx init --link my-product
+knowlyx init --link my-product \
+  --remote git@github.com:your-org/my-product-knowledge.git
 # auto-detects role + domains from package.json/pyproject.toml/etc
 # writes .knowlyx/config.toml — commit this to git
 git add .knowlyx/config.toml
 git commit -m "link to knowlyx workspace"
 ```
+
+The `--remote` flag records the URL of the shared knowledge repo inside
+`.knowlyx/config.toml`. When teammates clone `api`, Knowlyx already knows where
+to fetch the shared brain from — and prints the exact `git clone` command if
+the local workspace folder is missing.
 
 Now every dev who clones `api` is automatically connected to `my-product`'s shared memory.
 
@@ -332,11 +338,20 @@ knowlyx sync push --workspace my-product -m "init"
 
 ### Each developer — clone shared knowledge
 
-```bash
-# Path matters — must be ~/.knowlyx/workspaces/<workspace-name>
-git clone git@github.com:your-org/my-product-knowledge.git \
-  ~/.knowlyx/workspaces/my-product
+When you clone a project repo that's already linked, Knowlyx prints the exact
+clone command on first use — you don't have to look up the URL:
+
+```text
+$ knowlyx memory list
+ℹ Shared knowledge for workspace 'my-product' is not on this machine.
+  Run:  git clone git@github.com:your-org/my-product-knowledge.git \
+                  ~/.knowlyx/workspaces/my-product
 ```
+
+Copy that command and run it. Done.
+
+(The URL lives in each linked repo's `.knowlyx/config.toml` as
+`knowledge_remote`, so it travels with the repo.)
 
 Auth: uses your existing git auth (SSH key / HTTPS credential helper / `gh auth`). No Knowlyx-specific tokens needed.
 

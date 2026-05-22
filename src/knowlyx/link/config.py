@@ -28,6 +28,14 @@ class LinkConfig(BaseModel):
     domains: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
     critical: bool = False
+    knowledge_remote: str = ""
+    """Git remote URL of the shared workspace (knowledge) repo.
+
+    When set, this is the canonical address devs should clone into
+    ~/.knowlyx/workspaces/<workspace>/. Knowlyx surfaces this URL in
+    error messages when the local workspace folder is missing, so
+    no one has to hunt for "where is the shared knowledge?".
+    """
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     def resolved_repo_name(self, repo_path: str | Path) -> str:
@@ -57,6 +65,7 @@ def load_link(repo_path: str | Path = ".") -> LinkConfig | None:
         domains=list(data.get("domains", [])),
         tags=list(data.get("tags", [])),
         critical=bool(data.get("critical", False)),
+        knowledge_remote=str(data.get("knowledge_remote", "")),
         metadata=dict(data.get("metadata", {})),
     )
 
@@ -76,6 +85,8 @@ def _serialize(config: LinkConfig) -> str:
         "",
         f'workspace = "{config.workspace}"',
     ]
+    if config.knowledge_remote:
+        lines.append(f'knowledge_remote = "{config.knowledge_remote}"')
     if config.repo_name:
         lines.append(f'repo_name = "{config.repo_name}"')
     if config.role and config.role != "unknown":

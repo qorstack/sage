@@ -12,6 +12,7 @@ from knowlyx.link.resolver import (
     WorkspaceResolution,
     resolve_workspace,
     resolve_workspace_or_legacy,
+    workspace_setup_hint,
 )
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "WorkspaceResolution",
     "resolve_workspace",
     "resolve_workspace_or_legacy",
+    "workspace_setup_hint",
 ]

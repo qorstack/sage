@@ -17,6 +17,7 @@ from knowlyx.link.config import LinkConfig, load_link
 from knowlyx.paths import (
     ensure_workspace_dir,
     workspace_approvals_path,
+    workspace_dir,
     workspace_memory_path,
 )
 
@@ -47,6 +48,10 @@ def resolve_workspace(repo_path: str | Path = ".") -> WorkspaceResolution | None
     """
     Return WorkspaceResolution if repo (or any ancestor) has a link config.
     Returns None if no link found — caller should fall back to legacy mode.
+
+    Auto-creates the workspace directory if missing. CLI commands should
+    call `workspace_setup_hint(repo_path)` separately to surface a clone
+    instruction when a knowledge_remote is declared but the folder is empty.
     """
     found = _find_link_upwards(Path(repo_path))
     if found is None:
@@ -61,6 +66,44 @@ def resolve_workspace(repo_path: str | Path = ".") -> WorkspaceResolution | None
         link=cfg,
         repo_path=repo_root,
     )
+
+
+def workspace_setup_hint(repo_path: str | Path = ".") -> str | None:
+    """
+    Return a one-line setup hint when the link declares a knowledge_remote
+    but the local workspace folder is missing/empty — meaning the dev hasn't
+    cloned the shared knowledge yet.
+
+    Returns None when there's no hint to give (no link, no remote, or the
+    workspace is already populated).
+    """
+    found = _find_link_upwards(Path(repo_path))
+    if found is None:
+        return None
+    _, cfg = found
+    if not cfg.knowledge_remote:
+        return None
+    ws_path = workspace_dir(cfg.workspace)
+    if not ws_path.exists():
+        target = str(ws_path)
+        return (
+            f"Shared knowledge for workspace '{cfg.workspace}' is not on this machine.\n"
+            f"  Run:  git clone {cfg.knowledge_remote} {target}\n"
+            "  (Then memory + approvals + decisions will be available to AI.)"
+        )
+    # exists but empty — likely the auto-created empty dir
+    has_memory = (ws_path / "memory.json").exists()
+    has_workspace_toml = (ws_path / "workspace.toml").exists()
+    if not has_memory and not has_workspace_toml:
+        target = str(ws_path)
+        return (
+            f"Workspace folder '{cfg.workspace}' exists but is empty (no memory.json).\n"
+            f"  If this is a fresh setup, expected. Otherwise the team-shared knowledge\n"
+            f"  hasn't been pulled. Replace the empty folder with a clone:\n"
+            f"  rm -rf {target}\n"
+            f"  git clone {cfg.knowledge_remote} {target}"
+        )
+    return None
 
 
 def resolve_workspace_or_legacy(repo_path: str | Path = ".") -> tuple[Path, Path, str]:
