@@ -110,10 +110,13 @@ def _available_skills_summary(
 
     keywords = {d.lower() for d in (domains or []) if d}
     if keywords:
+        import re
+        # Word-boundary match so e.g. `ui` doesn't accidentally match `built-in`.
+        patterns = [re.compile(rf"\b{re.escape(k)}\b") for k in keywords]
         filtered = []
         for s in skills:
             haystack = (s.name + " " + s.description + " " + " ".join(s.tags)).lower()
-            if any(k in haystack for k in keywords):
+            if any(p.search(haystack) for p in patterns):
                 filtered.append(s)
         chosen = filtered if filtered else skills
     else:

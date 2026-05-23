@@ -108,15 +108,47 @@ def workspace_setup_hint(repo_path: str | Path = ".") -> str | None:
 
 def resolve_workspace_or_legacy(repo_path: str | Path = ".") -> tuple[Path, Path, str]:
     """
-    Convenience: return (memory_path, approvals_path, mode) where
-    mode is "central" if a workspace was resolved, else "legacy".
+    Convenience: return (memory_path, approvals_path, mode).
 
-    Legacy paths preserve original per-repo behavior:
-        <repo_path>/.knowlyx/memory.json
-        <repo_path>/.knowlyx/approvals.json
+    Resolution order:
+    1. If repo (or ancestor) has `.knowlyx/config.toml` → "central" — use the
+       linked workspace's shared store.
+    2. If repo (or ancestor) has `workspace.toml` → "home" — we ARE the
+       workspace home, store at workspace root.
+    3. Otherwise "legacy" — per-repo `.knowlyx/memory/`.
     """
     res = resolve_workspace(repo_path)
     if res:
         return res.memory_path, res.approvals_path, "central"
+
+    # Walk up looking for workspace.toml (knowledge-home mode)
+    p = Path(repo_path).resolve()
+    while True:
+        if (p / "workspace.toml").exists():
+            from knowlyx.paths import workspace_approvals_path, workspace_memory_path
+            ws_name = _read_workspace_name(p) or p.name
+            # paths.workspace_*_path now returns the dir, but we want this
+            # specific knowledge-home folder, not the registry-resolved one.
+            return p / "memory", p / "approvals", "home"
+        if p.parent == p:
+            break
+        p = p.parent
+
     legacy_dir = Path(repo_path) / ".knowlyx"
-    return legacy_dir / "memory.json", legacy_dir / "approvals.json", "legacy"
+    return legacy_dir / "memory", legacy_dir / "approvals", "legacy"
+
+
+def _read_workspace_name(workspace_toml_dir: Path) -> str | None:
+    """Best-effort read of the `name` field from `<dir>/workspace.toml`."""
+    p = workspace_toml_dir / "workspace.toml"
+    if not p.exists():
+        return None
+    try:
+        for line in p.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("name") and "=" in line:
+                _, _, v = line.partition("=")
+                return v.strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return None
