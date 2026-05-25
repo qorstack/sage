@@ -1,38 +1,38 @@
 {% extends "base.html" %}
-{% block title %}{{ entry.title if entry else 'Entry' }}{% endblock %}
+{% block title %}{{ entry.title if entry else 'Item' }}{% endblock %}
 {% block content %}
-<p><a href="/entries">← All entries</a></p>
+<a href="/entries" class="back-link">← Back to Library</a>
 
 {% if not entry %}
-  <p class="muted">Entry not found.</p>
+  <p class="muted">This item was not found. It may have been deleted.</p>
 {% else %}
   <h1>{{ entry.title }}</h1>
   <div class="meta">
-    <span class="tag">{{ entry.kind }}</span>
-    <span class="tag">domain: {{ entry.domain }}</span>
-    {% if entry.approved %}<span class="tag tag-approve">approved by {{ entry.approved_by or 'unknown' }}</span>
+    <span class="tag">{{ entry.kind.replace('_', ' ') }}</span>
+    <span class="tag">topic: {{ entry.domain }}</span>
+    {% if entry.approved %}<span class="tag tag-approve">approved by {{ entry.approved_by or 'team' }}</span>
     {% else %}<span class="tag">pending approval</span>{% endif %}
     {% if entry.superseded_by %}
-      <span class="tag tag-supersede">superseded by <a href="/entries/{{ entry.superseded_by }}">{{ entry.superseded_by }}</a></span>
+      <span class="tag tag-supersede">replaced by <a href="/entries/{{ entry.superseded_by }}" style="color:inherit">{{ entry.superseded_by }}</a></span>
     {% endif %}
   </div>
-  <p class="muted mono"><small>id: {{ entry.id }} · repo: {{ entry.repo_path or '—' }} · created: {{ entry.created_at }} · updated: {{ entry.updated_at }}</small></p>
+  <p class="id-line">id {{ entry.id }} · created {{ entry.created_at.strftime('%Y-%m-%d %H:%M') }} · updated {{ entry.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
 
   <div class="actions">
-    <a class="btn" href="/entries/{{ entry.id }}/edit">Edit</a>
+    <a class="btn btn-secondary" href="/entries/{{ entry.id }}/edit">Edit</a>
     {% if not entry.approved %}
       <form method="post" action="/entries/{{ entry.id }}/approve" class="inline">
-        <input type="text" name="approver" placeholder="approver name (optional)">
-        <button type="submit" class="btn btn-primary">Approve</button>
+        <input type="text" name="approver" placeholder="your name (optional)">
+        <button type="submit" class="btn">Approve</button>
       </form>
     {% endif %}
-    <form method="post" action="/entries/{{ entry.id }}/delete" class="inline" onsubmit="return confirm('Delete this entry?');">
+    <form method="post" action="/entries/{{ entry.id }}/delete" class="inline" onsubmit="return confirm('Delete this item? This cannot be undone.');">
       <button type="submit" class="btn btn-danger">Delete</button>
     </form>
   </div>
 
   <section>
-    <h2>Body</h2>
+    <h2>Content</h2>
     <pre class="body">{{ entry.body }}</pre>
   </section>
 
@@ -43,15 +43,15 @@
   </section>
   {% endif %}
 
-  {% if entry.metadata %}
+  {% if entry.metadata and (entry.metadata.get('merge_count') or entry.metadata.get('contributors')) %}
   <section>
-    <h2>Metadata</h2>
+    <h2>Merge history</h2>
     {% if entry.metadata.get('merge_count') %}
-      <p>Merged <strong>{{ entry.metadata.merge_count }}</strong> time(s).</p>
+      <p class="muted">This item absorbed <strong style="color:var(--ink)">{{ entry.metadata.merge_count }}</strong> similar submission(s).</p>
     {% endif %}
     {% if entry.metadata.get('contributors') %}
       <table class="tbl">
-        <thead><tr><th>When</th><th>Actor</th><th>From title</th></tr></thead>
+        <thead><tr><th>When</th><th>Who</th><th>Original title</th></tr></thead>
         <tbody>
         {% for c in entry.metadata.contributors %}
           <tr><td class="mono"><small>{{ c.at }}</small></td><td>{{ c.actor }}</td><td>{{ c.title }}</td></tr>
@@ -59,22 +59,24 @@
         </tbody>
       </table>
     {% endif %}
-    <details><summary>Raw metadata</summary><pre class="mono">{{ entry.metadata | tojson(indent=2) }}</pre></details>
+    <details><summary>Raw metadata (debug)</summary><pre class="mono">{{ entry.metadata | tojson(indent=2) }}</pre></details>
   </section>
   {% endif %}
 
   <section>
-    <h2>Audit log</h2>
+    <h2>History</h2>
     <table class="tbl">
-      <thead><tr><th>When</th><th>Action</th><th>Actor</th><th>Diff</th></tr></thead>
+      <thead><tr><th>When</th><th>What</th><th>Who</th><th>Details</th></tr></thead>
       <tbody>
       {% for a in audit %}
         <tr>
-          <td class="mono"><small>{{ a.at }}</small></td>
+          <td class="mono"><small>{{ a.at.strftime('%Y-%m-%d %H:%M') if a.at else '' }}</small></td>
           <td><span class="tag tag-{{ a.action }}">{{ a.action }}</span></td>
           <td>{{ a.actor }}</td>
-          <td><pre class="mono inline">{{ a.diff | tojson }}</pre></td>
+          <td>{% if a.diff %}<pre class="mono inline">{{ a.diff | tojson }}</pre>{% else %}—{% endif %}</td>
         </tr>
+      {% else %}
+        <tr><td colspan="4" class="muted">No history yet.</td></tr>
       {% endfor %}
       </tbody>
     </table>

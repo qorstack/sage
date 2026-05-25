@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Syntheses{% endblock %}
+{% block title %}Summaries{% endblock %}
 {% block content %}
-<h1>Syntheses</h1>
-<p class="muted">One row per domain — the AI's rolled-up summary of all entries in that domain.</p>
+<h1>Summaries</h1>
+<p class="subtitle">One AI-written summary per topic — a rolled-up view of everything the team has saved on it.</p>
 
 <table class="tbl">
   <thead>
-    <tr><th>Domain</th><th>Summary</th><th class="num-col">Entries (then / now)</th><th>Synthesized</th><th>Status</th></tr>
+    <tr><th>Topic</th><th>Summary</th><th class="num-col">Items (at time / now)</th><th>Made</th><th>Status</th></tr>
   </thead>
   <tbody>
   {% for r in rows %}
@@ -16,13 +16,13 @@
       <td class="num-col mono">{{ r.entry_count_at_synthesis }} / {{ r.current_entries }}</td>
       <td class="mono"><small>{{ r.synthesized_at.strftime('%Y-%m-%d %H:%M') }}<br>by {{ r.synthesized_by }}</small></td>
       <td>
-        {% if r.stale %}<span class="tag tag-supersede">stale</span>
-        {% elif r.entry_count_at_synthesis != r.current_entries %}<span class="tag tag-supersede">drift</span>
-        {% else %}<span class="tag tag-approve">fresh</span>{% endif %}
+        {% if r.stale %}<span class="tag tag-supersede">needs refresh</span>
+        {% elif r.entry_count_at_synthesis != r.current_entries %}<span class="tag tag-supersede">out of date</span>
+        {% else %}<span class="tag tag-approve">up to date</span>{% endif %}
       </td>
     </tr>
   {% else %}
-    <tr><td colspan="5" class="muted">No syntheses yet.</td></tr>
+    <tr><td colspan="5" class="muted">No summaries yet. They'll appear here once you have enough items in a topic.</td></tr>
   {% endfor %}
   </tbody>
 </table>

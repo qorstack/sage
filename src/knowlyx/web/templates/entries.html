@@ -1,49 +1,79 @@
 {% extends "base.html" %}
-{% block title %}Entries{% endblock %}
+{% block title %}{% if show_add %}Add knowledge{% else %}Knowledge{% endif %}{% endblock %}
 {% block content %}
-<h1>Entries</h1>
 
-<form class="filters" method="get" action="/entries">
-  <input type="text" name="q" placeholder="Search title/body…" value="{{ filter_q }}">
-  <select name="domain">
-    <option value="">All domains</option>
-    {% for d in domains %}
-      <option value="{{ d }}" {% if d == filter_domain %}selected{% endif %}>{{ d }}</option>
-    {% endfor %}
-  </select>
-  <select name="kind">
-    <option value="">All kinds</option>
-    {% for k in ['business_context','approved_convention','team_decision','reusable_asset','risk_pattern','workflow'] %}
-      <option value="{{ k }}" {% if k == filter_kind %}selected{% endif %}>{{ k }}</option>
-    {% endfor %}
-  </select>
-  <label><input type="checkbox" name="show_superseded" value="true" {% if show_superseded %}checked{% endif %}> show superseded</label>
-  <button type="submit">Apply</button>
-</form>
+{% if show_add %}
+  {# ──────── Add mode: full-page focused form ──────── #}
+  <a href="/entries" class="back-link">← Back to Knowledge</a>
+  <h1>Add knowledge</h1>
+  <p class="subtitle">Title + content. That's it.</p>
 
-<table class="tbl">
-  <thead>
-    <tr><th>Domain</th><th>Kind</th><th>Title</th><th>Tags</th><th class="num-col">Merges</th><th>Updated</th><th>Status</th></tr>
-  </thead>
-  <tbody>
-  {% for r in rows %}
-    <tr class="{{ 'row-superseded' if r.superseded_by else '' }}">
-      <td>{{ r.domain }}</td>
-      <td><small>{{ r.kind }}</small></td>
-      <td><a href="/entries/{{ r.id }}">{{ r.title }}</a></td>
-      <td><small class="muted">{{ r.repo_path or '—' }}</small></td>
-      <td class="num-col">{% if r.merge_count > 0 %}<span class="tag tag-merge">{{ r.merge_count }}</span>{% else %}—{% endif %}</td>
-      <td class="mono"><small>{{ r.updated_at.strftime('%Y-%m-%d %H:%M') if r.updated_at else '' }}</small></td>
-      <td>
-        {% if r.superseded_by %}<span class="tag tag-supersede">superseded</span>
-        {% elif r.approved %}<span class="tag tag-approve">approved</span>
-        {% else %}<span class="tag">pending</span>{% endif %}
-      </td>
-    </tr>
-  {% else %}
-    <tr><td colspan="7" class="muted">No matching entries.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
-<p class="muted"><small>Showing up to 200 rows.</small></p>
+  {% with action_url="/knowledge/create",
+          submit_label="Save",
+          show_approve=True,
+          show_cancel=True,
+          cancel_url="/entries" %}
+    {% include "_entry_form.html" %}
+  {% endwith %}
+
+{% else %}
+  {# ──────── Browse mode: list + filters ──────── #}
+  <div class="page-head">
+    <div>
+      <h1>Knowledge</h1>
+      <p class="subtitle">Everything your team has captured.</p>
+    </div>
+    <a href="/entries?add=true" class="btn">+ Add new</a>
+  </div>
+
+  <form class="filters" method="get" action="/entries">
+    <input type="text" name="q" placeholder="Search title or content…" value="{{ filter_q }}">
+    {% if domains %}
+      <select name="domain">
+        <option value="">All topics</option>
+        {% for d in domains %}
+          <option value="{{ d }}" {% if d == filter_domain %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    {% endif %}
+    <label class="inline" style="font-size:13px;color:var(--muted)">
+      <input type="checkbox" name="show_superseded" value="true" {% if show_superseded %}checked{% endif %} style="accent-color:var(--primary)">
+      Include replaced
+    </label>
+    <button type="submit">Search</button>
+  </form>
+
+  <table class="tbl">
+    <thead>
+      <tr><th>Title</th><th>Status</th><th class="num-col">Merges</th><th>Updated</th></tr>
+    </thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="{{ 'row-superseded' if r.superseded_by else '' }}">
+        <td>
+          <a href="/entries/{{ r.id }}">{{ r.title }}</a>
+          {% if r.domain and r.domain != 'general' %}
+            <small class="muted"> · {{ r.domain }}</small>
+          {% endif %}
+        </td>
+        <td>
+          {% if r.superseded_by %}<span class="tag tag-supersede">replaced</span>
+          {% elif r.approved %}<span class="tag tag-approve">approved</span>
+          {% else %}<span class="tag">pending</span>{% endif %}
+        </td>
+        <td class="num-col">{% if r.merge_count > 0 %}<span class="tag tag-merge">{{ r.merge_count }}</span>{% else %}—{% endif %}</td>
+        <td class="mono"><small>{{ r.updated_at.strftime('%Y-%m-%d %H:%M') if r.updated_at else '' }}</small></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">
+        {% if filter_q or filter_domain %}No items match. Try a different search.
+        {% else %}Nothing here yet. Click <strong>+ Add new</strong> to write your first item.
+        {% endif %}
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted"><small>Showing up to 200 items.</small></p>
+{% endif %}
+
 {% endblock %}

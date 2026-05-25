@@ -1,18 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Audit{% endblock %}
+{% block title %}Activity{% endblock %}
 {% block content %}
-<h1>Audit log</h1>
+<h1>Activity</h1>
+<p class="subtitle">Everything that's ever happened — useful when you need to know "who did what, when."</p>
 
 <form class="filters" method="get" action="/audit">
   <select name="action">
-    <option value="">All actions</option>
+    <option value="">All events</option>
     {% for a in actions %}
       <option value="{{ a }}" {% if a == filter_action %}selected{% endif %}>{{ a }}</option>
     {% endfor %}
   </select>
   <select name="limit">
     {% for n in [50, 100, 200, 500] %}
-      <option value="{{ n }}" {% if n == limit %}selected{% endif %}>{{ n }} rows</option>
+      <option value="{{ n }}" {% if n == limit %}selected{% endif %}>Show {{ n }}</option>
     {% endfor %}
   </select>
   <button type="submit">Apply</button>
@@ -20,7 +21,7 @@
 
 <table class="tbl">
   <thead>
-    <tr><th>When</th><th>Action</th><th>Actor</th><th>Domain</th><th>Entry</th><th>Diff</th></tr>
+    <tr><th>When</th><th>What</th><th>Who</th><th>Topic</th><th>Item</th><th>Details</th></tr>
   </thead>
   <tbody>
   {% for r in rows %}
@@ -30,10 +31,10 @@
       <td>{{ r.actor }}</td>
       <td>{{ r.domain or '—' }}</td>
       <td>{% if r.entry_id %}<a href="/entries/{{ r.entry_id }}">{{ r.title or r.entry_id }}</a>{% else %}—{% endif %}</td>
-      <td><pre class="mono inline"><small>{{ r.diff | tojson }}</small></pre></td>
+      <td>{% if r.diff %}<pre class="mono inline"><small>{{ r.diff | tojson }}</small></pre>{% else %}—{% endif %}</td>
     </tr>
   {% else %}
-    <tr><td colspan="6" class="muted">No audit rows.</td></tr>
+    <tr><td colspan="6" class="muted">No activity yet.</td></tr>
   {% endfor %}
   </tbody>
 </table>

@@ -139,24 +139,23 @@ You'll see the **Overview** page with all counts at 0.
 
 ### Step 4 — Add your first knowledge entry
 
-1. Click **Knowledge** in the top nav.
-2. *(Optional)* Sign in with your name — sets a sticky cookie used as the audit-log author. Skip and the actor will be `web`.
-3. Fill the form:
-   - **Kind**: `team_decision`
-   - **Domain**: `payment`
-   - **Title**: `Use idempotency keys`
-   - **Body**: `All POST /payments require an Idempotency-Key header.`
-   - **Tags**: `payment, api`
-   - Tick ☑ Auto-approve
-4. Click **Save knowledge** → you land on the entry detail page.
+1. Click **Knowledge** in the top nav, then **+ Add new**.
+2. Fill in two things:
+   - **Title** — `Use idempotency keys`
+   - **Content** — `All POST /payments require an Idempotency-Key header.`
+     (Plain markdown — toolbar gives you bold/italic/headings/code/lists; **Preview** tab renders it.)
+3. *(Optional)* tick **Mark as approved** if your team has already signed off.
+4. Click **Save** → you land on the entry detail page.
 
-Go back to **Overview** — `Active = 1`, `Approved = 1`.
+Go back to **Home** — `Knowledge items = 1`, `Approved = 1`.
 
-**On any entry detail page** you can also:
+**On any entry detail page** you can:
 
-- **Edit** — change title/body (logged as `update`)
+- **Edit** — change title/content (logged as `update`)
 - **Approve** — flip status if pending (logged as `approve`)
 - **Delete** — remove the entry (kept in audit log)
+
+> **Note on defaults.** The web form keeps things simple — every new entry gets `domain = general`, `kind = team_decision`, and no tags. If you want a different domain/kind/tags (used for grouping and AI-tool queries), set them via the CLI: `knowai memory decide <domain> "<title>" --body "..." --tags a,b,c`.
 
 ✅ If you only need a team knowledge base, **you're done**. Skip to [Manage / inspect](#manage--inspect) or [Stop / restart](#stop--restart--wipe).
 
@@ -260,20 +259,18 @@ If you see no MCP call: env vars from Step 6 aren't loaded in the shell that sta
 
 ## Verify auto-merge
 
-Add a **second** entry in the same `payment` domain with similar wording:
+Add a **second** entry with similar wording (web form defaults both entries to `domain = general`, which is what auto-merge keys on):
 
-- **Kind**: `team_decision`
-- **Domain**: `payment`
 - **Title**: `Idempotency-Key header is mandatory for payment endpoints`
-- **Body**: `All POST /payments require an Idempotency-Key header to safely retry. Keys kept 24h.`
+- **Content**: `All POST /payments require an Idempotency-Key header to safely retry. Keys kept 24h.`
 
 After submit you should land on the **original entry** (same id), not a new one. Check:
 
-- "Merged 1 time(s)" appears in Metadata
-- A `contributors` row lists the second entry
-- Body has the new content appended after a `---` separator
-- Audit log shows `insert` + `merge` rows
-- Overview still shows `Active = 1` (not 2)
+- "This item absorbed 1 similar submission(s)" appears under **Merge history**
+- A `contributors` row lists the second entry's original title
+- Content has the new text appended after a `---` separator
+- **History** section shows `insert` + `merge` rows
+- Home still shows `Knowledge items = 1` (not 2)
 
 **If you see 2 separate entries:**
 
@@ -290,12 +287,12 @@ After submit you should land on the **original entry** (same id), not a new one.
 
 | URL | What it shows |
 |---|---|
-| <http://localhost:8080> | Overview — counts, top domains, recent activity, stale syntheses |
-| <http://localhost:8080/knowledge> | Form to add new entries + recent team entries |
-| <http://localhost:8080/entries> | All entries with filters (domain / kind / text) |
-| <http://localhost:8080/entries/{id}> | Detail + Edit / Approve / Delete buttons |
-| <http://localhost:8080/syntheses> | Per-domain AI summaries + drift detection |
-| <http://localhost:8080/audit> | Full audit log, filter by action |
+| <http://localhost:8080> | **Home** — counts + recent activity |
+| <http://localhost:8080/entries> | **Knowledge** — list of items, search/filter, edit/approve/delete |
+| <http://localhost:8080/entries?add=true> | **Add knowledge** — full-page editor (Title + markdown content) |
+| <http://localhost:8080/entries/{id}> | Item detail with Edit / Approve / Delete + history |
+| <http://localhost:8080/syntheses> | **Summaries** — per-domain AI summaries + drift detection |
+| <http://localhost:8080/audit> | **Activity** — full audit log, filter by action |
 | <http://localhost:8080/healthz> | JSON status (for monitoring) |
 
 ### From psql (no password needed via `docker exec`)

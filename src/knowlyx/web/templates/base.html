@@ -3,19 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}knowai{% endblock %} — knowai dashboard</title>
+  <title>{% block title %}knowai{% endblock %} — knowai</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <script src="/static/editor.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">knowai</div>
+    <a href="/" class="brand" style="text-decoration:none">knowai</a>
     <nav>
-      <a href="/" class="{{ 'on' if active == 'dashboard' else '' }}">Overview</a>
-      <a href="/knowledge" class="{{ 'on' if active == 'knowledge' else '' }}">Knowledge</a>
-      <a href="/entries" class="{{ 'on' if active == 'entries' else '' }}">Entries</a>
-      <a href="/syntheses" class="{{ 'on' if active == 'syntheses' else '' }}">Syntheses</a>
-      <a href="/audit" class="{{ 'on' if active == 'audit' else '' }}">Audit</a>
+      <a href="/"           class="{{ 'on' if active == 'dashboard' else '' }}">Home</a>
+      <a href="/entries"    class="{{ 'on' if active == 'entries'   else '' }}">Knowledge</a>
+      <a href="/syntheses"  class="{{ 'on' if active == 'syntheses' else '' }}">Summaries</a>
+      <a href="/audit"      class="{{ 'on' if active == 'audit'     else '' }}">Activity</a>
     </nav>
+    <div class="spacer"></div>
+    {% if active != 'entries' %}
+      <a href="/entries?add=true#add" class="btn" style="height:38px;padding:6px 18px;font-size:14px">+ Add</a>
+    {% endif %}
   </header>
   <main>
     {% block content %}{% endblock %}

@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Edit{% endblock %}
 {% block content %}
-<p><a href="/entries/{{ entry.id }}">← Back to entry</a></p>
-<h1>Edit entry</h1>
+<a href="/entries/{{ entry_id }}" class="back-link">← Back to item</a>
+<h1>Edit</h1>
 
-{% if not entry %}
-  <p class="muted">Entry not found.</p>
+{% if not entry_exists %}
+  <p class="muted">This item was not found. It may have been deleted.</p>
 {% else %}
-  <form method="post" action="/entries/{{ entry.id }}/edit" class="stack">
-    <p class="muted mono"><small>id: {{ entry.id }} · kind: {{ entry.kind }} · domain: {{ entry.domain }}</small></p>
-    <label>Title <input type="text" name="title" value="{{ entry.title }}" required></label>
-    <label>Body <textarea name="body" rows="14" required>{{ entry.body }}</textarea></label>
-    <label>Tags <input type="text" name="tags" value="{{ entry.tags | join(',') }}"></label>
-    <label>Editor name (optional) <input type="text" name="editor" placeholder="your name"></label>
-    <button type="submit">Save changes</button>
-  </form>
+  <p class="subtitle">Change the title or content. Other settings (topic, type, tags) are kept as they were.</p>
+  {% with action_url="/entries/" + entry_id + "/edit",
+          submit_label="Save changes",
+          show_approve=False,
+          show_cancel=True,
+          cancel_url="/entries/" + entry_id %}
+    {% include "_entry_form.html" %}
+  {% endwith %}
 {% endif %}
 {% endblock %}

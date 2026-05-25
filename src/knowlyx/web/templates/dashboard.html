@@ -1,65 +1,38 @@
 {% extends "base.html" %}
-{% block title %}Overview{% endblock %}
+{% block title %}Home{% endblock %}
 {% block content %}
-<h1>Overview</h1>
+<h1>Home</h1>
+<p class="subtitle">Your team's knowledge base for AI tools. Add what your team knows, and Claude/Cursor will use it before generating code.</p>
 
-<div class="cards">
-  <div class="card"><div class="num">{{ stats.active_entries or 0 }}</div><div class="lbl">Active entries</div></div>
-  <div class="card"><div class="num">{{ stats.approved_entries or 0 }}</div><div class="lbl">Approved</div></div>
-  <div class="card"><div class="num">{{ stats.superseded_entries or 0 }}</div><div class="lbl">Superseded</div></div>
-  <div class="card"><div class="num">{{ stats.merges or 0 }}</div><div class="lbl">Total merges</div></div>
-  <div class="card"><div class="num">{{ stats.syntheses or 0 }}</div><div class="lbl">Syntheses</div></div>
-  <div class="card warn-{{ 'on' if (stats.stale_syntheses or 0) > 0 else 'off' }}">
-    <div class="num">{{ stats.stale_syntheses or 0 }}</div><div class="lbl">Stale syntheses</div>
+<div class="hero-cta">
+  <div class="lead">
+    <strong>Add your team's knowledge</strong>
+    <span>Title + content. That's it.</span>
   </div>
-  <div class="card"><div class="num">{{ stats.audit_24h or 0 }}</div><div class="lbl">Events (24h)</div></div>
+  <a class="btn" href="/entries?add=true#add">+ Add knowledge</a>
 </div>
 
-<div class="grid-2">
-  <section>
-    <h2>Top domains</h2>
-    <table class="tbl">
-      <thead><tr><th>Domain</th><th class="num-col">Entries</th></tr></thead>
-      <tbody>
-      {% for r in by_domain %}
-        <tr><td><a href="/entries?domain={{ r.domain }}">{{ r.domain }}</a></td><td class="num-col">{{ r.n }}</td></tr>
-      {% else %}
-        <tr><td colspan="2" class="muted">No entries yet.</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>By kind</h2>
-    <table class="tbl">
-      <thead><tr><th>Kind</th><th class="num-col">Entries</th></tr></thead>
-      <tbody>
-      {% for r in by_kind %}
-        <tr><td>{{ r.kind }}</td><td class="num-col">{{ r.n }}</td></tr>
-      {% else %}
-        <tr><td colspan="2" class="muted">No entries yet.</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </section>
+<div class="cards">
+  <div class="card"><div class="num">{{ stats.active_entries or 0 }}</div><div class="lbl">Knowledge items</div></div>
+  <div class="card"><div class="num">{{ stats.approved_entries or 0 }}</div><div class="lbl">Approved by team</div></div>
+  <div class="card"><div class="num">{{ stats.merges or 0 }}</div><div class="lbl">Auto-merged duplicates</div></div>
+  <div class="card"><div class="num">{{ stats.audit_24h or 0 }}</div><div class="lbl">Changes today</div></div>
 </div>
 
 <section>
   <h2>Recent activity</h2>
   <table class="tbl">
-    <thead><tr><th>When</th><th>Action</th><th>Actor</th><th>Domain</th><th>Title</th></tr></thead>
+    <thead><tr><th>When</th><th>What</th><th>Who</th><th>Item</th></tr></thead>
     <tbody>
     {% for r in recent_activity %}
       <tr>
-        <td class="mono">{{ r.at.strftime('%Y-%m-%d %H:%M:%S') if r.at else '' }}</td>
+        <td class="mono"><small>{{ r.at.strftime('%Y-%m-%d %H:%M') if r.at else '' }}</small></td>
         <td><span class="tag tag-{{ r.action }}">{{ r.action }}</span></td>
         <td>{{ r.actor }}</td>
-        <td>{{ r.domain or '—' }}</td>
         <td>{% if r.entry_id %}<a href="/entries/{{ r.entry_id }}">{{ r.title or r.entry_id }}</a>{% else %}—{% endif %}</td>
       </tr>
     {% else %}
-      <tr><td colspan="5" class="muted">No activity yet.</td></tr>
+      <tr><td colspan="4" class="muted">Nothing yet. <a href="/entries?add=true#add">Add your first item →</a></td></tr>
     {% endfor %}
     </tbody>
   </table>

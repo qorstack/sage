@@ -1,0 +1,55 @@
+{# Shared editor form used by Add (inline on /entries) and Edit pages.
+   Inputs: action_url, submit_label, form_title, form_body.
+   Optional: form_approve (bool, Add only), show_approve (bool), show_cancel (bool), cancel_url. #}
+
+{% if error %}
+  <div class="error-box"><strong>Couldn't save:</strong> {{ error }}</div>
+{% endif %}
+
+<form method="post" action="{{ action_url }}" class="entry-form">
+  <label class="field-title">
+    <span>Title</span>
+    <input type="text" name="title" value="{{ form_title }}" required maxlength="200" autofocus
+           placeholder="What's the one thing to remember? e.g. Use idempotency keys">
+  </label>
+
+  <div class="md-editor" data-editor>
+    <div class="md-toolbar">
+      <div class="md-tabs">
+        <button type="button" class="md-tab on" data-tab="write">Write</button>
+        <button type="button" class="md-tab"    data-tab="preview">Preview</button>
+      </div>
+      <div class="md-tools">
+        <button type="button" data-md="bold"     title="Bold (Ctrl+B)"><strong>B</strong></button>
+        <button type="button" data-md="italic"   title="Italic (Ctrl+I)"><em>I</em></button>
+        <button type="button" data-md="heading"  title="Heading">H</button>
+        <button type="button" data-md="code"     title="Inline code">&lt;/&gt;</button>
+        <button type="button" data-md="codeblock" title="Code block">{ }</button>
+        <button type="button" data-md="link"     title="Link (Ctrl+K)">🔗</button>
+        <button type="button" data-md="ul"       title="Bulleted list">• –</button>
+        <button type="button" data-md="ol"       title="Numbered list">1.</button>
+        <button type="button" data-md="quote"    title="Quote">”</button>
+      </div>
+    </div>
+    <div class="md-write">
+      <textarea name="body" required spellcheck="false" rows="14" data-md-input
+                placeholder="Write the details. Plain markdown — **bold**, *italic*, # headings, lists, links, ```code```…">{{ form_body }}</textarea>
+    </div>
+    <div class="md-preview" data-md-preview hidden>
+      <div class="md-preview-empty muted">Nothing to preview yet.</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="btn">{{ submit_label }}</button>
+    {% if show_cancel %}
+      <a href="{{ cancel_url }}" class="btn btn-secondary">Cancel</a>
+    {% endif %}
+    {% if show_approve %}
+      <label class="row md-approve" style="margin-left:auto">
+        <input type="checkbox" name="approve" value="true" {% if form_approve %}checked{% endif %}>
+        Mark as approved
+      </label>
+    {% endif %}
+  </div>
+</form>

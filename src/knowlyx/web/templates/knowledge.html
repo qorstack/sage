@@ -1,52 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Knowledge{% endblock %}
+{% block title %}Add knowledge{% endblock %}
 {% block content %}
-<h1>Team knowledge</h1>
-
-<div class="who">
-  {% if author %}
-    <span>Signed in as <strong>{{ author }}</strong></span>
-    <form method="post" action="/me" class="inline">
-      <input type="text" name="name" placeholder="Change name…" required>
-      <button type="submit">Update</button>
-    </form>
-  {% else %}
-    <form method="post" action="/me" class="inline">
-      <label>Sign in as <input type="text" name="name" placeholder="Your name" required></label>
-      <button type="submit">Save</button>
-    </form>
-  {% endif %}
-</div>
+<h1>Add knowledge</h1>
+<p class="subtitle">Capture one thing your team knows — a decision, convention, fact, or gotcha. Write it in markdown.</p>
 
 <div class="grid-2">
   <section>
-    <h2>Add knowledge</h2>
-    <form method="post" action="/knowledge/create" class="stack">
-      <label>Kind
-        <select name="kind" required>
-          {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
-        </select>
-      </label>
-      <label>Domain
-        <input type="text" name="domain" placeholder="e.g. payment, auth, order" required list="domain-list">
-        <datalist id="domain-list">
-          {% for d in domains %}<option value="{{ d }}">{% endfor %}
-        </datalist>
-      </label>
-      <label>Title <input type="text" name="title" required maxlength="200"></label>
-      <label>Body <textarea name="body" rows="8" required placeholder="Business context, decision, convention, etc."></textarea></label>
-      <label>Tags <input type="text" name="tags" placeholder="comma,separated,tags"></label>
-      {% if not author %}
-        <label>Your name <input type="text" name="approved_by" placeholder="optional, used as audit actor"></label>
-      {% endif %}
-      <label class="row"><input type="checkbox" name="auto_approve" value="true"> Auto-approve (team decision / convention)</label>
-      <button type="submit">Save knowledge</button>
-    </form>
-    <p class="muted"><small>Similar entries (cosine ≥ 0.92) in the same domain are auto-merged — body appended, tags merged, contributor logged.</small></p>
+    <h2>New item</h2>
+    {% with action_url="/knowledge/create", submit_label="Save knowledge" %}
+      {% include "_entry_form.html" %}
+    {% endwith %}
   </section>
 
   <section>
-    <h2>Recent team entries{% if filter_domain %} <small class="muted">— domain: {{ filter_domain }}</small>{% endif %}</h2>
+    <h2>Recent items{% if filter_domain %} <small class="muted">— {{ filter_domain }}</small>{% endif %}</h2>
     <form class="filters" method="get" action="/knowledge">
       <select name="domain" onchange="this.form.submit()">
         <option value="">All domains</option>
@@ -54,21 +21,24 @@
       </select>
     </form>
     <table class="tbl">
-      <thead><tr><th>Domain</th><th>Title</th><th class="num-col">Merges</th><th>Status</th><th>Updated</th></tr></thead>
+      <thead><tr><th>Domain</th><th>Title</th><th>Status</th></tr></thead>
       <tbody>
       {% for r in recent %}
         <tr>
           <td>{{ r.domain }}</td>
           <td><a href="/entries/{{ r.id }}">{{ r.title }}</a></td>
-          <td class="num-col">{% if r.merge_count > 0 %}<span class="tag tag-merge">{{ r.merge_count }}</span>{% else %}—{% endif %}</td>
           <td>{% if r.approved %}<span class="tag tag-approve">approved</span>{% else %}<span class="tag">pending</span>{% endif %}</td>
-          <td class="mono"><small>{{ r.updated_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
         </tr>
       {% else %}
-        <tr><td colspan="5" class="muted">No entries yet — add the first one →</td></tr>
+        <tr><td colspan="3" class="muted">No items yet — write the first one →</td></tr>
       {% endfor %}
       </tbody>
     </table>
+
+    <h2 style="margin-top:28px">How this works</h2>
+    <p class="hint"><strong>Auto-merge</strong> — if a new item is very similar (≥0.92) to an existing one in the same domain, they combine. No duplicates.</p>
+    <p class="hint"><strong>Approve</strong> — flag items the whole team has signed off on. Approved items get higher trust when AI tools query them.</p>
+    <p class="hint"><strong>One idea per item</strong> — short and focused beats a 5-page architecture dump.</p>
   </section>
 </div>
 {% endblock %}

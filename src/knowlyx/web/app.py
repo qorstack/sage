@@ -109,6 +109,7 @@ def dashboard(request: Request):
     )
 
     return TEMPLATES.TemplateResponse(
+        request,
         "dashboard.html",
         {
             "request": request,
@@ -121,13 +122,17 @@ def dashboard(request: Request):
     )
 
 
-@app.get("/entries", response_class=HTMLResponse)
-def entries(
+def _render_entries(
     request: Request,
-    domain: str = Query("", alias="domain"),
-    kind: str = Query("", alias="kind"),
-    q: str = Query("", alias="q"),
-    show_superseded: bool = Query(False),
+    *,
+    q: str = "",
+    domain: str = "",
+    show_superseded: bool = False,
+    show_add: bool = False,
+    form_title: str = "",
+    form_body: str = "",
+    form_approve: bool = False,
+    error: str = "",
 ):
     where = []
     params: list = []
@@ -136,9 +141,6 @@ def entries(
     if domain:
         where.append("domain = %s")
         params.append(domain)
-    if kind:
-        where.append("kind = %s::memory_kind")
-        params.append(kind)
     if q:
         where.append("search_tsv @@ plainto_tsquery('simple', %s)")
         params.append(q)
@@ -147,8 +149,8 @@ def entries(
     rows = _fetch_all(
         f"""
         SELECT id, kind::text AS kind, domain, title,
-               approved, repo_path, created_at, updated_at,
-               superseded_by, COALESCE((metadata->>'merge_count')::int, 0) AS merge_count
+               approved, updated_at, superseded_by,
+               COALESCE((metadata->>'merge_count')::int, 0) AS merge_count
         FROM memory_entries
         {where_sql}
         ORDER BY updated_at DESC
@@ -157,22 +159,39 @@ def entries(
         tuple(params),
     )
 
-    domains = [r["domain"] for r in _fetch_all(
-        "SELECT DISTINCT domain FROM memory_entries ORDER BY domain"
-    )]
-
     return TEMPLATES.TemplateResponse(
+        request,
         "entries.html",
         {
-            "request": request,
             "rows": rows,
-            "domains": domains,
+            "domains": _list_domains(),
             "filter_domain": domain,
-            "filter_kind": kind,
             "filter_q": q,
             "show_superseded": show_superseded,
+            "show_add": show_add or bool(error),
+            "form_title": form_title,
+            "form_body": form_body,
+            "form_approve": form_approve,
+            "error": error,
             "active": "entries",
         },
+    )
+
+
+@app.get("/entries", response_class=HTMLResponse)
+def entries(
+    request: Request,
+    domain: str = Query("", alias="domain"),
+    q: str = Query("", alias="q"),
+    show_superseded: bool = Query(False),
+    add: bool = Query(False),
+):
+    return _render_entries(
+        request,
+        q=q,
+        domain=domain,
+        show_superseded=show_superseded,
+        show_add=add,
     )
 
 
@@ -193,8 +212,9 @@ def entry_detail(request: Request, entry_id: str):
         (entry_id,),
     )
     return TEMPLATES.TemplateResponse(
+        request,
         "entry_detail.html",
-        {"request": request, "entry": entry, "audit": audit, "active": "entries"},
+        {"entry": entry, "audit": audit, "active": "entries"},
     )
 
 
@@ -210,8 +230,9 @@ def syntheses(request: Request):
         """,
     )
     return TEMPLATES.TemplateResponse(
+        request,
         "syntheses.html",
-        {"request": request, "rows": rows, "active": "syntheses"},
+        {"rows": rows, "active": "syntheses"},
     )
 
 
@@ -243,6 +264,7 @@ def audit(
     )
     actions = ["insert", "update", "delete", "supersede", "approve", "merge"]
     return TEMPLATES.TemplateResponse(
+        request,
         "audit.html",
         {
             "request": request,
@@ -265,63 +287,64 @@ def _author_from(request: Request, fallback: str = "") -> str:
     return request.cookies.get("knowai_author") or fallback or "web"
 
 
-@app.get("/knowledge", response_class=HTMLResponse)
-def knowledge(request: Request, domain: str = Query("")):
-    """Team workspace: prominently shows the 'add knowledge' form + recent team entries."""
-    clauses = ["superseded_by IS NULL"]
-    params: list = []
-    if domain:
-        clauses.append("domain = %s")
-        params.append(domain)
-    where_sql = "WHERE " + " AND ".join(clauses)
-    recent = _fetch_all(
-        f"""
-        SELECT id, kind::text AS kind, domain, title, approved, approved_by,
-               updated_at, COALESCE((metadata->>'merge_count')::int, 0) AS merge_count
-        FROM memory_entries
-        {where_sql}
-        ORDER BY updated_at DESC
-        LIMIT 30
-        """,
-        tuple(params),
-    )
-    domains = [r["domain"] for r in _fetch_all(
+def _parse_tags(raw: str) -> list[str]:
+    return [t.strip() for t in raw.split(",") if t.strip()]
+
+
+def _list_domains() -> list[str]:
+    return [r["domain"] for r in _fetch_all(
         "SELECT DISTINCT domain FROM memory_entries ORDER BY domain"
     )]
-    return TEMPLATES.TemplateResponse(
-        "knowledge.html",
-        {
-            "request": request,
-            "kinds": KINDS,
-            "domains": domains,
-            "filter_domain": domain,
-            "recent": recent,
-            "author": request.cookies.get("knowai_author", ""),
-            "active": "knowledge",
-        },
-    )
 
 
-@app.post("/knowledge/create")
+_DEFAULT_DOMAIN = "general"
+_DEFAULT_KIND = "team_decision"
+
+
+def _validate_fields(kind: str, domain: str, title: str, body: str) -> str | None:
+    if not title.strip():
+        return "Title is required."
+    if kind and kind not in KINDS:
+        return f"Invalid type '{kind}'."
+    if not body.strip():
+        return "Body is empty. Write something in the editor below."
+    return None
+
+
+@app.get("/knowledge")
+def knowledge_redirect(domain: str = Query("")):
+    target = "/entries?add=true"
+    if domain:
+        target += f"&domain={domain}"
+    return RedirectResponse(url=target, status_code=307)
+
+
+@app.post("/knowledge/create", response_class=HTMLResponse)
 def knowledge_create(
     request: Request,
-    kind: str = Form(...),
-    domain: str = Form(...),
-    title: str = Form(...),
-    body: str = Form(...),
-    tags: str = Form(""),
-    approved_by: str = Form(""),
-    auto_approve: bool = Form(False),
+    title: str = Form(""),
+    body: str = Form(""),
+    approve: bool = Form(False),
 ):
+    kind = _DEFAULT_KIND
+    domain = _DEFAULT_DOMAIN
+    err = _validate_fields(kind, domain, title, body)
+    if err:
+        return _render_entries(
+            request,
+            form_title=title, form_body=body, form_approve=approve,
+            error=err, show_add=True,
+        )
+
     entry = MemoryEntry(
         id="",
         kind=MemoryKind(kind),
-        domain=domain.strip(),
+        domain=domain,
         title=title.strip(),
         body=body,
-        tags=[t.strip() for t in tags.split(",") if t.strip()],
-        approved=bool(auto_approve),
-        approved_by=_author_from(request, approved_by),
+        tags=[],
+        approved=approve,
+        approved_by=_author_from(request),
         repo_path="",
     )
     saved = _store().save(entry)
@@ -350,15 +373,44 @@ def entry_delete(entry_id: str):
     return RedirectResponse(url="/entries", status_code=303)
 
 
-@app.get("/entries/{entry_id}/edit", response_class=HTMLResponse)
-def entry_edit_form(request: Request, entry_id: str):
+def _render_entry_edit(
+    request: Request,
+    entry_id: str,
+    *,
+    form_title: str,
+    form_body: str,
+    error: str = "",
+):
     entry = _fetch_one(
-        "SELECT id, kind::text AS kind, domain, title, body, tags, approved, approved_by FROM memory_entries WHERE id = %s",
+        "SELECT id FROM memory_entries WHERE id = %s",
         (entry_id,),
     )
     return TEMPLATES.TemplateResponse(
+        request,
         "entry_edit.html",
-        {"request": request, "entry": entry, "kinds": KINDS, "active": "entries"},
+        {
+            "entry_id": entry_id,
+            "entry_exists": entry is not None,
+            "active": "entries",
+            "error": error,
+            "form_title": form_title,
+            "form_body": form_body,
+        },
+    )
+
+
+@app.get("/entries/{entry_id}/edit", response_class=HTMLResponse)
+def entry_edit_form(request: Request, entry_id: str):
+    entry = _fetch_one(
+        "SELECT title, body FROM memory_entries WHERE id = %s",
+        (entry_id,),
+    )
+    if not entry:
+        return _render_entry_edit(request, entry_id, form_title="", form_body="")
+    return _render_entry_edit(
+        request, entry_id,
+        form_title=entry["title"],
+        form_body=entry["body"],
     )
 
 
@@ -366,17 +418,22 @@ def entry_edit_form(request: Request, entry_id: str):
 def entry_edit_submit(
     request: Request,
     entry_id: str,
-    title: str = Form(...),
-    body: str = Form(...),
-    tags: str = Form(""),
-    editor: str = Form(""),
+    title: str = Form(""),
+    body: str = Form(""),
 ):
-    actor = _author_from(request, editor)
-    tag_list = [t.strip() for t in tags.split(",") if t.strip()]
+    err = _validate_fields(_DEFAULT_KIND, _DEFAULT_DOMAIN, title, body)
+    if err:
+        return _render_entry_edit(
+            request, entry_id,
+            form_title=title, form_body=body,
+            error=err,
+        )
+
+    actor = _author_from(request)
     with _pool().connection() as conn, conn.cursor() as cur:
         cur.execute(
-            "UPDATE memory_entries SET title = %s, body = %s, tags = %s WHERE id = %s",
-            (title.strip(), body, tag_list, entry_id),
+            "UPDATE memory_entries SET title = %s, body = %s WHERE id = %s",
+            (title.strip(), body, entry_id),
         )
         if cur.rowcount:
             cur.execute(

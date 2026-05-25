@@ -15,6 +15,17 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- IMMUTABLE wrapper so the generated column below is allowed.
+-- array_to_string is STABLE in core PG, which Postgres rejects in GENERATED ... STORED.
+CREATE OR REPLACE FUNCTION knowai_tags_to_text(tags TEXT[])
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+PARALLEL SAFE
+AS $$
+  SELECT COALESCE(array_to_string(tags, ' '), '')
+$$;
+
 CREATE TABLE IF NOT EXISTS memory_entries (
   id              TEXT PRIMARY KEY,
   kind            memory_kind NOT NULL,
@@ -33,7 +44,7 @@ CREATE TABLE IF NOT EXISTS memory_entries (
   search_tsv      TSVECTOR GENERATED ALWAYS AS (
                     setweight(to_tsvector('simple'::regconfig, coalesce(title, '')), 'A') ||
                     setweight(to_tsvector('simple'::regconfig, coalesce(body,  '')), 'B') ||
-                    setweight(to_tsvector('simple'::regconfig, array_to_string(tags, ' ')), 'C')
+                    setweight(to_tsvector('simple'::regconfig, knowai_tags_to_text(tags)), 'C')
                   ) STORED
 );
 
