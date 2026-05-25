@@ -92,7 +92,7 @@ services:
       retries: 10
 
   web:
-    image: ghcr.io/satangbudsai/knowai:latest
+    image: ghcr.io/qorstack/knowai:latest
     container_name: knowai-web
     restart: unless-stopped
     depends_on:
@@ -172,10 +172,10 @@ Pick **one** (uv recommended):
 
 ```bash
 # uv (recommended)
-uv tool install git+https://github.com/SatangBudsai/knowai.git
+uv tool install git+https://github.com/qorstack/knowai.git
 
 # or pipx
-pipx install git+https://github.com/SatangBudsai/knowai.git
+pipx install git+https://github.com/qorstack/knowai.git
 ```
 
 Verify it's on your PATH:
@@ -338,14 +338,14 @@ docker compose pull web && docker compose up -d
 | AI doesn't call knowai tools | Shell env vars don't match `.env`, OR Claude/Cursor was started before exporting them — restart it |
 | Two similar entries instead of one merged | See [Verify auto-merge](#verify-auto-merge) outcomes table above |
 | Embedding model OOM on first start | Container needs ~2GB free RAM. Close other apps and `docker compose restart web` |
-| Image pull fails (`ghcr.io` 403) | Image is public; check network/proxy. Or build locally: `git clone https://github.com/SatangBudsai/knowai.git && cd knowai && docker compose -f docker-compose.dev.yml up -d --build` |
+| Image pull fails (`ghcr.io` 403) | Image is public; check network/proxy. Or build locally: `git clone https://github.com/qorstack/knowai.git && cd knowai && docker compose -f docker-compose.dev.yml up -d --build` |
 
 ---
 
 ## Build from source (contributors)
 
 ```bash
-git clone https://github.com/SatangBudsai/knowai.git
+git clone https://github.com/qorstack/knowai.git
 cd knowai
 cp .env.example .env
 docker compose up -d --build      # uses the local Dockerfile instead of the published image

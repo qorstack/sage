@@ -55,4 +55,4 @@ Next.js + React Flow app for visualizing cognitive graph, browsing memory, manag
 
 ## How to influence the roadmap
 
-Open a [GitHub Discussion](https://github.com/SatangBudsai/knowai/discussions) — concrete use cases drive priority more than feature requests.
+Open a [GitHub Discussion](https://github.com/qorstack/knowai/discussions) — concrete use cases drive priority more than feature requests.

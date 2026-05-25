@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Knowlyx one-line installer (macOS / Linux)
-#   curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowai/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/qorstack/knowai/main/install.sh | bash
 #
 # Or with workspace name + Claude Code registration:
-#   curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowai/main/install.sh | bash -s -- --workspace my-product --claude
+#   curl -fsSL https://raw.githubusercontent.com/qorstack/knowai/main/install.sh | bash -s -- --workspace my-product --claude
 
 set -euo pipefail
 
@@ -34,7 +34,7 @@ fi
 
 # 2. Install knowlyx as a tool
 echo "→ Installing knowlyx"
-uv tool install git+https://github.com/SatangBudsai/knowai.git --upgrade
+uv tool install git+https://github.com/qorstack/knowai.git --upgrade
 
 # 3. Smoke test
 knowlyx --version

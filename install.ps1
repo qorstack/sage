@@ -1,9 +1,9 @@
 # Knowlyx one-line installer (Windows PowerShell)
-#   irm https://raw.githubusercontent.com/SatangBudsai/knowai/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/qorstack/knowai/main/install.ps1 | iex
 #
 # Or with workspace + Claude Code:
 #   $env:KNOWLYX_WORKSPACE = "my-product"; $env:KNOWLYX_CLAUDE = "1"
-#   irm https://raw.githubusercontent.com/SatangBudsai/knowai/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/qorstack/knowai/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
@@ -22,7 +22,7 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
 
 # 2. Install knowlyx
 Write-Host "-> Installing knowlyx" -ForegroundColor Yellow
-uv tool install git+https://github.com/SatangBudsai/knowai.git --upgrade
+uv tool install git+https://github.com/qorstack/knowai.git --upgrade
 
 # 3. Smoke test
 knowlyx --version
