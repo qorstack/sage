@@ -338,7 +338,7 @@ docker compose pull web && docker compose up -d
 | AI doesn't call knowai tools | Shell env vars don't match `.env`, OR Claude/Cursor was started before exporting them — restart it |
 | Two similar entries instead of one merged | See [Verify auto-merge](#verify-auto-merge) outcomes table above |
 | Embedding model OOM on first start | Container needs ~2GB free RAM. Close other apps and `docker compose restart web` |
-| Image pull fails (`ghcr.io` 403) | Image is public; check network/proxy. Or build locally: `git clone https://github.com/qorstack/knowai.git && cd knowai && docker compose -f docker-compose.dev.yml up -d --build` |
+| `docker pull qorstack/knowai` fails | Image not published yet — wait for `Publish Docker image` workflow to finish. Or build locally via the [Build from source](#build-from-source-contributors) section |
 
 ---
 
