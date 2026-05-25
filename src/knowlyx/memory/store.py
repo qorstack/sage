@@ -381,12 +381,23 @@ def create_store(repo_path: str = ".", qdrant_url: str = "", qdrant_api_key: str
     Return the best available store for the given repo.
 
     Resolution order:
-    1. If repo has .knowlyx/config.toml (or any ancestor does), use the
-       central workspace store at <workspace>/memory/ — shared across all
-       repos in the same workspace.
-    2. Otherwise fall back to legacy per-repo .knowlyx/memory/.
+    1. KNOWAI_DB_URL (or legacy KNOWLYX_DB_URL) set → PostgresMemoryStore.
+       Schema auto-bootstraps on first connect (zero setting).
+    2. Workspace config present → central FileMemoryStore at <workspace>/memory/.
+    3. Legacy per-repo .knowlyx/memory/.
     """
+    import os
+
     from knowlyx.link.resolver import resolve_workspace_or_legacy
+
+    dsn = os.getenv("KNOWAI_DB_URL") or os.getenv("KNOWLYX_DB_URL")
+    if dsn:
+        try:
+            from knowlyx.memory.postgres_store import PostgresMemoryStore
+            return PostgresMemoryStore(dsn=dsn)
+        except ImportError:
+            # psycopg not installed — fall through to file store
+            pass
 
     memory_path, _, _mode = resolve_workspace_or_legacy(repo_path)
     if qdrant_url:

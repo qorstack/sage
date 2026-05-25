@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: knowai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-knowai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-knowai}
+      POSTGRES_DB: ${POSTGRES_DB:-knowai}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - knowai_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-knowai} -d ${POSTGRES_DB:-knowai}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  knowai_pgdata:
