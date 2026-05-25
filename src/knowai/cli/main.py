@@ -179,6 +179,109 @@ def scan(
 
 
 @app.command()
+def generate(
+    repo_path: str = typer.Option(".", "--repo", "-r", help="Path to the repository"),
+    save: bool = typer.Option(False, "--save", help="Persist entries to the memory store"),
+    domain: str = typer.Option("", "--domain", "-d", help="Override domain (default: repo_name or 'general')"),
+    approve: bool = typer.Option(False, "--approve", help="Mark generated entries as approved"),
+):
+    """Generate memory entries from what's already in this repo.
+
+    Runs the scanner, then turns each finding (framework, conventions, reusable
+    assets, forbidden patterns) into a pending memory entry. Dry-run by default;
+    pass --save to persist.
+    """
+    from knowai.link.config import load_link
+    from knowai.memory.schema import MemoryEntry, MemoryKind
+    from knowai.scanner.repo_scanner import RepoScanner
+
+    root = Path(repo_path).resolve()
+    with console.status("[bold cyan]Scanning…"):
+        scan = RepoScanner(repo_path).scan()
+
+    link = load_link(repo_path)
+    inferred_repo = link.repo_name if link and link.repo_name else root.name
+    target_domain = (domain or (link.repo_name if link else "") or "general").strip()
+
+    entries: list[MemoryEntry] = []
+
+    # 1. Overview as business_context
+    overview = [
+        f"**Repo:** {inferred_repo}",
+        f"**Language:** {scan.language}",
+        f"**Framework:** {scan.framework}",
+        f"**Architecture:** {scan.architecture.value if hasattr(scan.architecture, 'value') else scan.architecture}",
+    ]
+    if scan.domains:
+        overview.append(f"**Domains detected:** {', '.join(scan.domains)}")
+    if scan.api_clients:
+        overview.append(f"**External clients:** {', '.join(scan.api_clients)}")
+    entries.append(MemoryEntry(
+        id="", kind=MemoryKind.BUSINESS_CONTEXT, domain=target_domain,
+        title=f"{inferred_repo} — repo overview",
+        body="\n".join(overview),
+        tags=[t for t in (scan.language, scan.framework) if t and t != "unknown"],
+        approved=approve, approved_by="generate" if approve else "",
+    ))
+
+    # 2. Conventions
+    for conv in scan.conventions:
+        body = conv.rule
+        if conv.examples:
+            body += "\n\nExamples:\n" + "\n".join(f"- {e}" for e in conv.examples)
+        entries.append(MemoryEntry(
+            id="", kind=MemoryKind.APPROVED_CONVENTION, domain=target_domain,
+            title=conv.name, body=body, tags=["convention"],
+            approved=approve, approved_by="generate" if approve else "",
+        ))
+
+    # 3. Reusable assets
+    for asset in scan.reusable_assets:
+        body = f"{asset.description or 'Existing asset in this repo.'}\n\n**Path:** `{asset.path}`"
+        entries.append(MemoryEntry(
+            id="", kind=MemoryKind.REUSABLE_ASSET, domain=target_domain,
+            title=f"{asset.asset_type}: {asset.name}", body=body,
+            tags=[asset.asset_type, *asset.tags],
+            approved=approve, approved_by="generate" if approve else "",
+        ))
+
+    # 4. Forbidden / risk patterns
+    for fp in scan.forbidden_patterns:
+        entries.append(MemoryEntry(
+            id="", kind=MemoryKind.RISK_PATTERN, domain=target_domain,
+            title=f"Avoid: {fp}",
+            body="Pattern flagged as risky/forbidden by repo scan.",
+            tags=["forbidden"],
+            approved=approve, approved_by="generate" if approve else "",
+        ))
+
+    console.print(f"\n[bold]Proposed {len(entries)} entries[/bold] (domain: [cyan]{target_domain}[/cyan])\n")
+    for e in entries:
+        console.print(f"  [magenta]{e.kind.value:22}[/magenta] {e.title}")
+
+    if not save:
+        console.print("\n[yellow]Dry run.[/yellow] Re-run with [cyan]--save[/cyan] to persist (add [cyan]--approve[/cyan] to mark them approved).")
+        return
+
+    try:
+        from knowai.memory.postgres_store import PostgresMemoryStore
+        store = PostgresMemoryStore()
+    except Exception as exc:
+        console.print(f"\n[red]Could not connect to memory store:[/red] {exc}")
+        console.print("Set ~/.knowai.config (see README Step 6) and try again.")
+        raise typer.Exit(1)
+
+    saved = 0
+    for e in entries:
+        try:
+            store.save(e)
+            saved += 1
+        except Exception as exc:
+            console.print(f"  [red]failed[/red] {e.title}: {exc}")
+    console.print(f"\n[green]Saved {saved}/{len(entries)} entries.[/green]")
+
+
+@app.command()
 def analyze(
     request: str = typer.Argument(..., help="User request in natural language"),
     repo_path: str = typer.Option(".", "--repo", "-r", help="Path to the repository"),

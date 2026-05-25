@@ -38,11 +38,11 @@ def test_link_then_unlink(isolated_home, tmp_path):
 
     r = runner.invoke(app, ["link", "alpha", "--repo", str(repo), "--role", "backend"])
     assert r.exit_code == 0
-    assert (repo / ".knowai" / "config.toml").exists()
+    assert (repo / "knowai.config").exists()
 
     r2 = runner.invoke(app, ["unlink", "--repo", str(repo)])
     assert r2.exit_code == 0
-    assert not (repo / ".knowai" / "config.toml").exists()
+    assert not (repo / "knowai.config").exists()
 
 
 def test_link_fails_when_workspace_missing(isolated_home, tmp_path):

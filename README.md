@@ -187,13 +187,10 @@ If `command not found`, open a new terminal (uv/pipx adds to your PATH on first 
 
 ### Step 6 — Give the CLI your credentials
 
-Drop one file in your home directory. Works in every repo:
+Drop one file in your home directory:
 
 ```bash
 cat > ~/.knowai.config <<'EOF'
-workspace = "my-product"     # every repo on this machine joins this workspace
-                             # repo_name = folder name (auto)
-
 [database]
 host     = "localhost"
 port     = 5432
@@ -210,11 +207,37 @@ Verify:
 knowai memory list   # prints [] or your entries — no error
 ```
 
-That's it. If you `cd` into `~/code/aaa-website` and `~/code/aaa-service`, knowai treats them as two repos in the **same workspace**, named after their folders. No per-repo command needed.
+### Step 6½ — Identify each repo to a workspace
 
-> **Need a different workspace for some repo?** Drop a `./knowai.config` at its root with `workspace = "other-product"` (override). Or run `knowai link <workspace> --role ... --domains ...` to generate it. See [`knowai.config.example`](knowai.config.example) for the full format.
+For every repo that should join a workspace, drop a `./knowai.config` at its root:
+
+```toml
+workspace = "my-product"
+repo_name = "aaa-api"
+role      = "backend"        # optional
+domains   = ["payment"]      # optional
+```
+
+`repo_name` is **explicit on purpose** — folder names get renamed, the identity shouldn't. Commit `./knowai.config` to git so every dev who clones the repo is auto-connected to the same workspace.
+
+- Generate it with `knowai link my-product --name aaa-api --role backend`, or write it by hand. See [`knowai.config.example`](knowai.config.example).
+- A repo can also carry its own `[database]` section here to override `~/.knowai.config`.
+- Repos without `./knowai.config` simply aren't linked — knowai falls back to a per-repo local store. A dev who hasn't installed knowai is unaffected; the file is ignored.
 
 **Config precedence** (highest first): process env → `./knowai.config` (cwd or any parent) → `~/.knowai.config` → `.env`.
+
+### Step 6¾ — (optional) Seed knowledge from an existing repo
+
+For repos you've already built, `knowai generate` scans the code and produces a starting set of memory entries (overview, conventions, reusable assets, risk patterns):
+
+```bash
+cd ~/code/aaa-api
+knowai generate                     # dry-run — preview proposed entries
+knowai generate --save              # persist as pending (review in dashboard)
+knowai generate --save --approve    # persist + auto-approve (use when you trust the scan)
+```
+
+Then refine them in the dashboard — edit titles, delete noise, approve the keepers.
 
 ### Step 7 — Connect to Claude Code
 

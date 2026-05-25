@@ -33,33 +33,15 @@ class WorkspaceResolution:
 
 
 def _find_link_upwards(start: Path) -> tuple[Path, LinkConfig] | None:
-    """Walk up from `start` looking for knowai.config (workspace key set).
-
-    If none is found, fall back to ~/.knowai.config — when that file declares
-    a top-level `workspace = "..."`, every repo on this machine auto-joins it
-    with `repo_name` defaulting to the folder name. So users with one shared
-    workspace never have to run `knowai link` per repo.
-    """
+    """Walk up from `start` looking for knowai.config with `workspace` set."""
     p = start.resolve()
     while True:
         cfg = load_link(p)
         if cfg is not None:
             return p, cfg
         if p.parent == p:
-            break
+            return None
         p = p.parent
-
-    global_link = load_global_link()
-    if global_link is None:
-        return None
-    repo_root = start.resolve()
-    return repo_root, LinkConfig(
-        workspace=global_link["workspace"],
-        repo_name=repo_root.name,
-        role=global_link.get("role", "unknown"),
-        domains=global_link.get("domains", []),
-        tags=global_link.get("tags", []),
-    )
 
 
 def resolve_workspace(repo_path: str | Path = ".") -> WorkspaceResolution | None:

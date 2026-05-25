@@ -1,9 +1,9 @@
 # knowai project config — drop at repo root and commit.
-# Per-project. ~/.knowai.config is the user-global fallback (workspace + database).
+# Required to link this repo to a workspace.
 
-workspace = "my-product"      # only needed if this repo joins a non-default workspace
-repo_name = "api"             # optional — defaults to folder name
-role      = "backend"         # optional
+workspace = "my-product"      # required — which workspace this repo belongs to
+repo_name = "aaa-api"         # required — explicit name (not auto-detected from folder)
+role      = "backend"         # optional — backend / frontend / worker / shared / infra
 domains   = ["payment", "auth"]   # optional
 
 [database]                    # optional — overrides ~/.knowai.config
