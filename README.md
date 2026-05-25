@@ -340,7 +340,7 @@ docker compose pull web && docker compose up -d
 | Web shows `unhealthy` for >30s | Postgres still booting first time. Check `docker compose logs web` |
 | Port `5432` / `8080` already in use | Change `POSTGRES_PORT` / `WEB_PORT` in `.env`, then `docker compose up -d` |
 | `knowai: command not found` | Open a new terminal (uv/pipx PATH not loaded yet) |
-| AI doesn't call knowai tools | Shell env vars don't match `.env`, OR Claude/Cursor was started before exporting them — restart it |
+| AI doesn't call knowai tools | `~/.knowai.config` missing/misconfigured, OR Claude/Cursor started before you created it — restart the AI app and check `claude mcp list` shows `knowai ✓` |
 | Two similar entries instead of one merged | See [Verify auto-merge](#verify-auto-merge) outcomes table above |
 | Embedding model OOM on first start | Container needs ~2GB free RAM. Close other apps and `docker compose restart web` |
 | `docker pull qorstack/knowai` fails | Image not published yet — wait for `Publish Docker image` workflow to finish. Or build locally via the [Build from source](#build-from-source-contributors) section |
