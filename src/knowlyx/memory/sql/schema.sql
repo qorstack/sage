@@ -31,9 +31,9 @@ CREATE TABLE IF NOT EXISTS memory_entries (
   superseded_by   TEXT REFERENCES memory_entries(id) ON DELETE SET NULL,
   superseded_at   TIMESTAMPTZ,
   search_tsv      TSVECTOR GENERATED ALWAYS AS (
-                    setweight(to_tsvector('simple', coalesce(title, '')), 'A') ||
-                    setweight(to_tsvector('simple', coalesce(body,  '')), 'B') ||
-                    setweight(to_tsvector('simple', array_to_string(tags, ' ')), 'C')
+                    setweight(to_tsvector('simple'::regconfig, coalesce(title, '')), 'A') ||
+                    setweight(to_tsvector('simple'::regconfig, coalesce(body,  '')), 'B') ||
+                    setweight(to_tsvector('simple'::regconfig, array_to_string(tags, ' ')), 'C')
                   ) STORED
 );
 
