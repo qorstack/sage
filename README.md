@@ -1,168 +1,121 @@
-# Knowlyx
+# knowai
 
 **Cognitive enforcement layer for AI software development.**
-
-AI coding tools generate code fast — but they don't understand your system. They duplicate utilities, ignore conventions, miss cross-service impact, and hallucinate imports. Knowlyx makes AI agents *understand* your codebase before they touch it.
+**ชั้นบังคับให้ AI เข้าใจระบบก่อนเขียนโค้ด**
 
 > Knowledge is passive. Cognition must be enforced.
-
-[![PyPI](https://img.shields.io/pypi/v/knowlyx)](https://pypi.org/project/knowlyx/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-
-- [What it does](#what-it-does)
-- [Try the live tutorial](#try-the-live-tutorial)
-- [Install](#install)
-- [Connect your AI assistant](#connect-your-ai-assistant)
-- [5-minute first session](#5-minute-first-session)
-- [Team setup (multi-developer)](#team-setup-multi-developer)
-- [Why Knowlyx](#why-knowlyx)
-- [How it works](#how-it-works)
-- [Design properties](#design-properties)
-- [Troubleshooting](#troubleshooting)
-- [Roadmap & docs](#roadmap--docs)
+> ความรู้เป็นแค่ข้อมูล — ต้องบังคับให้ AI เข้าใจก่อน
 
 ---
 
-## What it does
+## English
 
-When you ask Claude *"add password reset flow"*, Knowlyx intercepts and returns:
+### Step 1 — Install Docker
 
-```text
-Domain:    auth (CRITICAL)
-Decision:  WARN — follow required workflow before proceeding
-
-Impact:    auth-service, notification-worker, audit-log
-Cascade:   account enumeration, email bombing, token replay
-
-Reuse:     EmailTemplate.tsx, useRateLimit hook, AuditLogger
-Memory:    "Team uses SendGrid + SES fallback" (approved by alice@co 2 weeks ago)
-           [3 more entries auto-synthesized by AI into a single narrative]
-
-Workflow:
-  1. Single-use token (15 min expiry)
-  2. Rate limit per email + per IP
-  3. Audit log every step
-  4. Integration test with mock SMTP
-
-Risk policy: Knowlyx decision is authoritative. You may UPGRADE risk
-based on context. You may NEVER downgrade.
-```
-
-Claude reads this through MCP — it can't skip it. Result: first-try correct code.
-
----
-
-## Try the live tutorial
-
-A complete 3-repo demo (knowledge + backend service + frontend website) with real code and commits showing the full Knowlyx loop:
-
-```bash
-# 1. Install knowlyx (30 seconds, one-time)
-curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh | bash
-# Windows: irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
-
-# 2. Clone the shared knowledge into the expected path
-git clone https://github.com/SatangBudsai/tutorial-knowlyx-knowledge.git \
-  ~/.knowlyx/workspaces/tutorial
-
-# 3. Clone the two product repos anywhere
-mkdir -p ~/code && cd ~/code
-git clone https://github.com/SatangBudsai/tutorial-knowlyx-service.git
-git clone https://github.com/SatangBudsai/tutorial-knowlyx-website.git
-
-# 4. Register MCP with Claude Code in each product repo
-cd tutorial-knowlyx-service  && claude mcp add knowlyx -- uvx knowlyx mcp --repo .
-cd ../tutorial-knowlyx-website && claude mcp add knowlyx -- uvx knowlyx mcp --repo .
-```
-
-Then open the WALKTHROUGH:
-**[tutorial-knowlyx-knowledge/WALKTHROUGH.md](https://github.com/SatangBudsai/tutorial-knowlyx-knowledge/blob/main/WALKTHROUGH.md)**
-
-What you'll see (across 8 commits):
-
-- Tech lead scaffolds workspace + records 3 kickoff decisions
-- Alice scaffolds FastAPI service → Claude auto-applies memory (idempotency, decimal money)
-- Bob scaffolds Next.js storefront → Claude follows team conventions (TanStack Query, no raw fetch)
-- Bob attempts checkout (HIGH risk) → Knowlyx blocks until tech lead approves
-- AI synthesizes the billing domain (4 entries → 1 narrative) — cached for next session
-
----
-
-## Install
-
-### One-line installer
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh | bash
-```
-
-**Windows PowerShell:**
-
-```powershell
-irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
-```
-
-### One-line installer + workspace + Claude Code in one shot
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.sh \
-  | bash -s -- --workspace my-product --claude --repo .
-```
-
-**Windows:**
-
-```powershell
-$env:KNOWLYX_WORKSPACE="my-product"; $env:KNOWLYX_CLAUDE="1"
-irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
-```
-
-### Manual install (if you prefer)
-
-```bash
-# Option A — uv tool (recommended, isolates the install)
-uv tool install knowlyx
-
-# Option B — pipx
-pipx install knowlyx
-
-# Option C — uvx (no install, runs on demand)
-uvx knowlyx --version
-```
-
-Requires Python 3.11+. The installer will install `uv` for you if it's missing.
-
----
-
-## Connect your AI assistant
-
-### Claude Code (one-liner)
-
-```bash
-claude mcp add knowlyx -- uvx knowlyx mcp --repo .
-```
+You need Docker + Docker Compose. That's it. No Python, no database setup.
 
 Verify:
 
 ```bash
-claude mcp list
-# → knowlyx ✓
+docker --version
+docker compose version
 ```
 
-### Cursor
+### Step 2 — Clone and configure
+
+```bash
+git clone https://github.com/SatangBudsai/knowlyx.git knowai
+cd knowai
+cp .env.example .env
+```
+
+Default `.env` works for local use. For a team, edit `POSTGRES_PASSWORD` and `POSTGRES_HOST`.
+
+### Step 3 — Start everything
+
+```bash
+docker compose up -d --build
+```
+
+This starts two services:
+- **Postgres** on port `5432` — stores knowledge
+- **Web dashboard** on port `8080` — team UI
+
+Wait for both to be healthy:
+
+```bash
+docker compose ps
+```
+
+### Step 4 — Open the dashboard
+
+Open in browser:
+
+```
+http://localhost:8080
+```
+
+You'll see the **Overview** page with all counts at 0.
+
+### Step 5 — Add your first knowledge entry
+
+Click **Knowledge** in the top nav, then:
+
+1. Sign in with your name (sticky cookie, used for audit log)
+2. Fill the form:
+   - **Kind**: pick `team_decision`
+   - **Domain**: e.g. `payment`
+   - **Title**: e.g. `Use idempotency keys`
+   - **Body**: e.g. `All POST /payments require an Idempotency-Key header.`
+   - **Tags**: `payment, api`
+   - Tick ☑ Auto-approve
+3. Click **Save knowledge**
+
+You'll land on the entry detail page. Go back to Overview — count is now 1.
+
+### Step 6 — Install the CLI (for AI integration)
+
+```bash
+# Option A: uv (recommended)
+uv tool install knowlyx
+
+# Option B: pipx
+pipx install knowlyx
+
+# Option C: no install, run on demand
+uvx knowai --version
+```
+
+Set the same env vars in your shell so CLI hits the same database:
+
+```bash
+export POSTGRES_HOST=localhost
+export POSTGRES_PORT=5432
+export POSTGRES_USER=knowai
+export POSTGRES_PASSWORD=knowai
+export POSTGRES_DB=knowai
+export POSTGRES_SCHEMA=public
+```
+
+### Step 7 — Connect to Claude Code
+
+```bash
+claude mcp add knowai -- uvx knowai mcp --repo .
+claude mcp list      # should show: knowai ✓
+```
+
+Now when you chat with Claude, it automatically queries knowai before generating code.
+
+### Step 7b — Or connect to Cursor
 
 Edit `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "knowlyx": {
+    "knowai": {
       "command": "uvx",
-      "args": ["knowlyx", "mcp", "--repo", "."]
+      "args": ["knowai", "mcp", "--repo", "."]
     }
   }
 }
@@ -170,336 +123,204 @@ Edit `~/.cursor/mcp.json`:
 
 Restart Cursor.
 
-### Cline (VS Code)
+### Step 8 — Test that it works
 
-VS Code Settings → search "cline mcp" → add:
+In your AI chat, type something like:
+> "Add a refund endpoint to /payments"
+
+The AI should call knowai's MCP tools and reply with:
+- Existing reusable code
+- Team decisions about payments (the entry from Step 5)
+- Risk level + impact analysis
+
+### Stop / restart / wipe
+
+```bash
+docker compose stop          # stop, keep data
+docker compose start         # start again
+docker compose down          # stop + remove containers (data kept in volume)
+docker compose down -v       # also wipe all data
+```
+
+### Quick reference
+
+| What you want | Where |
+|---|---|
+| See all knowledge | <http://localhost:8080/entries> |
+| Add new knowledge | <http://localhost:8080/knowledge> |
+| Audit log | <http://localhost:8080/audit> |
+| Domain summaries | <http://localhost:8080/syntheses> |
+| Health check | <http://localhost:8080/healthz> |
+| Full test plan | [TEST_GUIDE.md](TEST_GUIDE.md) |
+
+### Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `docker compose up` fails | Make sure Docker Desktop is running |
+| Web shows "unhealthy" | Wait 10s, Postgres is still booting. Check: `docker compose logs web` |
+| Port 5432 / 8080 in use | Change `POSTGRES_PORT` / `WEB_PORT` in `.env` |
+| Two similar entries instead of one merged | Embedding model failed to load. Check: `docker compose logs web | grep sentence` |
+| AI doesn't see knowledge | Your shell env vars don't match `.env` |
+
+---
+
+## ภาษาไทย
+
+### Step 1 — ติดตั้ง Docker
+
+ต้องมี Docker + Docker Compose เท่านั้น ไม่ต้องลง Python, ไม่ต้องตั้งค่า database
+
+ตรวจสอบ:
+
+```bash
+docker --version
+docker compose version
+```
+
+### Step 2 — Clone และตั้งค่า
+
+```bash
+git clone https://github.com/SatangBudsai/knowlyx.git knowai
+cd knowai
+cp .env.example .env
+```
+
+ค่า default ใน `.env` ใช้สำหรับ local ได้เลย ถ้าใช้ทีมแก้ `POSTGRES_PASSWORD` กับ `POSTGRES_HOST`
+
+### Step 3 — Start ทุกอย่าง
+
+```bash
+docker compose up -d --build
+```
+
+จะ start 2 services:
+- **Postgres** port `5432` — เก็บ knowledge
+- **Web dashboard** port `8080` — UI ของทีม
+
+รอจน healthy ทั้งสอง:
+
+```bash
+docker compose ps
+```
+
+### Step 4 — เปิด dashboard
+
+เปิด browser:
+
+```
+http://localhost:8080
+```
+
+จะเห็นหน้า **Overview** ค่าทั้งหมดเป็น 0
+
+### Step 5 — เพิ่ม knowledge ตัวแรก
+
+คลิก **Knowledge** ที่เมนูบน, แล้ว:
+
+1. Sign in ด้วยชื่อตัวเอง (เก็บใน cookie, ใช้บันทึก audit log)
+2. กรอกฟอร์ม:
+   - **Kind**: เลือก `team_decision`
+   - **Domain**: เช่น `payment`
+   - **Title**: เช่น `Use idempotency keys`
+   - **Body**: เช่น `ทุก POST /payments ต้องมี header Idempotency-Key`
+   - **Tags**: `payment, api`
+   - ติ๊ก ☑ Auto-approve
+3. กด **Save knowledge**
+
+จะไปหน้า entry detail. กลับไป Overview จะเห็นว่ามี 1 รายการแล้ว
+
+### Step 6 — ติดตั้ง CLI (สำหรับเชื่อม AI)
+
+```bash
+# ทางเลือก A: uv (แนะนำ)
+uv tool install knowlyx
+
+# ทางเลือก B: pipx
+pipx install knowlyx
+
+# ทางเลือก C: ไม่ต้องติดตั้ง รันเป็นครั้งๆ
+uvx knowai --version
+```
+
+ตั้ง env vars เดียวกันใน shell เพื่อให้ CLI เชื่อมต่อ database เดียวกัน:
+
+```bash
+export POSTGRES_HOST=localhost
+export POSTGRES_PORT=5432
+export POSTGRES_USER=knowai
+export POSTGRES_PASSWORD=knowai
+export POSTGRES_DB=knowai
+export POSTGRES_SCHEMA=public
+```
+
+### Step 7 — เชื่อมต่อ Claude Code
+
+```bash
+claude mcp add knowai -- uvx knowai mcp --repo .
+claude mcp list      # ควรเห็น: knowai ✓
+```
+
+ทีนี้เวลา chat กับ Claude มันจะ query knowai อัตโนมัติก่อนเขียนโค้ด
+
+### Step 7b — หรือเชื่อมต่อ Cursor
+
+แก้ไฟล์ `~/.cursor/mcp.json`:
 
 ```json
 {
-  "cline.mcpServers": {
-    "knowlyx": {
+  "mcpServers": {
+    "knowai": {
       "command": "uvx",
-      "args": ["knowlyx", "mcp", "--repo", "."]
+      "args": ["knowai", "mcp", "--repo", "."]
     }
   }
 }
 ```
 
-### Continue.dev
+Restart Cursor
 
-Edit `~/.continue/config.json`:
+### Step 8 — ทดสอบ
 
-```json
-{
-  "experimental": {
-    "modelContextProtocolServers": [
-      {
-        "transport": {
-          "type": "stdio",
-          "command": "uvx",
-          "args": ["knowlyx", "mcp", "--repo", "."]
-        }
-      }
-    ]
-  }
-}
-```
+ใน AI chat ลองพิมพ์:
+> "เพิ่ม refund endpoint ที่ /payments"
 
-### Windsurf / Zed / Codex / any MCP client
+AI ควรเรียก MCP tools ของ knowai แล้วตอบกลับมาพร้อม:
+- โค้ดเดิมที่ใช้ซ้ำได้
+- การตัดสินใจของทีมเกี่ยวกับ payment (entry จาก Step 5)
+- ระดับความเสี่ยง + impact analysis
 
-Same JSON pattern:
-
-```json
-{ "command": "uvx", "args": ["knowlyx", "mcp", "--repo", "."] }
-```
-
-### No AI assistant — just CLI
+### Stop / restart / ล้างข้อมูล
 
 ```bash
-knowlyx scan .
-knowlyx analyze "add password reset" --repo .
+docker compose stop          # หยุด เก็บข้อมูลไว้
+docker compose start         # เริ่มใหม่
+docker compose down          # หยุด + ลบ container (ข้อมูลใน volume ยังอยู่)
+docker compose down -v       # ลบข้อมูลทั้งหมด
 ```
 
-Knowlyx works standalone too — useful as a code review checklist and team decision log.
+### ดูข้อมูลที่ไหน
 
----
-
-## 5-minute first session
-
-```bash
-# 1. Verify install
-knowlyx --version
-
-# 2. Scan your project (3 sec → mental model)
-cd /path/to/your/project
-knowlyx scan .
-
-# 3. Run a cognition request
-knowlyx analyze "add rate limiting to /login" --repo .
-
-# 4. (Optional) Save a team decision
-knowlyx memory decide auth \
-  "Rate limit /login" \
-  --body "5 attempts per email per 15min, plus 20 attempts per IP per hour. Use Redis sliding window."
-
-# 5. Verify Claude/Cursor picks it up
-# In Claude Code: type "rate limit login" and watch it call analyze_intent + recall_context
-```
-
----
-
-## Team setup (multi-developer)
-
-Real products span multiple repos and multiple devs. Knowlyx is a **per-machine CLI tool** — every dev installs it locally, then connects to the same central workspace (a git repo holding the shared memory).
-
-### 👑 Tech Lead — once per product
-
-```powershell
-# 1. Install knowlyx (Windows; macOS/Linux equivalents in the Install section)
-irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
-
-# 2. Create the central workspace
-knowlyx workspace create my-product
-
-# 3. Push it to a private git repo (any host — GitHub/GitLab/self-host)
-cd $env:USERPROFILE\.knowlyx\workspaces\my-product
-git init && git branch -M main && git add . && git commit -m "init"
-git remote add origin git@github.com:your-org/my-product-knowledge.git
-git push -u origin main
-```
-
-That's the entire tech-lead setup. The `workspace.toml` topology auto-fills as each dev links their repo — you don't have to declare `[[repos]]` by hand.
-
-### 👨‍💻 Each developer — same commands for everyone
-
-```powershell
-# 1. Install knowlyx (one-time, same as tech lead)
-irm https://raw.githubusercontent.com/SatangBudsai/knowlyx/main/install.ps1 | iex
-
-# 2. Clone the project repo you'll work on
-git clone git@github.com:your-org/api.git
-cd api
-
-# 3. Link this repo to the workspace
-knowlyx init --link my-product \
-  --remote git@github.com:your-org/my-product-knowledge.git
-
-# 4. Knowlyx auto-detects role + domains, auto-registers in workspace.toml.
-# If the shared knowledge isn't on this machine yet, it prints the exact
-# clone command — copy/paste and run it.
-git clone git@github.com:your-org/my-product-knowledge.git \
-          ~/.knowlyx/workspaces/my-product
-
-# 5. Wire up Claude Code (or Cursor/Cline/etc.) — once per repo
-claude mcp add knowlyx -- uvx knowlyx mcp --repo .
-
-# 6. Commit the link config so the next dev who clones is auto-connected
-git add .knowlyx/config.toml && git commit -m "link to knowlyx workspace" && git push
-```
-
-**~3 minutes from clone to working** — no docs to read; Knowlyx prints any missing setup steps as you go.
-
-### Daily workflow
-
-```bash
-# Morning — pull the team's latest decisions
-git -C ~/.knowlyx/workspaces/my-product pull
-
-# Work normally — Claude/Cursor calls Knowlyx tools through MCP.
-# When a meaningful decision is made:
-knowlyx memory decide billing "Use Stripe for subscriptions" \
-  --body "Stripe Billing for B2C, manual invoice for B2B over \$10k"
-
-# End of day — push knowledge back
-cd ~/.knowlyx/workspaces/my-product
-git add . && git commit -m "decisions from billing redesign" && git push
-```
-
-Convenience aliases (add to `.bashrc` / `.zshrc` / PowerShell `$PROFILE`):
-
-```bash
-alias kw-pull='git -C ~/.knowlyx/workspaces/my-product pull'
-alias kw-push='git -C ~/.knowlyx/workspaces/my-product add -A && git -C ~/.knowlyx/workspaces/my-product commit -m "knowledge update" && git -C ~/.knowlyx/workspaces/my-product push'
-```
-
-```powershell
-# PowerShell profile
-function kw-pull { Push-Location $env:USERPROFILE\.knowlyx\workspaces\my-product; git pull; Pop-Location }
-function kw-push { Push-Location $env:USERPROFILE\.knowlyx\workspaces\my-product; git add -A; git commit -m "knowledge update"; git push; Pop-Location }
-```
-
-### Concurrency — what happens when two devs save at once
-
-| Situation | How Knowlyx handles it |
+| ต้องการ | URL |
 |---|---|
-| Two devs save different memory entries simultaneously | ✅ git auto-merges (different IDs, no conflict) |
-| Two devs save the same logical decision (ID collision) | ✅ `knowlyx sync pull` auto-merges newer-wins by timestamp |
-| Dev A approves, Dev B rejects the same request | ✅ Fail-safe: **REJECTED stays rejected**, even on later approves |
-| Two processes write to memory.json simultaneously | ✅ Cross-platform file lock (`fcntl` POSIX / `msvcrt` Windows) + atomic write — no lost updates |
+| ดู knowledge ทั้งหมด | <http://localhost:8080/entries> |
+| เพิ่ม knowledge ใหม่ | <http://localhost:8080/knowledge> |
+| ดู audit log | <http://localhost:8080/audit> |
+| สรุปต่อ domain | <http://localhost:8080/syntheses> |
+| Health check | <http://localhost:8080/healthz> |
+| Test plan แบบเต็ม | [TEST_GUIDE.md](TEST_GUIDE.md) |
 
-Auth: uses your existing git auth (SSH key / HTTPS credential helper / `gh auth`). No Knowlyx-specific tokens needed. Works with GitHub, GitLab, Gitea, self-hosted Forgejo, etc.
+### แก้ปัญหา
 
-Full deep-dive (self-hosted GitLab, manual conflict resolution, branch protection):
-**[docs/git-sync.md](docs/git-sync.md)**
-
-### FAQ
-
-| Question | Answer |
+| ปัญหา | วิธีแก้ |
 |---|---|
-| Does every dev install Knowlyx? | ✅ Yes — it's a CLI tool, per-machine |
-| Who creates the workspace? | ✅ Tech lead, once. Then `git push` |
-| Do other devs run `workspace create`? | ❌ No — they `git clone` the workspace that tech lead created |
-| Does workspace.toml need manual editing? | ❌ No — `knowlyx init --link` auto-registers each repo |
-| What if I forget to pull? | ⚠️ You'll save into a stale view; on `git push` you'll need to pull-merge first. Auto-merger handles common cases |
+| `docker compose up` ขึ้น error | ตรวจสอบว่า Docker Desktop รันอยู่ |
+| Web ขึ้น "unhealthy" | รอ 10 วิ Postgres ยัง boot อยู่. ดู: `docker compose logs web` |
+| Port 5432 / 8080 ชน | เปลี่ยน `POSTGRES_PORT` / `WEB_PORT` ใน `.env` |
+| มี 2 entries คล้ายกันที่ควรจะ merge เป็น 1 | embedding model โหลดไม่สำเร็จ. ดู: `docker compose logs web | grep sentence` |
+| AI ไม่เห็น knowledge | env vars ใน shell ไม่ตรงกับ `.env` |
 
 ---
-
-## Why Knowlyx
-
-| Pain that every team has | Knowlyx solution |
-|---|---|
-| "We already have a helper for that" — duplicate utils | `get_reusable_assets` injects existing code |
-| AI ignores CLAUDE.md / .cursorrules | MCP tool result — AI trusts tools more than markdown |
-| Migration breaks downstream services | `get_cross_repo_impact` shows blast radius |
-| AI hallucinates imports/functions | `validate_generated_code` blocks before write |
-| Refactor misses call sites | `get_impact_analysis` lists every caller |
-| 2-week onboarding for new devs | `scan + graph` = 5-min mental model |
-| Silent API contract breakage | Risk gate + deprecation workflow |
-| AI re-invents same decision team made last month | `get_domain_knowledge` + cached AI synthesis |
-| AI downgrades risk to ship faster | Risk policy: `proceed → warn → ask → reject`, upgrade-only |
-
----
-
-## How it works
-
-**No LLM inside Knowlyx — by design.** Knowlyx is 100% rule-based + pattern matching + graph algorithms. Deterministic, fast (<100ms), free, offline, auditable.
-
-The intelligence comes from your AI agent (Claude/Cursor/etc.): Knowlyx hands the agent **structured cognition data** through MCP, the agent does the reasoning and writing.
-
-For tasks that need judgment (summarizing related memory, weighing historical risk):
-
-1. Knowlyx returns raw data + a structured instruction for the AI
-2. The AI agent does the synthesis using its own LLM
-3. Knowlyx caches the result (`save_synthesis`) so future sessions reuse it
-4. New evidence automatically marks the cache stale → triggers re-synthesis
-
-Risk decisions follow the **upgrade-only rule**: the AI can make Knowlyx's decision stricter (`proceed → warn → ask → reject`), but never looser.
-
-```text
-┌─────────────────────────────────────────────────┐
-│  AI Agent (Claude / Cursor / Cline / Codex)     │
-└──────────────────┬──────────────────────────────┘
-                   │ MCP protocol — 25 tools
-┌──────────────────▼──────────────────────────────┐
-│  ENFORCEMENT (mcp/server.py)                    │
-│  • analyze_intent  • get_conventions            │
-│  • get_reusable_assets  • get_impact_analysis   │
-│  • get_domain_knowledge  • save_synthesis       │
-│  • assess_risk_in_context  • get_module_context │
-│  • validate_generated_code  • request_approval  │
-│  • recall_context  • get_workspace_context  …   │
-└──────────────────┬──────────────────────────────┘
-                   │
-┌──────────────────▼──────────────────────────────┐
-│  REASONING — Intent → Impact → Risk → Decision  │
-│  (rule-based, deterministic, no LLM)            │
-└──────────────────┬──────────────────────────────┘
-                   │
-       ┌───────────┼───────────────────┐
-       ▼           ▼                   ▼
-┌──────────┐ ┌──────────────┐    ┌──────────┐
-│  GRAPH   │ │   MEMORY     │    │  PACKS   │
-│ NetworkX │ │ schema v2    │    │ 7 built  │
-│ cascade  │ │ + AI synth   │    │   -in    │
-│ rules    │ │ + file lock  │    │ domains  │
-└────┬─────┘ └──────────────┘    └──────────┘
-     │
-┌────▼────────────────────────────────────────────┐
-│  SCANNER — language/framework/architecture/     │
-│  domains/conventions/reusable assets            │
-└─────────────────────────────────────────────────┘
-```
-
-### Memory schema v2
-
-```json
-{
-  "version": 2,
-  "entries": { "<id>": { kind, domain, title, body, approved, ... } },
-  "syntheses": {
-    "<domain>": {
-      "summary": "narrative tying related decisions together",
-      "key_themes": [...],
-      "open_questions": [...],
-      "stale": false
-    }
-  }
-}
-```
-
-v1 (flat dict) files auto-migrate on first read. New entries automatically mark their domain's synthesis stale → next AI session re-synthesizes.
-
----
-
-## Design properties
-
-These are guarantees Knowlyx makes by construction:
-
-| Property | Why it matters |
-|---|---|
-| **Deterministic** | Same input → same output every time. Audits and CI gates work. |
-| **Fast** (<100ms reasoning) | Pre-commit hooks stay usable. AI doesn't wait. |
-| **Free** ($0 to run) | No API costs. No surprise bills. |
-| **Offline** | Works air-gapped, in CI, on planes. |
-| **No vendor lock-in** | Works with any MCP client. No required LLM provider. |
-| **Concurrent-safe** | Multiple devs/sessions can save simultaneously without lost updates. |
-| **Audit-friendly** | Git log shows every memory/approval change with author + timestamp. |
-| **Backward compatible** | Schema migrations are automatic. Old files keep working. |
-
----
-
-## Troubleshooting
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| `knowlyx: command not found` | uv path not loaded | Open new terminal, or `source ~/.bashrc` |
-| `Workspace '<name>' not found` | Knowledge repo not cloned at the expected path | Must be `~/.knowlyx/workspaces/<workspace-name>` exactly |
-| Claude doesn't see memory | Local clone of knowledge repo is stale | `cd ~/.knowlyx/workspaces/<name> && git pull` |
-| `git push` rejected | Behind remote | `knowlyx sync pull` first, then push |
-| `memory.json` git conflict | Two devs saved at the same time | `knowlyx sync pull` auto-merges by timestamp; manual edit if not |
-| `Permission denied (publickey)` | SSH key not registered | Add `~/.ssh/id_ed25519.pub` to GitHub Settings → SSH keys |
-| Approval not unlocking AI | Status still pending | `knowlyx approval list` → `knowlyx approval approve <id>` |
-| TypeScript errors in fresh website clone | `node_modules` missing | `npm install` |
-
----
-
-## Roadmap & docs
-
-- **[ROADMAP.md](ROADMAP.md)** — versions + what's next
-- **[CHANGELOG.md](CHANGELOG.md)** — every release
-- **[docs/quickstart.md](docs/quickstart.md)** — 5-minute first session
-- **[docs/cli.md](docs/cli.md)** — every CLI command
-- **[docs/mcp.md](docs/mcp.md)** — MCP integration details
-- **[docs/architecture.md](docs/architecture.md)** — 6 layers explained
-- **[docs/multi-repo.md](docs/multi-repo.md)** — `knowlyx.toml` + cross-repo impact
-- **[docs/distributed-knowledge.md](docs/distributed-knowledge.md)** — central store + per-repo link + concurrency
-- **[docs/git-sync.md](docs/git-sync.md)** — share workspace via GitHub/GitLab (full step-by-step)
-- **[docs/usage-examples.md](docs/usage-examples.md)** — 7 real-world scenarios
-- **[docs/cognition-packs.md](docs/cognition-packs.md)** — built-in domain knowledge
-- **[Live tutorial](https://github.com/SatangBudsai/tutorial-knowlyx-knowledge/blob/main/WALKTHROUGH.md)** — 3-repo working demo
-
----
-
-## Contribute
-
-PRs welcome — see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
-
-```bash
-git clone https://github.com/SatangBudsai/knowlyx
-cd knowlyx
-uv sync --extra dev
-uv run pytest
-```
 
 ## License
 
