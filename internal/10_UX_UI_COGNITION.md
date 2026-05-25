@@ -52,7 +52,7 @@ AI gen UI ปัจจุบัน → modal style ไม่ตรง design sys
 ## Implementation plan
 
 ```text
-src/knowlyx/design/
+src/knowai/design/
   scanner.py           — scan tailwind.config, theme files, shared/ui
   token_extractor.py   — extract design tokens
   pattern_detector.py  — detect modal/form/table patterns

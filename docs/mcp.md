@@ -1,6 +1,6 @@
 # 08 — MCP Integration (Enforcement Layer)
 
-📂 [src/knowlyx/mcp/](../src/knowlyx/mcp/)
+📂 [src/knowai/mcp/](../src/knowai/mcp/)
 
 **The enforcement surface** — ทำให้ AI agents *ต้อง* query cognition ก่อน code
 
@@ -23,9 +23,9 @@
 // .claude/settings.json
 {
   "mcpServers": {
-    "knowlyx": {
+    "knowai": {
       "command": "uvx",
-      "args": ["knowlyx", "mcp", "--repo", "."]
+      "args": ["knowai", "mcp", "--repo", "."]
     }
   }
 }
@@ -36,9 +36,9 @@
 ```json
 {
   "mcpServers": {
-    "knowlyx": {
+    "knowai": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/knowlyx", "knowlyx", "mcp", "--repo", "."]
+      "args": ["run", "--directory", "/path/to/knowai", "knowai", "mcp", "--repo", "."]
     }
   }
 }
@@ -47,7 +47,7 @@
 ### HTTP/SSE (สำหรับ web client)
 
 ```bash
-uv run knowlyx mcp --sse --port 8765 --repo /path/to/repo
+uv run knowai mcp --sse --port 8765 --repo /path/to/repo
 ```
 
 ## 20 MCP Tools (Phase 1-3 ครบ)
@@ -128,11 +128,11 @@ For EVERY user request that touches code:
 
 [Claude tells user]
 "⚠️ Risk: HIGH — billing domain + DB change + finance approval flow.
-Submitted approval request abc-123. Run `knowlyx approval show abc-123`
+Submitted approval request abc-123. Run `knowai approval show abc-123`
 and approve before I write the code."
 
 [User runs]
-$ knowlyx approval approve abc-123
+$ knowai approval approve abc-123
 
 [Claude]
 3. tool: check_approval("abc-123") → approved

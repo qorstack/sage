@@ -7,23 +7,23 @@ from pathlib import Path
 
 import pytest
 
-from knowlyx import paths
+from knowai import paths
 
 
 @pytest.fixture
 def isolated_home(tmp_path, monkeypatch):
-    """Point KNOWLYX_HOME at a temp dir so tests don't touch the real ~/.knowlyx."""
-    monkeypatch.setenv("KNOWLYX_HOME", str(tmp_path / "knowlyx_home"))
-    return tmp_path / "knowlyx_home"
+    """Point KNOWLYX_HOME at a temp dir so tests don't touch the real ~/.knowai."""
+    monkeypatch.setenv("KNOWLYX_HOME", str(tmp_path / "knowai_home"))
+    return tmp_path / "knowai_home"
 
 
-def test_knowlyx_home_honors_env(isolated_home):
-    assert paths.knowlyx_home() == isolated_home.resolve()
+def test_knowai_home_honors_env(isolated_home):
+    assert paths.knowai_home() == isolated_home.resolve()
 
 
-def test_knowlyx_home_default_is_user_home(monkeypatch):
+def test_knowai_home_default_is_user_home(monkeypatch):
     monkeypatch.delenv("KNOWLYX_HOME", raising=False)
-    assert paths.knowlyx_home() == Path.home() / ".knowlyx"
+    assert paths.knowai_home() == Path.home() / ".knowai"
 
 
 def test_workspace_dir_path(isolated_home):
@@ -58,4 +58,4 @@ def test_list_workspaces_empty_when_no_home(isolated_home):
 
 
 def test_repo_link_config_path(tmp_path):
-    assert paths.repo_link_config_path(tmp_path) == tmp_path / ".knowlyx" / "config.toml"
+    assert paths.repo_link_config_path(tmp_path) == tmp_path / ".knowai" / "config.toml"

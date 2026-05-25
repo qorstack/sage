@@ -1,6 +1,6 @@
 # CLI reference
 
-Every Knowlyx command. Run `knowlyx --help` for live help.
+Every Knowai command. Run `knowai --help` for live help.
 
 ## Project commands
 
@@ -9,8 +9,8 @@ Every Knowlyx command. Run `knowlyx --help` for live help.
 Scan a repo and show its cognitive profile.
 
 ```bash
-knowlyx scan [path]
-knowlyx scan . --json
+knowai scan [path]
+knowai scan . --json
 ```
 
 ### `analyze`
@@ -18,8 +18,8 @@ knowlyx scan . --json
 Run the full Intent → Impact → Risk pipeline on a request.
 
 ```bash
-knowlyx analyze "add rate limiting to /login" --repo .
-knowlyx analyze "..." --repo . --json
+knowai analyze "add rate limiting to /login" --repo .
+knowai analyze "..." --repo . --json
 ```
 
 ### `impact`
@@ -27,7 +27,7 @@ knowlyx analyze "..." --repo . --json
 Show the blast radius of a planned change (single repo).
 
 ```bash
-knowlyx impact "rename users.email column" --repo .
+knowai impact "rename users.email column" --repo .
 ```
 
 ### `conventions`
@@ -35,7 +35,7 @@ knowlyx impact "rename users.email column" --repo .
 List all detected conventions + forbidden patterns.
 
 ```bash
-knowlyx conventions .
+knowai conventions .
 ```
 
 ### `assets`
@@ -43,8 +43,8 @@ knowlyx conventions .
 List reusable assets (components, hooks, utils, services), optionally filtered by domain.
 
 ```bash
-knowlyx assets             # all assets
-knowlyx assets billing     # filter by domain
+knowai assets             # all assets
+knowai assets billing     # filter by domain
 ```
 
 ### `pack`
@@ -52,8 +52,8 @@ knowlyx assets billing     # filter by domain
 Show the built-in cognition pack for a domain.
 
 ```bash
-knowlyx pack auth
-knowlyx pack payment
+knowai pack auth
+knowai pack payment
 ```
 
 Available domains: `auth`, `otp`, `payment`, `webhook`, `order`, `notification`, `worker`.
@@ -63,9 +63,9 @@ Available domains: `auth`, `otp`, `payment`, `webhook`, `order`, `notification`,
 Export the cognitive graph for a single repo.
 
 ```bash
-knowlyx graph mermaid --repo .
-knowlyx graph dot --repo . | dot -Tpng > graph.png
-knowlyx graph react_flow --repo .
+knowai graph mermaid --repo .
+knowai graph dot --repo . | dot -Tpng > graph.png
+knowai graph react_flow --repo .
 ```
 
 ## Memory commands
@@ -75,8 +75,8 @@ knowlyx graph react_flow --repo .
 List all memory entries (approved + pending), optionally filtered.
 
 ```bash
-knowlyx memory list --repo .
-knowlyx memory list --domain billing --repo .
+knowai memory list --repo .
+knowai memory list --domain billing --repo .
 ```
 
 ### `memory recall`
@@ -84,7 +84,7 @@ knowlyx memory list --domain billing --repo .
 Fuzzy search approved memory.
 
 ```bash
-knowlyx memory recall "rate limit" --repo .
+knowai memory recall "rate limit" --repo .
 ```
 
 ### `memory decide`
@@ -92,7 +92,7 @@ knowlyx memory recall "rate limit" --repo .
 Record an auto-approved team decision.
 
 ```bash
-knowlyx memory decide billing \
+knowai memory decide billing \
   "Use Stripe for subscriptions" \
   --body "Stripe Billing for B2C, manual invoice for B2B over $10k"
 ```
@@ -102,17 +102,17 @@ knowlyx memory decide billing \
 Delete a memory entry.
 
 ```bash
-knowlyx memory forget <entry-id>
+knowai memory forget <entry-id>
 ```
 
 ## Workspace (multi-repo)
 
 ### `workspace create`
 
-Create a central workspace at `~/.knowlyx/workspaces/<name>/`.
+Create a central workspace at `~/.knowai/workspaces/<name>/`.
 
 ```bash
-knowlyx workspace create my-product
+knowai workspace create my-product
 ```
 
 ### `workspace list`
@@ -120,15 +120,15 @@ knowlyx workspace create my-product
 List all central workspaces.
 
 ```bash
-knowlyx workspace list
+knowai workspace list
 ```
 
 ### `workspace init`
 
-Create a `knowlyx.toml` in the current folder (legacy sibling-layout mode).
+Create a `knowai.toml` in the current folder (legacy sibling-layout mode).
 
 ```bash
-knowlyx workspace init
+knowai workspace init
 ```
 
 ### `workspace scan`
@@ -136,7 +136,7 @@ knowlyx workspace init
 Scan all repos in the current workspace and show summary.
 
 ```bash
-knowlyx workspace scan
+knowai workspace scan
 ```
 
 ### `workspace impact`
@@ -144,7 +144,7 @@ knowlyx workspace scan
 Cross-repo blast radius for a change in one repo.
 
 ```bash
-knowlyx workspace impact api --change "rename users.email"
+knowai workspace impact api --change "rename users.email"
 ```
 
 ### `workspace graph`
@@ -152,8 +152,8 @@ knowlyx workspace impact api --change "rename users.email"
 Export the cross-repo graph.
 
 ```bash
-knowlyx workspace graph mermaid
-knowlyx workspace graph react_flow --json
+knowai workspace graph mermaid
+knowai workspace graph react_flow --json
 ```
 
 ## Link (per-repo)
@@ -163,29 +163,29 @@ knowlyx workspace graph react_flow --json
 Connect this repo to a central workspace.
 
 ```bash
-knowlyx link my-product \
+knowai link my-product \
   --role backend \
   --domains billing,auth \
   --critical
 ```
 
-This writes `.knowlyx/config.toml` — commit it to git so every clone connects automatically.
+This writes `.knowai/config.toml` — commit it to git so every clone connects automatically.
 
 ### `unlink`
 
 Remove the link.
 
 ```bash
-knowlyx unlink
+knowai unlink
 ```
 
 ### `migrate`
 
-Move legacy `<repo>/.knowlyx/{memory,approvals}.json` into the central workspace.
+Move legacy `<repo>/.knowai/{memory,approvals}.json` into the central workspace.
 
 ```bash
-knowlyx migrate
-knowlyx migrate --workspace my-product --dry-run
+knowai migrate
+knowai migrate --workspace my-product --dry-run
 ```
 
 ## Approval queue
@@ -195,7 +195,7 @@ knowlyx migrate --workspace my-product --dry-run
 List pending approval requests.
 
 ```bash
-knowlyx approval list
+knowai approval list
 ```
 
 ### `approval show`
@@ -203,14 +203,14 @@ knowlyx approval list
 Show details of one request.
 
 ```bash
-knowlyx approval show <id>
+knowai approval show <id>
 ```
 
 ### `approval approve` / `reject`
 
 ```bash
-knowlyx approval approve <id>
-knowlyx approval reject <id> --reason "too risky before release"
+knowai approval approve <id>
+knowai approval reject <id> --reason "too risky before release"
 ```
 
 ## MCP server
@@ -220,8 +220,8 @@ knowlyx approval reject <id> --reason "too risky before release"
 Start the MCP server (stdio by default — for Claude Code, Cursor, Cline).
 
 ```bash
-knowlyx mcp --repo .
-knowlyx mcp --sse --port 8765 --repo .
+knowai mcp --repo .
+knowai mcp --sse --port 8765 --repo .
 ```
 
 ## Global flags
@@ -237,6 +237,6 @@ knowlyx mcp --sse --port 8765 --repo .
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `KNOWLYX_HOME` | `~/.knowlyx` | Central knowledge home |
+| `KNOWLYX_HOME` | `~/.knowai` | Central knowledge home |
 | `QDRANT_URL` | (none) | Enable semantic search via Qdrant |
 | `QDRANT_API_KEY` | (none) | Qdrant cloud auth |

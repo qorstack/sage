@@ -1,6 +1,6 @@
 """Tests for cognition packs."""
 
-from knowlyx.packs.builtin import get_pack, get_packs_for_domains, BUILTIN_PACKS
+from knowai.packs.builtin import get_pack, get_packs_for_domains, BUILTIN_PACKS
 
 
 def test_all_packs_have_required_fields():

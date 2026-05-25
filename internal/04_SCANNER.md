@@ -1,6 +1,6 @@
 # 04 — Scanner Layer
 
-📂 [src/knowlyx/scanner/](../src/knowlyx/scanner/)
+📂 [src/knowai/scanner/](../src/knowai/scanner/)
 
 อ่าน repo → infer ทุกอย่างที่ static analysis ตอบได้ โดยไม่ต้องถามคน
 
@@ -78,13 +78,13 @@ ScanResult(
 
 - `_state` dict ใน `mcp/server.py` และ `api/main.py`
 - Key = `repo_path`
-- Invalidate via `refresh_scan(repo_path)` MCP tool หรือ `knowlyx scan` CLI
+- Invalidate via `refresh_scan(repo_path)` MCP tool หรือ `knowai scan` CLI
 
 ## Real-world usage
 
 ```bash
 # CLI
-uv run knowlyx scan /path/to/repo
+uv run knowai scan /path/to/repo
 
 # Output:
 # Languages: python, typescript
@@ -98,7 +98,7 @@ uv run knowlyx scan /path/to/repo
 
 ```python
 # Python
-from knowlyx.scanner import RepoScanner
+from knowai.scanner import RepoScanner
 
 scanner = RepoScanner()
 result = scanner.scan("/path/to/repo")
@@ -110,5 +110,5 @@ print([a.name for a in result.assets if a.domain == "billing"])
 **Scenario จริง:** Onboard repo ใหม่
 
 1. Dev clone repo เข้ามา
-2. `uv run knowlyx scan .` → เห็นภาพรวมใน 3 วินาที (architecture, domains, conventions)
+2. `uv run knowai scan .` → เห็นภาพรวมใน 3 วินาที (architecture, domains, conventions)
 3. ไม่ต้องอ่าน README 30 หน้า

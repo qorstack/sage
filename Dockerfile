@@ -23,4 +23,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=3s --retries=5 \
   CMD curl -fs http://localhost:8080/healthz || exit 1
 
-CMD ["uvicorn", "knowlyx.web.app:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "knowai.web.app:app", "--host", "0.0.0.0", "--port", "8080"]

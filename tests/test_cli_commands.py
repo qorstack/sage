@@ -8,13 +8,13 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from knowlyx.cli.main import app
+from knowai.cli.main import app
 
 
 @pytest.fixture
 def isolated_home(tmp_path, monkeypatch):
-    monkeypatch.setenv("KNOWLYX_HOME", str(tmp_path / "knowlyx_home"))
-    return tmp_path / "knowlyx_home"
+    monkeypatch.setenv("KNOWLYX_HOME", str(tmp_path / "knowai_home"))
+    return tmp_path / "knowai_home"
 
 
 runner = CliRunner()
@@ -38,11 +38,11 @@ def test_link_then_unlink(isolated_home, tmp_path):
 
     r = runner.invoke(app, ["link", "alpha", "--repo", str(repo), "--role", "backend"])
     assert r.exit_code == 0
-    assert (repo / ".knowlyx" / "config.toml").exists()
+    assert (repo / ".knowai" / "config.toml").exists()
 
     r2 = runner.invoke(app, ["unlink", "--repo", str(repo)])
     assert r2.exit_code == 0
-    assert not (repo / ".knowlyx" / "config.toml").exists()
+    assert not (repo / ".knowai" / "config.toml").exists()
 
 
 def test_link_fails_when_workspace_missing(isolated_home, tmp_path):
@@ -70,8 +70,8 @@ def test_commit_check_strict_fails_without_stamp(isolated_home, tmp_path):
 def test_commit_check_proceeds_on_approved_stamp(isolated_home, tmp_path):
     from datetime import datetime, timezone
     repo = tmp_path / "api"
-    (repo / ".knowlyx").mkdir(parents=True)
-    (repo / ".knowlyx" / "last_cognition.json").write_text(json.dumps({
+    (repo / ".knowai").mkdir(parents=True)
+    (repo / ".knowai" / "last_cognition.json").write_text(json.dumps({
         "request": "test",
         "decision": "proceed",
         "risk_level": "low",
@@ -87,8 +87,8 @@ def test_commit_check_proceeds_on_approved_stamp(isolated_home, tmp_path):
 def test_commit_check_blocks_on_reject(isolated_home, tmp_path):
     from datetime import datetime, timezone
     repo = tmp_path / "api"
-    (repo / ".knowlyx").mkdir(parents=True)
-    (repo / ".knowlyx" / "last_cognition.json").write_text(json.dumps({
+    (repo / ".knowai").mkdir(parents=True)
+    (repo / ".knowai" / "last_cognition.json").write_text(json.dumps({
         "request": "drop table users",
         "decision": "reject",
         "risk_level": "critical",

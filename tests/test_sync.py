@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from knowlyx.sync.git_sync import auto_merge_json
+from knowai.sync.git_sync import auto_merge_json
 
 
 def test_auto_merge_no_conflict_returns_false(tmp_path):

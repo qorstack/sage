@@ -1,4 +1,4 @@
-# Knowlyx Documentation
+# Knowai Documentation
 
 User documentation. For internal design specs see [`../internal/`](../internal/).
 
@@ -15,7 +15,7 @@ User documentation. For internal design specs see [`../internal/`](../internal/)
 
 ## Multi-repo
 
-- [Multi-repo workspace](multi-repo.md) — `knowlyx.toml` + cross-repo impact
+- [Multi-repo workspace](multi-repo.md) — `knowai.toml` + cross-repo impact
 - [Distributed knowledge](distributed-knowledge.md) — central store + per-repo link
 - [Git sync](git-sync.md) — share workspace via GitHub/GitLab
 

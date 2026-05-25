@@ -35,19 +35,19 @@
 
 | # | Layer | Package | Responsibility | Status |
 | --- | --- | --- | --- | --- |
-| 1 | **Scanner** | [scanner/](../src/knowlyx/scanner/) | อ่าน repo, infer language/framework/architecture/conventions/assets | ✅ |
-| 2 | **Cognitive Graph** | [graph/](../src/knowlyx/graph/) | NetworkX DiGraph + cascade rules + exporter | ✅ |
-| 3 | **Memory** | [memory/](../src/knowlyx/memory/) | FileStore + Qdrant fallback + human approval | ✅ |
-| 4 | **Cognition Packs** | [packs/](../src/knowlyx/packs/) | Built-in domain knowledge | ✅ |
-| 5 | **Reasoning** | [reasoning/](../src/knowlyx/reasoning/) | Intent/Impact/Risk analyzers + engine | ✅ |
-| 6 | **Enforcement** | [mcp/](../src/knowlyx/mcp/) | FastMCP server, 20 tools | ✅ |
+| 1 | **Scanner** | [scanner/](../src/knowai/scanner/) | อ่าน repo, infer language/framework/architecture/conventions/assets | ✅ |
+| 2 | **Cognitive Graph** | [graph/](../src/knowai/graph/) | NetworkX DiGraph + cascade rules + exporter | ✅ |
+| 3 | **Memory** | [memory/](../src/knowai/memory/) | FileStore + Qdrant fallback + human approval | ✅ |
+| 4 | **Cognition Packs** | [packs/](../src/knowai/packs/) | Built-in domain knowledge | ✅ |
+| 5 | **Reasoning** | [reasoning/](../src/knowai/reasoning/) | Intent/Impact/Risk analyzers + engine | ✅ |
+| 6 | **Enforcement** | [mcp/](../src/knowai/mcp/) | FastMCP server, 20 tools | ✅ |
 
 Surfaces ที่ exposing layer เหล่านี้:
 
-- [cli/](../src/knowlyx/cli/) — Typer CLI (ทุก command)
-- [api/](../src/knowlyx/api/) — FastAPI REST (Phase 1 routes only — Phase 2-3 ยังขาด)
-- [workspace/](../src/knowlyx/workspace/) — Multi-repo orchestrator
-- [approval/](../src/knowlyx/approval/) — Human approval queue
+- [cli/](../src/knowai/cli/) — Typer CLI (ทุก command)
+- [api/](../src/knowai/api/) — FastAPI REST (Phase 1 routes only — Phase 2-3 ยังขาด)
+- [workspace/](../src/knowai/workspace/) — Multi-repo orchestrator
+- [approval/](../src/knowai/approval/) — Human approval queue
 
 ## Core data flow
 
@@ -87,12 +87,12 @@ AI Agent             → reads report → writes code that respects constraints
 // .claude/settings.json ของ project ที่ต้องการ enforce
 {
   "mcpServers": {
-    "knowlyx": {
+    "knowai": {
       "command": "uvx",
-      "args": ["knowlyx", "mcp", "--repo", "."]
+      "args": ["knowai", "mcp", "--repo", "."]
     }
   }
 }
 ```
 
-Claude Code launch → MCP handshake → Claude เห็น 20 tools ของ Knowlyx → ทุก request ของ user, Claude ต้อง call `analyze_intent` ก่อน
+Claude Code launch → MCP handshake → Claude เห็น 20 tools ของ Knowai → ทุก request ของ user, Claude ต้อง call `analyze_intent` ก่อน

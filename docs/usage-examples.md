@@ -16,7 +16,7 @@
 - AI revert, rewrite
 - เสีย review cycle 1 รอบ
 
-**With Knowlyx:**
+**With Knowai:**
 
 ```text
 analyze_intent("display product price formatted")
@@ -41,7 +41,7 @@ analyze_intent("display product price formatted")
 - Reviewer: "use useQuery please"
 - AI rewrite
 
-**With Knowlyx:**
+**With Knowai:**
 
 ```text
 get_conventions(repo_path)
@@ -72,10 +72,10 @@ get_conventions(repo_path)
 - 15 นาทีต่อมา: admin dashboard 500
 - Slack ระเบิด → rollback migration → painful
 
-**With Knowlyx:**
+**With Knowai:**
 
 ```bash
-$ knowlyx workspace impact api --change "rename users.email to email_address"
+$ knowai workspace impact api --change "rename users.email to email_address"
 
 Cascade affected:
   ⚠️ analytics-service (queries users.email in 6 places)
@@ -107,7 +107,7 @@ Suggested workflow:
 - บอก AI fix → AI gen function ใหม่
 - บางครั้ง gen ซ้ำของที่มีอยู่อีก (กลับไป Scenario 1)
 
-**With Knowlyx:**
+**With Knowai:**
 
 ```text
 Before write → validate_generated_code(code, repo_path)
@@ -135,7 +135,7 @@ Before write → validate_generated_code(code, repo_path)
 - ลืม mock ใน test files
 - Rerun, fail again
 
-**With Knowlyx:**
+**With Knowai:**
 
 ```text
 analyze_intent("rename processOrder to submitOrder")
@@ -168,10 +168,10 @@ analyze_intent("rename processOrder to submitOrder")
 - 1-2 สัปดาห์กว่าจะกล้าเปิด PR
 - PR แรก review 3 รอบ
 
-**With Knowlyx:**
+**With Knowai:**
 
 ```bash
-$ knowlyx scan .
+$ knowai scan .
 Languages: TypeScript, Python
 Frameworks: Next.js 15 (app router), FastAPI, Prisma
 Architecture: modular_monolith
@@ -193,7 +193,7 @@ Forbidden patterns:
   • any type (use unknown + zod parse)
   • direct DB in components (server actions only)
 
-$ knowlyx graph mermaid > docs/architecture.md
+$ knowai graph mermaid > docs/architecture.md
 ```
 
 → Day 1 = senior-level mental model. PR แรกผ่าน first review
@@ -213,7 +213,7 @@ $ knowlyx graph mermaid > docs/architecture.md
 - Frontend ทั้งหมดพัง production
 - ไม่มี TypeScript error เพราะ types เป็น `any` หลัง JSON parse
 
-**With Knowlyx:**
+**With Knowai:**
 
 ```text
 analyze_intent("flatten API response remove data wrapper")
@@ -235,9 +235,9 @@ analyze_intent("flatten API response remove data wrapper")
 
 ---
 
-## Summary: Universal pain → Knowlyx gain
+## Summary: Universal pain → Knowai gain
 
-| Pain ที่เจอทุกที่ | Knowlyx solution |
+| Pain ที่เจอทุกที่ | Knowai solution |
 | --- | --- |
 | "We have a helper for that" | `get_reusable_assets` injects existing utilities |
 | AI ignores CLAUDE.md / cursorrules | MCP tool result (AI trusts > markdown) |
@@ -248,4 +248,4 @@ analyze_intent("flatten API response remove data wrapper")
 | API contract silent break | Risk gate + deprecation workflow |
 
 **The common thread:** AI ปัจจุบันมี "code knowledge" แต่ไม่มี "system cognition"
-Knowlyx เติม cognition layer — ใช้ได้กับทุก stack, ทุก team size, ทุกอุตสาหกรรม
+Knowai เติม cognition layer — ใช้ได้กับทุก stack, ทุก team size, ทุกอุตสาหกรรม

@@ -1,6 +1,6 @@
 # Cognition Packs
 
-Built-in domain knowledge bundles. When AI works on a domain, Knowlyx injects the relevant pack into the cognition report — so the AI knows the rules even if your codebase doesn't spell them out.
+Built-in domain knowledge bundles. When AI works on a domain, Knowai injects the relevant pack into the cognition report — so the AI knows the rules even if your codebase doesn't spell them out.
 
 ## What's in a pack
 
@@ -28,7 +28,7 @@ Each pack has six sections:
 ## Inspect a pack
 
 ```bash
-knowlyx pack auth
+knowai pack auth
 ```
 
 Sample output:
@@ -71,10 +71,10 @@ analyze_intent("add login") → auto-injects relevant packs
 
 ## Team-specific packs (planned)
 
-Phase 4 will allow custom packs at `~/.knowlyx/workspaces/<name>/packs/` so teams can codify their own conventions. For now, use [`memory decide`](cli.md#memory-decide) to record team-specific rules.
+Phase 4 will allow custom packs at `~/.knowai/workspaces/<name>/packs/` so teams can codify their own conventions. For now, use [`memory decide`](cli.md#memory-decide) to record team-specific rules.
 
 ## Contributing a pack
 
-Built-in packs live in [src/knowlyx/packs/builtin.py](../src/knowlyx/packs/builtin.py). Open a PR adding a new `CognitionPack(...)` entry + a test in `tests/test_packs.py`.
+Built-in packs live in [src/knowai/packs/builtin.py](../src/knowai/packs/builtin.py). Open a PR adding a new `CognitionPack(...)` entry + a test in `tests/test_packs.py`.
 
 Strong packs cover domains that have well-known industry pitfalls — for example: `search`, `cache`, `feature_flag`, `analytics`, `gdpr`, `pci`.

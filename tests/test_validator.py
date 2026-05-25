@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from knowlyx.models.schema import (
+from knowai.models.schema import (
     ArchitecturePattern,
     Convention,
     ReusableAsset,
     ScanResult,
 )
-from knowlyx.validation.code_validator import CodeValidator, Severity
+from knowai.validation.code_validator import CodeValidator, Severity
 
 
 @pytest.fixture

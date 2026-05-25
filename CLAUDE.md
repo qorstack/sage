@@ -2,9 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What Knowlyx Is
+## What Knowai Is
 
-Knowlyx is a **cognitive enforcement layer for AI software development** — not an AI coding assistant. Its purpose is to force AI agents to *understand* a software system (business logic, architecture, UX patterns, reusable assets, impact) *before* generating or modifying code.
+Knowai is a **cognitive enforcement layer for AI software development** — not an AI coding assistant. Its purpose is to force AI agents to *understand* a software system (business logic, architecture, UX patterns, reusable assets, impact) *before* generating or modifying code.
 
 Core thesis: **Knowledge is passive. Cognition must be enforced.**
 
@@ -15,28 +15,28 @@ Core thesis: **Knowledge is passive. Cognition must be enforced.**
 uv sync
 
 # Run CLI
-uv run knowlyx --help
-uv run knowlyx scan /path/to/repo
-uv run knowlyx analyze "add OTP login" --repo /path/to/repo
-uv run knowlyx impact "fix payment scan 501" --repo /path/to/repo
-uv run knowlyx conventions /path/to/repo
-uv run knowlyx assets payment --repo /path/to/repo
-uv run knowlyx pack payment          # show built-in cognition pack
+uv run knowai --help
+uv run knowai scan /path/to/repo
+uv run knowai analyze "add OTP login" --repo /path/to/repo
+uv run knowai impact "fix payment scan 501" --repo /path/to/repo
+uv run knowai conventions /path/to/repo
+uv run knowai assets payment --repo /path/to/repo
+uv run knowai pack payment          # show built-in cognition pack
 
 # Memory commands
-uv run knowlyx memory list --repo /path/to/repo
-uv run knowlyx memory recall "OTP policy" --repo /path/to/repo
-uv run knowlyx memory decide payment "Use idempotency keys" --body "All payment calls require idempotency key" --repo /path/to/repo
-uv run knowlyx memory forget <entry-id> --repo /path/to/repo
+uv run knowai memory list --repo /path/to/repo
+uv run knowai memory recall "OTP policy" --repo /path/to/repo
+uv run knowai memory decide payment "Use idempotency keys" --body "All payment calls require idempotency key" --repo /path/to/repo
+uv run knowai memory forget <entry-id> --repo /path/to/repo
 
 # Start MCP server (stdio — for Claude Code integration)
-uv run knowlyx mcp --repo /path/to/repo
+uv run knowai mcp --repo /path/to/repo
 
 # Start MCP server (SSE — for HTTP clients)
-uv run knowlyx mcp --sse --port 8765 --repo /path/to/repo
+uv run knowai mcp --sse --port 8765 --repo /path/to/repo
 
 # Start REST API
-uv run uvicorn knowlyx.api.main:app --reload --port 8000
+uv run uvicorn knowai.api.main:app --reload --port 8000
 
 # Run tests
 uv run pytest
@@ -55,7 +55,7 @@ uv publish   # requires PYPI_TOKEN
 
 ## Architecture
 
-Six layers, each in its own package under `src/knowlyx/`:
+Six layers, each in its own package under `src/knowai/`:
 
 | Layer | Package | Responsibility |
 | --- | --- | --- |
@@ -78,7 +78,7 @@ User request (string)
 
 ### MCP Tools (the enforcement surface)
 
-All tools live in `src/knowlyx/mcp/server.py`. AI agents call these via MCP before coding:
+All tools live in `src/knowai/mcp/server.py`. AI agents call these via MCP before coding:
 
 #### Phase 1 — Cognitive analysis
 
@@ -107,10 +107,10 @@ Add to `.claude/settings.json` in any target repo:
 ```json
 {
   "mcpServers": {
-    "knowlyx": {
+    "knowai": {
       "command": "uv",
-      "args": ["run", "knowlyx", "mcp", "--repo", "."],
-      "cwd": "/path/to/knowlyx"
+      "args": ["run", "knowai", "mcp", "--repo", "."],
+      "cwd": "/path/to/knowai"
     }
   }
 }
@@ -122,11 +122,11 @@ Add to `.claude/settings.json` in any target repo:
 - **No LLM calls in the reasoning engine** — all reasoning is rule-based. Claude (via MCP) does the higher-level synthesis.
 - **Scan cache** — `_state` dict in both `mcp/server.py` and `api/main.py` caches per `repo_path`. Call `refresh_scan` after structural changes.
 - **Risk decisions are binding** — `reject` means stop; `ask` means pause for human confirmation. Never auto-proceed past these.
-- **Multi-repo aware** — `repo_path` is always explicit; tools can target any repo, not just the one Knowlyx lives in.
+- **Multi-repo aware** — `repo_path` is always explicit; tools can target any repo, not just the one Knowai lives in.
 
 ### Phase 3 — Workspace + Graph export + Approval queue
 
-- `get_workspace_context(workspace_path)` — full multi-repo overview from knowlyx.toml
+- `get_workspace_context(workspace_path)` — full multi-repo overview from knowai.toml
 - `get_cross_repo_impact(changed_repo, change_description, workspace_path)` — cross-repo blast radius
 - `export_graph(format, repo_path, workspace_path)` — react_flow | mermaid | dot
 - `request_approval(title, description, risk_level, domain, ...)` — submit approval gate
@@ -136,7 +136,7 @@ Add to `.claude/settings.json` in any target repo:
 
 ### Workspace (multi-repo)
 
-Defined in `src/knowlyx/workspace/`. Driven by `knowlyx.toml` at workspace root:
+Defined in `src/knowai/workspace/`. Driven by `knowai.toml` at workspace root:
 
 ```toml
 name = "my-product"
@@ -159,11 +159,11 @@ to = "api"
 type = "api"
 ```
 
-CLI: `knowlyx workspace init | scan | impact <repo> -c "..." | graph [mermaid|dot|react_flow]`
+CLI: `knowai workspace init | scan | impact <repo> -c "..." | graph [mermaid|dot|react_flow]`
 
 ### Graph export
 
-`src/knowlyx/graph/exporter.py` — `GraphExporter` produces:
+`src/knowai/graph/exporter.py` — `GraphExporter` produces:
 
 - **React Flow JSON** — drop-in for `<ReactFlow nodes={} edges={} />` (Phase 3 frontend)
 - **Mermaid** — paste into any markdown
@@ -171,11 +171,11 @@ CLI: `knowlyx workspace init | scan | impact <repo> -c "..." | graph [mermaid|do
 
 ### Approval queue
 
-`src/knowlyx/approval/queue.py` — stored in `.knowlyx/approvals.json`.
+`src/knowai/approval/queue.py` — stored in `.knowai/approvals.json`.
 
-Flow: AI calls `request_approval()` → stores as `pending` → human runs `knowlyx approval approve <id>` → AI polls `check_approval()` → proceeds only on `approved`.
+Flow: AI calls `request_approval()` → stores as `pending` → human runs `knowai approval approve <id>` → AI polls `check_approval()` → proceeds only on `approved`.
 
-CLI: `knowlyx approval list | show <id> | approve <id> | reject <id> --reason "..."`
+CLI: `knowai approval list | show <id> | approve <id> | reject <id> --reason "..."`
 
 ## Planned (Phase 4)
 

@@ -1,6 +1,6 @@
 # 06 — Memory Layer
 
-📂 [src/knowlyx/memory/](../src/knowlyx/memory/)
+📂 [src/knowai/memory/](../src/knowai/memory/)
 
 Persistent memory ข้าม session — สำหรับเก็บ business context, team decisions, approved conventions
 
@@ -8,7 +8,7 @@ Persistent memory ข้าม session — สำหรับเก็บ busine
 
 ### FileMemoryStore (default)
 
-- เก็บเป็น JSON ใน `.knowlyx/memory.json` ภายใน project
+- เก็บเป็น JSON ใน `.knowai/memory.json` ภายใน project
 - keyword scoring search
 - zero dependency
 - เหมาะ solo dev / small team
@@ -39,7 +39,7 @@ AI calls remember_business_context()
   → entry saved with approved=False
   → entry NOT injected into future analyses
 
-Human runs: knowlyx memory approve <entry-id>
+Human runs: knowai memory approve <entry-id>
   → entry marked approved=True
   → entry NOW injected into analyze_intent reports
 ```
@@ -51,7 +51,7 @@ Human runs: knowlyx memory approve <entry-id>
 ## API
 
 ```python
-from knowlyx.memory import MemoryService
+from knowai.memory import MemoryService
 
 mem = MemoryService(repo_path="/path/to/repo")
 
@@ -74,25 +74,25 @@ results = mem.recall(query="payment idempotency", domain="billing")
 
 ```bash
 # Solo dev → save แล้ว approve เอง
-uv run knowlyx memory decide billing \
+uv run knowai memory decide billing \
   "Idempotency keys required" \
   --body "All payment API calls must include Idempotency-Key header to prevent duplicate charges from network retries"
 
 # List
-uv run knowlyx memory list --repo .
+uv run knowai memory list --repo .
 
 # Search
-uv run knowlyx memory recall "rate limit"
+uv run knowai memory recall "rate limit"
 
 # Delete
-uv run knowlyx memory forget <entry-id>
+uv run knowai memory forget <entry-id>
 ```
 
 **Scenario จริง:** Tech lead ตัดสินใจหลัง incident
 
 1. เกิด incident: webhook handler ทำงานซ้ำเพราะไม่มี idempotency check
 2. Lead post-mortem → ตัดสินใจ "ทุก webhook handler ต้องเช็ค event_id duplicate"
-3. รัน `knowlyx memory decide webhook "Event ID idempotency" --body "..."`
+3. รัน `knowai memory decide webhook "Event ID idempotency" --body "..."`
 4. สัปดาห์ต่อมา dev ใหม่ขอ AI เพิ่ม webhook handler
 5. AI call `recall_context("webhook idempotency")` → ได้คำตอบทันที
 6. AI gen code ถูก first try — ไม่ซ้ำ incident เดิม

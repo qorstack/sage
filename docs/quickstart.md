@@ -1,6 +1,6 @@
 # Quick start
 
-Get Knowlyx running with Claude Code in 5 minutes.
+Get Knowai running with Claude Code in 5 minutes.
 
 ## 1. Install
 
@@ -8,13 +8,13 @@ Pick one:
 
 ```bash
 # Via uv (recommended)
-uv tool install knowlyx
+uv tool install knowai
 
 # Via pipx
-pipx install knowlyx
+pipx install knowai
 
 # Or run without installing (one-shot)
-uvx knowlyx scan .
+uvx knowai scan .
 ```
 
 Requires Python 3.11+.
@@ -22,8 +22,8 @@ Requires Python 3.11+.
 ## 2. Verify
 
 ```bash
-knowlyx --version
-knowlyx scan .
+knowai --version
+knowai scan .
 ```
 
 You should see a summary: language, framework, architecture, domains, conventions.
@@ -31,7 +31,7 @@ You should see a summary: language, framework, architecture, domains, convention
 ## 3. Connect to Claude Code
 
 ```bash
-claude mcp add knowlyx -- uvx knowlyx mcp --repo .
+claude mcp add knowai -- uvx knowai mcp --repo .
 ```
 
 Or edit `.claude/settings.json` manually:
@@ -39,15 +39,15 @@ Or edit `.claude/settings.json` manually:
 ```json
 {
   "mcpServers": {
-    "knowlyx": {
+    "knowai": {
       "command": "uvx",
-      "args": ["knowlyx", "mcp", "--repo", "."]
+      "args": ["knowai", "mcp", "--repo", "."]
     }
   }
 }
 ```
 
-Restart Claude Code. You should see 20 Knowlyx tools available.
+Restart Claude Code. You should see 20 Knowai tools available.
 
 ## 4. Try a cognition request
 
@@ -70,7 +70,7 @@ Claude writes code that respects everything in that report.
 ## 5. (Optional) Save your first team decision
 
 ```bash
-knowlyx memory decide auth \
+knowai memory decide auth \
   "Use SendGrid for password reset emails" \
   --body "Primary: SendGrid. Fallback: AWS SES. Templates in templates/auth/."
 ```
@@ -79,7 +79,7 @@ Now any future `analyze_intent` for auth-related work will surface this memory t
 
 ## 6. (Optional) Set up a multi-repo workspace
 
-If your product spans multiple repos, Knowlyx treats one of them as the **knowledge home** (the "shared brain") and auto-links the rest.
+If your product spans multiple repos, Knowai treats one of them as the **knowledge home** (the "shared brain") and auto-links the rest.
 
 ### Recommended layout
 
@@ -90,26 +90,26 @@ If your product spans multiple repos, Knowlyx treats one of them as the **knowle
   myproduct-web/         ← frontend (working repo)
 ```
 
-Naming convention: the knowledge repo's folder name ends with `-knowledge`. Knowlyx uses this to auto-derive the workspace name (strips `-knowledge` and `-knowlyx` suffixes).
+Naming convention: the knowledge repo's folder name ends with `-knowledge`. Knowai uses this to auto-derive the workspace name (strips `-knowledge` and `-knowai` suffixes).
 
 ### Tech lead — initialize the workspace home
 
 ```bash
 mkdir -p ~/code/myproduct/myproduct-knowledge && cd ~/code/myproduct/myproduct-knowledge
 git init   # or: git clone <empty-team-repo> .
-knowlyx init
+knowai init
 ```
 
-This creates `workspace.toml`, `packs/`, `scans/` in the folder and registers the path in `~/.knowlyx/registry.toml`. Push to a shared remote so teammates can clone it.
+This creates `workspace.toml`, `packs/`, `scans/` in the folder and registers the path in `~/.knowai/registry.toml`. Push to a shared remote so teammates can clone it.
 
 ### Each dev — link a working repo
 
 ```bash
 cd ~/code/myproduct/myproduct-api
-knowlyx init
+knowai init
 ```
 
-That's it. Knowlyx auto-detects the `-knowledge` sibling, reads its git remote, writes a 2-line `.knowlyx/config.toml`, and auto-registers this repo in the workspace's `workspace.toml`.
+That's it. Knowai auto-detects the `-knowledge` sibling, reads its git remote, writes a 2-line `.knowai/config.toml`, and auto-registers this repo in the workspace's `workspace.toml`.
 
 ### Joining from a fresh machine
 
@@ -117,7 +117,7 @@ That's it. Knowlyx auto-detects the `-knowledge` sibling, reads its git remote, 
 cd ~/code/myproduct
 git clone <team-knowledge-repo-url> myproduct-knowledge
 git clone <team-api-repo-url>       myproduct-api
-cd myproduct-api && knowlyx init    # auto-links via the sibling
+cd myproduct-api && knowai init    # auto-links via the sibling
 ```
 
 Memory + decisions + approvals are now shared across all linked repos. To share with your team, see [git-sync.md](git-sync.md).
@@ -125,8 +125,8 @@ Memory + decisions + approvals are now shared across all linked repos. To share 
 ### Override auto-detection
 
 ```bash
-knowlyx init --knowledge --name myproduct   # force this folder to be the workspace home, custom name
-knowlyx init --link myproduct --remote <git-url>   # force link mode (no sibling needed)
+knowai init --knowledge --name myproduct   # force this folder to be the workspace home, custom name
+knowai init --link myproduct --remote <git-url>   # force link mode (no sibling needed)
 ```
 
 ## Next

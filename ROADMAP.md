@@ -14,20 +14,20 @@ File-based memory store, Qdrant fallback, human approval workflow, 7 built-in co
 
 ### v0.3 — Workspace + Graph + Approval ✅
 
-`knowlyx.toml` multi-repo workspace, cross-repo impact analyzer, graph exporter (React Flow / Mermaid / DOT), approval queue, 8 workspace MCP tools.
+`knowai.toml` multi-repo workspace, cross-repo impact analyzer, graph exporter (React Flow / Mermaid / DOT), approval queue, 8 workspace MCP tools.
 
 ### v0.4 — Distributed Knowledge ✅
 
-Central knowledge store at `~/.knowlyx/workspaces/`, per-repo link config, auto-resolver, migration script. Dev clones one repo at a time and still gets shared memory + decisions.
+Central knowledge store at `~/.knowai/workspaces/`, per-repo link config, auto-resolver, migration script. Dev clones one repo at a time and still gets shared memory + decisions.
 
 ## In progress
 
 ### v0.5 — Sync + Self-Review + Hooks 🟡
 
-- Git sync CLI wrapper (`knowlyx sync init/pull/push`)
+- Git sync CLI wrapper (`knowai sync init/pull/push`)
 - AI self-review (`validate_generated_code` MCP tool — block bad code before write)
-- Commit-time enforcement (`knowlyx commit-check` + pre-commit hook)
-- `knowlyx init` auto-scaffold
+- Commit-time enforcement (`knowai commit-check` + pre-commit hook)
+- `knowai init` auto-scaffold
 - Complete REST API for memory/workspace/approval
 - GitHub Actions CI
 
@@ -49,7 +49,7 @@ Next.js + React Flow app for visualizing cognitive graph, browsing memory, manag
 
 - ML-based risk scoring (trained on historical incidents)
 - Local LLM augmentation via Ollama (auto-extract memory from PRs)
-- Knowlyx Cloud (managed sync + web UI for larger teams)
+- Knowai Cloud (managed sync + web UI for larger teams)
 - Business conflict detection (feature ↔ policy)
 - Auto-extracted decisions from PR descriptions
 

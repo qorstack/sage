@@ -1,11 +1,11 @@
 # 09 — Multi-Repo Workspace
 
-📂 [src/knowlyx/workspace/](../src/knowlyx/workspace/)
+📂 [src/knowai/workspace/](../src/knowai/workspace/)
 
 โปรเจกต์จริงไม่ใช่ repo เดียว — มี api + web + mobile + worker + admin
-Knowlyx ต้องเห็นทั้งหมดและรู้ว่าใครคุยกับใคร
+Knowai ต้องเห็นทั้งหมดและรู้ว่าใครคุยกับใคร
 
-## knowlyx.toml
+## knowai.toml
 
 วางที่ root ของ workspace (โฟลเดอร์ที่ครอบทุก repo):
 
@@ -69,7 +69,7 @@ Scan ทุก repo **parallel** → build cross-repo NetworkX graph
 
 - Frontend ที่มี generated API client (เจอ `src/api/generated/`) → backend
 - Worker ที่ share domain กับ source repo → source repo
-- Declared dependencies จาก `knowlyx.toml`
+- Declared dependencies จาก `knowai.toml`
 
 ## CrossRepoImpactAnalyzer
 
@@ -97,19 +97,19 @@ analyzer.analyze(
 ## CLI
 
 ```bash
-# Init knowlyx.toml อัตโนมัติ (Phase 4 — ยังไม่มี)
-knowlyx workspace init
+# Init knowai.toml อัตโนมัติ (Phase 4 — ยังไม่มี)
+knowai workspace init
 
 # Scan ทุก repo
-knowlyx workspace scan
+knowai workspace scan
 
 # Cross-repo impact
-knowlyx workspace impact api --change "rename users.email column"
+knowai workspace impact api --change "rename users.email column"
 
 # Graph
-knowlyx workspace graph
-knowlyx workspace graph react_flow --json
-knowlyx workspace graph mermaid
+knowai workspace graph
+knowai workspace graph react_flow --json
+knowai workspace graph mermaid
 ```
 
 ## MCP tools
@@ -125,7 +125,7 @@ knowlyx workspace graph mermaid
 **Scenario:** Backend dev จะ rename DB column
 
 ```bash
-$ knowlyx workspace impact api --change "rename users.email → email_address"
+$ knowai workspace impact api --change "rename users.email → email_address"
 
 Workspace: my-product
 Changed repo: api (CRITICAL)
@@ -161,5 +161,5 @@ Actions required:
 Risk: HIGH → recommend approval queue
 ```
 
-→ ก่อน Knowlyx: dev ลืม update mobile → users on old app version พัง production
-→ หลัง Knowlyx: เห็นชัดก่อนเริ่ม + plan rollout safe
+→ ก่อน Knowai: dev ลืม update mobile → users on old app version พัง production
+→ หลัง Knowai: เห็นชัดก่อนเริ่ม + plan rollout safe

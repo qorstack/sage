@@ -2,11 +2,11 @@
 
 import pytest
 
-from knowlyx.graph.cognitive_graph import CognitiveGraph
-from knowlyx.models.schema import AIDecision, ArchitecturePattern, ScanResult
-from knowlyx.reasoning.engine import ReasoningEngine
-from knowlyx.reasoning.intent_analyzer import IntentAnalyzer
-from knowlyx.reasoning.risk_scorer import RiskScorer
+from knowai.graph.cognitive_graph import CognitiveGraph
+from knowai.models.schema import AIDecision, ArchitecturePattern, ScanResult
+from knowai.reasoning.engine import ReasoningEngine
+from knowai.reasoning.intent_analyzer import IntentAnalyzer
+from knowai.reasoning.risk_scorer import RiskScorer
 
 
 def _make_scan(**kwargs) -> ScanResult:

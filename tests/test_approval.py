@@ -1,6 +1,6 @@
 """Tests for the approval queue."""
 
-from knowlyx.approval.queue import ApprovalQueue, ApprovalRequest, ApprovalStatus
+from knowai.approval.queue import ApprovalQueue, ApprovalRequest, ApprovalStatus
 
 
 def _queue(tmp_path):

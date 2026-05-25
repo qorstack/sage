@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from knowlyx.workspace.schema import RepoDependency, RepoConfig, RepoRole, WorkspaceConfig
-from knowlyx.workspace.config_loader import save, load, init
+from knowai.workspace.schema import RepoDependency, RepoConfig, RepoRole, WorkspaceConfig
+from knowai.workspace.config_loader import save, load, init
 
 
 def _make_repo(tmp_path: Path, name: str, package_json: dict | None = None) -> Path:
@@ -43,7 +43,7 @@ def test_config_save_load(tmp_path):
 def test_workspace_init(tmp_path):
     config = init(tmp_path, name="test-ws")
     assert config.name == "test-ws"
-    assert (tmp_path / "knowlyx.toml").exists()
+    assert (tmp_path / "knowai.toml").exists()
 
 
 def test_get_dependents(tmp_path):
@@ -65,7 +65,7 @@ def test_get_dependents(tmp_path):
 
 
 def test_workspace_scan(tmp_path):
-    from knowlyx.workspace.multi_scanner import WorkspaceScanner
+    from knowai.workspace.multi_scanner import WorkspaceScanner
 
     api_dir = _make_repo(tmp_path, "api")
     web_dir = _make_repo(tmp_path, "web", {"dependencies": {"next": "14"}, "devDependencies": {}})
@@ -87,7 +87,7 @@ def test_workspace_scan(tmp_path):
 
 
 def test_cross_repo_impact(tmp_path):
-    from knowlyx.workspace.multi_scanner import CrossRepoImpactAnalyzer, WorkspaceScanner
+    from knowai.workspace.multi_scanner import CrossRepoImpactAnalyzer, WorkspaceScanner
 
     api_dir = _make_repo(tmp_path, "api")
     web_dir = _make_repo(tmp_path, "web", {"dependencies": {"next": "14"}, "devDependencies": {}})

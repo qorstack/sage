@@ -7,15 +7,15 @@ from pathlib import Path
 
 import pytest
 
-from knowlyx import paths
-from knowlyx.link.config import LinkConfig, load_link, save_link
-from knowlyx.link.resolver import resolve_workspace, resolve_workspace_or_legacy
+from knowai import paths
+from knowai.link.config import LinkConfig, load_link, save_link
+from knowai.link.resolver import resolve_workspace, resolve_workspace_or_legacy
 
 
 @pytest.fixture
 def isolated_home(tmp_path, monkeypatch):
-    monkeypatch.setenv("KNOWLYX_HOME", str(tmp_path / "knowlyx_home"))
-    return tmp_path / "knowlyx_home"
+    monkeypatch.setenv("KNOWLYX_HOME", str(tmp_path / "knowai_home"))
+    return tmp_path / "knowai_home"
 
 
 @pytest.fixture
@@ -84,14 +84,14 @@ def test_resolve_workspace_or_legacy_central_mode(repo, isolated_home):
 def test_resolve_workspace_or_legacy_legacy_mode(repo, isolated_home):
     mem, app, mode = resolve_workspace_or_legacy(repo)
     assert mode == "legacy"
-    assert mem == repo / ".knowlyx" / "memory"
-    assert app == repo / ".knowlyx" / "approvals"
+    assert mem == repo / ".knowai" / "memory"
+    assert app == repo / ".knowai" / "approvals"
 
 
 def test_memory_store_uses_central_when_linked(repo, isolated_home):
     """Integration: create_store should follow the link to central memory."""
-    from knowlyx.memory.schema import MemoryEntry, MemoryKind
-    from knowlyx.memory.store import create_store
+    from knowai.memory.schema import MemoryEntry, MemoryKind
+    from knowai.memory.store import create_store
 
     save_link(LinkConfig(workspace="alpha"), repo)
     paths.ensure_workspace_dir("alpha")
@@ -112,14 +112,14 @@ def test_memory_store_uses_central_when_linked(repo, isolated_home):
     titles = [json.loads(p.read_text(encoding="utf-8"))["title"] for p in central_entries.glob("*.json")]
     assert "test" in titles
 
-    legacy_entries = repo / ".knowlyx" / "memory" / "entries"
+    legacy_entries = repo / ".knowai" / "memory" / "entries"
     assert not legacy_entries.exists()
 
 
 def test_memory_store_uses_legacy_when_not_linked(repo, isolated_home):
     """Without link, behavior must match pre-Phase4 layout."""
-    from knowlyx.memory.schema import MemoryEntry, MemoryKind
-    from knowlyx.memory.store import create_store
+    from knowai.memory.schema import MemoryEntry, MemoryKind
+    from knowai.memory.store import create_store
 
     store = create_store(str(repo))
     entry = MemoryEntry(
@@ -132,13 +132,13 @@ def test_memory_store_uses_legacy_when_not_linked(repo, isolated_home):
     )
     store.save(entry)
 
-    legacy_entries = repo / ".knowlyx" / "memory" / "entries"
+    legacy_entries = repo / ".knowai" / "memory" / "entries"
     assert legacy_entries.exists()
     assert any(legacy_entries.glob("*.json"))
 
 
 def test_approval_queue_uses_central_when_linked(repo, isolated_home):
-    from knowlyx.approval.queue import ApprovalRequest, get_queue
+    from knowai.approval.queue import ApprovalRequest, get_queue
 
     save_link(LinkConfig(workspace="alpha"), repo)
     paths.ensure_workspace_dir("alpha")

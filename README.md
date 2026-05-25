@@ -187,33 +187,51 @@ If `command not found`, open a new terminal (uv/pipx adds to your PATH on first 
 
 ### Step 6 — Point the CLI at the same database
 
-The CLI uses the same `POSTGRES_*` env vars as the dashboard.
+The CLI uses the same `POSTGRES_*` env vars as the dashboard. **The easiest way is to reuse the `.env` file from Step 1** — knowai auto-loads `.env` from the directory you run the CLI in (no exporting needed).
 
-**Mac / Linux:**
+So if you `cd` into the folder you created in Step 1 (which has the `.env` and `docker-compose.yml`), the CLI just works:
 
 ```bash
-export POSTGRES_HOST=localhost
-export POSTGRES_PORT=5432
-export POSTGRES_USER=knowai
-export POSTGRES_PASSWORD=knowai
-export POSTGRES_DB=knowai
-export POSTGRES_SCHEMA=public
+cd ~/knowai          # the folder from Step 1
+knowai memory list   # uses .env automatically
 ```
 
-Persist them in `~/.bashrc` or `~/.zshrc`.
+**If you want to run knowai from any directory** (e.g. inside your code repos), either:
 
-**Windows PowerShell:**
+- Copy the `.env` file into each repo (recommended), or
+- Export the vars in your shell profile:
 
-```powershell
-$env:POSTGRES_HOST='localhost'
-$env:POSTGRES_PORT='5432'
-$env:POSTGRES_USER='knowai'
-$env:POSTGRES_PASSWORD='knowai'
-$env:POSTGRES_DB='knowai'
-$env:POSTGRES_SCHEMA='public'
-```
+  <details>
+  <summary>Mac / Linux</summary>
 
-Persist them in your `$PROFILE`.
+  ```bash
+  export POSTGRES_HOST=localhost
+  export POSTGRES_PORT=5432
+  export POSTGRES_USER=knowai
+  export POSTGRES_PASSWORD=knowai
+  export POSTGRES_DB=knowai
+  export POSTGRES_SCHEMA=public
+  ```
+
+  Persist in `~/.bashrc` or `~/.zshrc`.
+  </details>
+
+  <details>
+  <summary>Windows PowerShell</summary>
+
+  ```powershell
+  $env:POSTGRES_HOST='localhost'
+  $env:POSTGRES_PORT='5432'
+  $env:POSTGRES_USER='knowai'
+  $env:POSTGRES_PASSWORD='knowai'
+  $env:POSTGRES_DB='knowai'
+  $env:POSTGRES_SCHEMA='public'
+  ```
+
+  Persist in your `$PROFILE`.
+  </details>
+
+System env vars always win over `.env` if both exist.
 
 ### Step 7 — Connect to Claude Code
 

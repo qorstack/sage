@@ -6,8 +6,8 @@ import threading
 
 import pytest
 
-from knowlyx.approval.queue import ApprovalQueue, ApprovalRequest, ApprovalStatus
-from knowlyx.sync.git_sync import _newer
+from knowai.approval.queue import ApprovalQueue, ApprovalRequest, ApprovalStatus
+from knowai.sync.git_sync import _newer
 
 
 def _req(title="t") -> ApprovalRequest:

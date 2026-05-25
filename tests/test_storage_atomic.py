@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from knowlyx.storage import atomic_write_text, file_lock, read_modify_write
+from knowai.storage import atomic_write_text, file_lock, read_modify_write
 
 
 def test_atomic_write_creates_file(tmp_path):

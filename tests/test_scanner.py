@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from knowlyx.scanner.repo_scanner import RepoScanner
+from knowai.scanner.repo_scanner import RepoScanner
 
 
-def test_scan_knowlyx_itself(tmp_path):
-    """Scanning the Knowlyx repo itself should return a valid ScanResult."""
+def test_scan_knowai_itself(tmp_path):
+    """Scanning the Knowai repo itself should return a valid ScanResult."""
     root = Path(__file__).parent.parent
     scanner = RepoScanner(root)
     result = scanner.scan()

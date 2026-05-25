@@ -1,9 +1,9 @@
 """Tests for graph exporters."""
 
-from knowlyx.graph.cognitive_graph import CognitiveGraph
-from knowlyx.graph.exporter import GraphExporter
-from knowlyx.models.schema import ArchitecturePattern, ScanResult
-from knowlyx.scanner.repo_scanner import RepoScanner
+from knowai.graph.cognitive_graph import CognitiveGraph
+from knowai.graph.exporter import GraphExporter
+from knowai.models.schema import ArchitecturePattern, ScanResult
+from knowai.scanner.repo_scanner import RepoScanner
 
 
 def _build_graph() -> CognitiveGraph:
