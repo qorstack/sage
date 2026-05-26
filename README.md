@@ -125,33 +125,13 @@ docker compose up -d
 docker compose ps
 ```
 
-Both rows should show `Up X seconds (healthy)`.
+Both rows should show `(healthy)`.
 
 ### Step 3 — Open the dashboard
 
 Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-### Step 4 — Add your first knowledge entry
-
-1. Click **Knowledge** in the top nav, then **+ Add new**.
-2. Fill in two things:
-   - **Title** — `Use idempotency keys`
-   - **Content** — `All POST /payments require an Idempotency-Key header.`
-     (Plain markdown — toolbar gives you bold/italic/headings/code/lists; **Preview** tab renders it.)
-3. _(Optional)_ tick **Mark as approved** if your team has already signed off.
-4. Click **Save** → you land on the entry detail page.
-
-Go back to **Home** — `Knowledge items = 1`, `Approved = 1`.
-
-**On any entry detail page** you can:
-
-- **Edit** — change title/content (logged as `update`)
-- **Approve** — flip status if pending (logged as `approve`)
-- **Delete** — remove the entry (kept in audit log)
-
-> **Note on defaults.** The web form keeps things simple — every new entry gets `domain = general`, `kind = team_decision`, and no tags. If you want a different domain/kind/tags (used for grouping and AI-tool queries), set them via the CLI: `knowai memory decide <domain> "<title>" --body "..." --tags a,b,c`.
-
-✅ If you only need a team knowledge base, **you're done**. Skip to [Manage / inspect](#manage--inspect) or [Stop / restart](#stop--restart--wipe).
+If you only need a team knowledge base, **you're done**. Add entries via the dashboard ([Add knowledge manually](#add-knowledge-manually)), then jump to [Manage / inspect](#manage--inspect) or [Stop / restart](#stop--restart--wipe).
 
 ---
 
@@ -159,7 +139,7 @@ Go back to **Home** — `Knowledge items = 1`, `Approved = 1`.
 
 This part connects the dashboard's Postgres to Claude Code / Cursor / any MCP client via a CLI.
 
-### Step 5 — Install the CLI
+### Step 4 — Install the CLI
 
 Pick **one** (uv recommended):
 
@@ -179,7 +159,7 @@ knowai --version
 
 If `command not found`, open a new terminal (uv/pipx adds to your PATH on first install).
 
-### Step 6 — Configure the CLI and link each repo to a workspace
+### Step 5 — Configure the CLI and link each repo to a workspace
 
 Create a `knowai.config` at the root of every repo.
 
@@ -198,29 +178,17 @@ schema   = "public"
 
 **Why explicit `repo_name`:** folder names get renamed locally; repo identity shouldn't drift with them.
 
-**Bypass behavior:**
+### Step 6 — Seed knowledge from existing code
 
-- Repo without `./knowai.config` → not linked. The CLI keeps working but stores data in a local per-repo fallback.
-- Dev without knowai installed → the file is just text in the repo. Nothing breaks.
-
-**Config precedence** (highest first): process env → `./knowai.config` (cwd or any parent) → `~/.knowai.config` → `.env`. You can also put a shared `[database]` block in `~/.knowai.config` so per-repo files only need `workspace` + `repo_name`.
-
-### Step 7 — (optional) Seed knowledge from existing code
-
-For repos you've already built, `knowai generate` scans the code and turns each finding (overview, conventions, reusable assets, risk patterns) into a knowledge entry:
+For repos you've already built, `knowai generate` scans the code and turns each finding (overview, conventions, reusable assets, risk patterns) into an **approved** knowledge entry:
 
 ```bash
-cd ~/code/aaa-api
-knowai generate                     # dry-run — preview proposed entries
-knowai generate --save              # persist as pending (review in dashboard)
-knowai generate --save --approve    # persist + auto-approve (use when you trust the scan)
+knowai generate
 ```
 
-Add `--approve` to mark them approved on the spot (use when you trust the scan).
+Safe to re-run — entries upsert on title. Refine in the dashboard afterward: edit titles, delete noise, or unapprove items you don't actually trust.
 
-Then refine in the dashboard — edit titles, delete noise, approve the keepers.
-
-### Step 8 — Connect to Claude Code
+### Step 7 — Connect to Claude Code
 
 Register knowai **once at user scope** so it works in every project — no need to re-register per repo:
 
@@ -251,7 +219,7 @@ Edit `~/.cursor/mcp.json`:
 
 Restart Cursor.
 
-### Step 9 — Confirm the AI uses it
+### Step 8 — Confirm the AI uses it
 
 In your AI chat, type:
 
@@ -261,12 +229,36 @@ In your AI chat, type:
 
 - **Claude Code**: you'll see a `knowai` tool call indicator in the response.
 - **Cursor**: hover the assistant message — MCP tool calls appear inline.
-- The reply mentions your Step 4 entry about idempotency keys.
+- The reply mentions any idempotency-keys entry you added (see [Add knowledge manually](#add-knowledge-manually)).
 
 If you see no MCP call:
 
 - Confirm registration: `claude mcp list` should show `knowai ✓`. If it shows `✗`, run `knowai mcp` manually in a terminal — the error tells you what's missing (usually credentials).
-- Make sure `~/.knowai.config` exists (Step 6), or that the repo you ran Claude in has its own `knowai.config`.
+- Make sure `~/.knowai.config` exists (Step 5), or that the repo you ran Claude in has its own `knowai.config`.
+
+---
+
+## Add knowledge manually
+
+Use this when you want to build the central knowledge base yourself through the dashboard UI.
+
+1. Click **Knowledge** in the top nav, then **+ Add new**.
+2. Fill in two things:
+   - **Title** — `Use idempotency keys`
+   - **Content** — `All POST /payments require an Idempotency-Key header.`
+     (Plain markdown — toolbar gives you bold/italic/headings/code/lists; **Preview** tab renders it.)
+3. _(Optional)_ tick **Mark as approved** if your team has already signed off.
+4. Click **Save** → you land on the entry detail page.
+
+Go back to **Home** — `Knowledge items = 1`, `Approved = 1`.
+
+**On any entry detail page** you can:
+
+- **Edit** — change title/content (logged as `update`)
+- **Approve** — flip status if pending (logged as `approve`)
+- **Delete** — remove the entry (kept in audit log)
+
+> **Note on defaults.** The web form keeps things simple — every new entry gets `domain = general`, `kind = team_decision`, and no tags. If you want a different domain/kind/tags (used for grouping and AI-tool queries), set them via the CLI: `knowai memory decide <domain> "<title>" --body "..." --tags a,b,c`.
 
 ---
 

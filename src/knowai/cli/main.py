@@ -262,7 +262,7 @@ def generate(
         store = PostgresMemoryStore()
     except Exception as exc:
         console.print(f"\n[red]Could not connect to memory store:[/red] {exc}")
-        console.print("Set ~/.knowai.config (see README Step 6) and try again.")
+        console.print("Check that Postgres is running and knowai.config (or ~/.knowai.config) has a valid [database] section — see README Step 5.")
         raise typer.Exit(1)
 
     saved = 0

@@ -15,6 +15,10 @@ from knowai.link.resolver import resolve_workspace, resolve_workspace_or_legacy
 @pytest.fixture
 def isolated_home(tmp_path, monkeypatch):
     monkeypatch.setenv("KNOWLYX_HOME", str(tmp_path / "knowai_home"))
+    # Force file-store path: tests in this module exercise the link/workspace
+    # resolver, not Postgres. The repo's .env may leak POSTGRES_USER into the
+    # shell, which would otherwise route create_store() to PostgresMemoryStore.
+    monkeypatch.delenv("POSTGRES_USER", raising=False)
     return tmp_path / "knowai_home"
 
 
