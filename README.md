@@ -48,6 +48,17 @@ Higher on real codebases — AI stops reinventing utilities, matches team style,
 
 Doesn't help much on greenfield / one-shot scripts with no team context.
 
+### The more you use it, the less it costs
+
+**Cheaper over time** — because the AI gets more accurate the longer you use it:
+
+- Reuses approved team decisions instead of re-deriving them every session
+- Stops writing code that gets rejected and rewritten (the biggest token sink)
+- Catches risky changes before code is generated, not after
+- Pulls only the relevant assets / conventions for each request, not the whole repo
+
+A small upfront investment makes this possible: seed memory once with `/knowai-generate`, then let every `/knowai` call run the full pipeline so each change starts from real context.
+
 ---
 
 ## Prerequisites
@@ -164,7 +175,7 @@ Two commands ship:
 
 > Why a slash command? MCP tool descriptions only reach Claude when it _decides_ to use a tool — a plain prompt can slip past the pipeline. `/knowai` makes the consult mandatory.
 
-### 8. Seed memory from the repo (once)
+### 8. Seed memory from the repo (first time or re-generate)
 
 Open Claude inside the repo and run:
 
@@ -175,6 +186,8 @@ Open Claude inside the repo and run:
 Claude will walk the codebase, extract meaningful conventions / decisions / reusable assets, and save them through MCP. Entries land as **Pending** for you to approve on the dashboard.
 
 Re-run after a big refactor or when onboarding a new repo — it's idempotent.
+
+> Add `.knowai/` to your repo's `.gitignore`
 
 ### 9. Use it
 
@@ -196,6 +209,16 @@ If not: `claude mcp list` shows `✗` → run `knowai mcp` in a terminal to see 
 - **Knowledge** — workspace pills at the top, then filter by source (Human / AI), status (Approved / Pending), or domain. Every row shows scope + source badges.
 - **Entry detail** — full metadata strip plus a **Move to Global ↑** / **Move to Workspace ↓** button so you can re-scope without re-creating.
 - **Summaries / Activity** — per-domain AI syntheses and full audit log.
+
+---
+
+## Tips — fewer tokens, sharper answers
+
+- **Use `/knowai` only for real changes** — features, refactors, bug fixes. Skip it for renames, typos, formatting.
+- **Approve memory on the dashboard** — pending entries are not recalled in the next session. Approved ones are.
+- **Run `/knowai-generate` once per repo** — re-run only after a big refactor or new domain. It's not a routine task.
+- **Set `repo_name` precisely** in `knowai.config` — scopes recall tighter, so Claude pulls less but more relevant context.
+- **Forget stale memory** — outdated decisions waste tokens and confuse Claude. Use `knowai memory forget <id>` or the dashboard.
 
 ---
 

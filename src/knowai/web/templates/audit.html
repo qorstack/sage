@@ -21,7 +21,7 @@
 
 <table class="tbl">
   <thead>
-    <tr><th>When</th><th>What</th><th>Who</th><th>Topic</th><th>Item</th><th>Details</th></tr>
+    <tr><th>When</th><th>What</th><th>Who</th><th>Topic</th><th>Item</th></tr>
   </thead>
   <tbody>
   {% for r in rows %}
@@ -30,11 +30,18 @@
       <td><span class="tag tag-{{ r.action }}">{{ r.action }}</span></td>
       <td>{{ r.actor }}</td>
       <td>{{ r.domain or '—' }}</td>
-      <td>{% if r.entry_id %}<a href="/entries/{{ r.entry_id }}">{{ r.title or r.entry_id }}</a>{% else %}—{% endif %}</td>
-      <td>{% if r.diff %}<pre class="mono inline"><small>{{ r.diff | tojson }}</small></pre>{% else %}—{% endif %}</td>
+      <td>
+        {% if r.entry_id %}<a href="/entries/{{ r.entry_id }}">{{ r.title or r.entry_id }}</a>{% else %}—{% endif %}
+        {% if r.diff %}
+          <details style="margin-top:4px">
+            <summary>diff</summary>
+            <pre class="mono"><small>{{ r.diff | tojson(indent=2) }}</small></pre>
+          </details>
+        {% endif %}
+      </td>
     </tr>
   {% else %}
-    <tr><td colspan="6" class="muted">No activity yet.</td></tr>
+    <tr><td colspan="5" class="muted">No activity yet.</td></tr>
   {% endfor %}
   </tbody>
 </table>

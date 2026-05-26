@@ -8,14 +8,14 @@
 <div class="grid-2" style="margin: 18px 0 28px;">
   <a href="/entries?source=ai&status=pending" class="card {{ 'warn-on' if stats.pending_ai else '' }}" style="text-decoration:none;display:block;padding:22px">
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-      <strong style="font-size:15px;color:var(--ink)">⏳ Pending review</strong>
+      <strong style="font-size:15px;color:var(--ink);display:inline-flex;align-items:center;gap:8px"><svg class="icon" style="color:var(--warn)"><use href="#icon-clock"/></svg>Pending review</strong>
       <span class="num" style="font-size:28px">{{ stats.pending_ai or 0 }}</span>
     </div>
     <div class="lbl" style="margin-top:6px">AI-generated entries waiting for a human to approve.</div>
   </a>
   <a href="/entries?scope=global" class="card" style="text-decoration:none;display:block;padding:22px">
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
-      <strong style="font-size:15px;color:var(--ink)">🌐 Global knowledge</strong>
+      <strong style="font-size:15px;color:var(--ink);display:inline-flex;align-items:center;gap:8px"><svg class="icon" style="color:var(--primary)"><use href="#icon-globe"/></svg>Global knowledge</strong>
       <span class="num" style="font-size:28px">{{ stats.global_entries or 0 }}</span>
     </div>
     <div class="lbl" style="margin-top:6px">Team-wide policies + conventions shared across every workspace.</div>
@@ -27,7 +27,7 @@
     <strong>Add your team's knowledge</strong>
     <span>Title + content. Pick global or a workspace.</span>
   </div>
-  <a class="btn" href="/entries?add=true#add">+ Add knowledge</a>
+  <a class="btn" href="/entries?add=true#add"><svg class="icon"><use href="#icon-plus"/></svg>Add knowledge</a>
 </div>
 
 <div class="cards">
@@ -45,7 +45,7 @@
     <tbody>
     {% for ws in workspaces %}
       <tr>
-        <td><span class="tag tag-scope-workspace">📁 {{ ws.workspace }}</span></td>
+        <td><span class="tag tag-scope-workspace"><svg class="icon"><use href="#icon-folder"/></svg>{{ ws.workspace }}</span></td>
         <td class="num-col">{{ ws.approved }}</td>
         <td class="num-col">{% if ws.pending %}<span class="tag tag-pending">{{ ws.pending }}</span>{% else %}0{% endif %}</td>
         <td><a href="/entries?workspace={{ ws.workspace }}">Open →</a></td>

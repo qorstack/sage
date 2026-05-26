@@ -80,6 +80,8 @@ body {
   color: var(--primary);
   letter-spacing: -0.2px;
 }
+/* Drop the baked-in black background of logo PNGs so they blend with --canvas */
+.brand img { mix-blend-mode: lighten; }
 .topbar nav { display: flex; gap: 4px; align-items: center; height: 100%; }
 .topbar nav a {
   color: var(--muted);
@@ -252,14 +254,34 @@ section h2 { margin-top: 0; }
 .tag-delete    { background: var(--bad-soft);      color: var(--bad); }
 .tag-merge     { background: var(--merge-soft);    color: var(--merge); }
 
-/* Scope / source / status badges — used on entries list + detail */
-.tag-scope-global    { background: #dbeafe; color: #1d4ed8; }
-.tag-scope-workspace { background: #dcfce7; color: #166534; }
-.tag-source-human    { background: #f3f4f6; color: #374151; }
-.tag-source-ai       { background: #fed7aa; color: #9a3412; }
-.tag-pending         { background: #fef3c7; color: #92400e; }
-.tag-approved        { background: var(--good-soft); color: var(--good); }
+/* Scope / source / status badges — used on entries list + detail.
+   All map to design tokens so they sit cleanly on dark canvas. */
+.tag-scope-global    { background: var(--primary-soft);        color: var(--primary); }
+.tag-scope-workspace { background: var(--good-soft);           color: var(--good); }
+.tag-source-human    { background: var(--surface-strong);      color: var(--body); }
+.tag-source-ai       { background: var(--merge-soft);          color: var(--merge); }
+.tag-pending         { background: var(--warn-soft);           color: var(--warn); }
+.tag-approved        { background: var(--good-soft);           color: var(--good); }
 .badges { display: inline-flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+
+/* ─── Icon system ────────────────────────────────────── */
+/* Inline SVG icons rendered via <svg class="icon"><use href="#icon-..."/></svg>.
+   Sized by font; colored by currentColor so they inherit tag/button color. */
+.icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  vertical-align: -0.15em;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon-sm { width: 0.95em; height: 0.95em; }
+.icon-lg { width: 1.2em; height: 1.2em; }
+.tag .icon { margin-right: 4px; vertical-align: -0.18em; }
+.md-tools .icon { width: 16px; height: 16px; vertical-align: middle; }
 
 /* ─── Filters bar ────────────────────────────────────── */
 .filters {
@@ -325,6 +347,7 @@ input, textarea, select {
   white-space: nowrap;
 }
 .filters button { height: 38px; padding: 6px 16px; font-size: 14px; }
+.btn-sm { height: 38px; padding: 6px 18px; font-size: 14px; }
 .filters button:hover, .stack button:hover, .btn:hover {
   background: var(--primary-active);
   text-decoration: none;
@@ -655,3 +678,53 @@ hr {
   font-weight: 400;
 }
 .md-approve input[type="checkbox"] { accent-color: var(--primary); width: 16px; height: 16px; }
+
+/* ─── Scope toggle (Add/Edit form) ───────────────────── */
+.scope-toggle { display: flex; flex-direction: column; gap: 10px; }
+.scope-option {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-sm);
+  background: var(--surface-soft);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.scope-option:hover { border-color: var(--hairline); }
+.scope-option.is-active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.scope-option input[type="radio"] { accent-color: var(--primary); margin-top: 2px; }
+.scope-option .scope-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.scope-option .scope-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.scope-option .scope-desc { font-size: 12.5px; color: var(--muted); }
+.scope-option input[type="text"] {
+  margin-top: 8px;
+  max-width: 280px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.scope-option input[type="text"]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--surface-soft);
+}
+.scope-option input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}

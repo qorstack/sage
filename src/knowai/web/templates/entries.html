@@ -24,7 +24,7 @@
       <h1>Knowledge</h1>
       <p class="subtitle">Everything your team has captured.</p>
     </div>
-    <a href="/entries?add=true" class="btn">+ Add new</a>
+    <a href="/entries?add=true" class="btn"><svg class="icon"><use href="#icon-plus"/></svg>Add new</a>
   </div>
 
   {# Workspace pills — quick filter for the most common axis #}
@@ -35,11 +35,11 @@
        style="text-decoration:none;cursor:pointer">All</a>
     <a href="/entries?workspace=__global__"
        class="tag tag-scope-global"
-       style="text-decoration:none;cursor:pointer;{{ 'outline:2px solid currentColor' if filter_workspace == '__global__' else '' }}">🌐 Global</a>
+       style="text-decoration:none;cursor:pointer;{{ 'outline:2px solid currentColor' if filter_workspace == '__global__' else '' }}"><svg class="icon"><use href="#icon-globe"/></svg>Global</a>
     {% for ws in workspaces %}
       <a href="/entries?workspace={{ ws.workspace }}"
          class="tag tag-scope-workspace"
-         style="text-decoration:none;cursor:pointer;{{ 'outline:2px solid currentColor' if filter_workspace == ws.workspace else '' }}">📁 {{ ws.workspace }}</a>
+         style="text-decoration:none;cursor:pointer;{{ 'outline:2px solid currentColor' if filter_workspace == ws.workspace else '' }}"><svg class="icon"><use href="#icon-folder"/></svg>{{ ws.workspace }}</a>
     {% endfor %}
   </div>
 
@@ -48,13 +48,13 @@
     {% if filter_workspace %}<input type="hidden" name="workspace" value="{{ filter_workspace }}">{% endif %}
     <select name="source">
       <option value="">Any source</option>
-      <option value="human" {% if filter_source == 'human' %}selected{% endif %}>👤 Human</option>
-      <option value="ai"    {% if filter_source == 'ai'    %}selected{% endif %}>🤖 AI</option>
+      <option value="human" {% if filter_source == 'human' %}selected{% endif %}>Human</option>
+      <option value="ai"    {% if filter_source == 'ai'    %}selected{% endif %}>AI</option>
     </select>
     <select name="status">
       <option value="">Any status</option>
-      <option value="approved" {% if filter_status == 'approved' %}selected{% endif %}>✓ Approved</option>
-      <option value="pending"  {% if filter_status == 'pending'  %}selected{% endif %}>⏳ Pending</option>
+      <option value="approved" {% if filter_status == 'approved' %}selected{% endif %}>Approved</option>
+      <option value="pending"  {% if filter_status == 'pending'  %}selected{% endif %}>Pending</option>
     </select>
     {% if domains %}
       <select name="domain">
@@ -86,22 +86,22 @@
         </td>
         <td>
           {% if r.scope == 'workspace' %}
-            <span class="tag tag-scope-workspace">📁 {{ r.workspace }}{% if r.repo_name %} · {{ r.repo_name }}{% endif %}</span>
+            <span class="tag tag-scope-workspace"><svg class="icon"><use href="#icon-folder"/></svg>{{ r.workspace }}{% if r.repo_name %} · {{ r.repo_name }}{% endif %}</span>
           {% else %}
-            <span class="tag tag-scope-global">🌐 Global</span>
+            <span class="tag tag-scope-global"><svg class="icon"><use href="#icon-globe"/></svg>Global</span>
           {% endif %}
         </td>
         <td>
           {% if r.source == 'ai' %}
-            <span class="tag tag-source-ai">🤖 AI</span>
+            <span class="tag tag-source-ai"><svg class="icon"><use href="#icon-bot"/></svg>AI</span>
           {% else %}
-            <span class="tag tag-source-human">👤 Human</span>
+            <span class="tag tag-source-human"><svg class="icon"><use href="#icon-user"/></svg>Human</span>
           {% endif %}
         </td>
         <td>
           {% if r.superseded_by %}<span class="tag tag-supersede">replaced</span>
-          {% elif r.approved %}<span class="tag tag-approved">✓ approved</span>
-          {% else %}<span class="tag tag-pending">⏳ pending</span>{% endif %}
+          {% elif r.approved %}<span class="tag tag-approved"><svg class="icon"><use href="#icon-check"/></svg>approved</span>
+          {% else %}<span class="tag tag-pending"><svg class="icon"><use href="#icon-clock"/></svg>pending</span>{% endif %}
         </td>
         <td class="mono"><small>{{ r.updated_at.strftime('%Y-%m-%d %H:%M') if r.updated_at else '' }}</small></td>
       </tr>

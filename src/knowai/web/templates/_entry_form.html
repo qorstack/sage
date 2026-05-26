@@ -8,23 +8,24 @@
 
 <form method="post" action="{{ action_url }}" class="entry-form">
   {% if show_scope %}
+    {% set initial_scope = form_scope or 'global' %}
     <fieldset style="border:1px solid var(--hairline);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:18px">
       <legend style="font-size:13px;color:var(--muted);padding:0 6px">Scope</legend>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <label class="row" style="display:flex;gap:10px;align-items:center;cursor:pointer">
-          <input type="radio" name="scope" value="global" {% if (form_scope or 'global') == 'global' %}checked{% endif %} style="accent-color:var(--primary)">
-          <div>
-            <strong style="font-size:14px">🌐 Global</strong>
-            <div class="muted" style="font-size:12.5px">Apply to every workspace and repo.</div>
+      <div class="scope-toggle" data-scope-toggle>
+        <label class="scope-option {{ 'is-active' if initial_scope == 'global' else '' }}" data-scope-option="global">
+          <input type="radio" name="scope" value="global" {% if initial_scope == 'global' %}checked{% endif %}>
+          <div class="scope-body">
+            <span class="scope-title"><svg class="icon"><use href="#icon-globe"/></svg>Global</span>
+            <span class="scope-desc">Apply to every workspace and repo.</span>
           </div>
         </label>
-        <label class="row" style="display:flex;gap:10px;align-items:center;cursor:pointer">
-          <input type="radio" name="scope" value="workspace" {% if form_scope == 'workspace' %}checked{% endif %} style="accent-color:var(--primary)">
-          <div style="flex:1">
-            <strong style="font-size:14px">📁 Workspace</strong>
-            <div class="muted" style="font-size:12.5px;margin-bottom:6px">Only AI calls running in this workspace will see it.</div>
+        <label class="scope-option {{ 'is-active' if initial_scope == 'workspace' else '' }}" data-scope-option="workspace">
+          <input type="radio" name="scope" value="workspace" {% if initial_scope == 'workspace' %}checked{% endif %}>
+          <div class="scope-body">
+            <span class="scope-title"><svg class="icon"><use href="#icon-folder"/></svg>Workspace</span>
+            <span class="scope-desc">Only AI calls running in this workspace will see it.</span>
             <input type="text" name="workspace" value="{{ form_workspace or '' }}" placeholder="my-product"
-                   style="max-width:280px;padding:8px 12px;border:1px solid var(--hairline);border-radius:var(--r-sm);font-size:13.5px">
+                   data-scope-input {% if initial_scope != 'workspace' %}disabled{% endif %}>
           </div>
         </label>
       </div>
@@ -44,15 +45,15 @@
         <button type="button" class="md-tab"    data-tab="preview">Preview</button>
       </div>
       <div class="md-tools">
-        <button type="button" data-md="bold"     title="Bold (Ctrl+B)"><strong>B</strong></button>
-        <button type="button" data-md="italic"   title="Italic (Ctrl+I)"><em>I</em></button>
-        <button type="button" data-md="heading"  title="Heading">H</button>
-        <button type="button" data-md="code"     title="Inline code">&lt;/&gt;</button>
-        <button type="button" data-md="codeblock" title="Code block">{ }</button>
-        <button type="button" data-md="link"     title="Link (Ctrl+K)">🔗</button>
-        <button type="button" data-md="ul"       title="Bulleted list">• –</button>
-        <button type="button" data-md="ol"       title="Numbered list">1.</button>
-        <button type="button" data-md="quote"    title="Quote">”</button>
+        <button type="button" data-md="bold"      title="Bold (Ctrl+B)"><svg class="icon"><use href="#icon-bold"/></svg></button>
+        <button type="button" data-md="italic"    title="Italic (Ctrl+I)"><svg class="icon"><use href="#icon-italic"/></svg></button>
+        <button type="button" data-md="heading"   title="Heading"><svg class="icon"><use href="#icon-heading"/></svg></button>
+        <button type="button" data-md="code"      title="Inline code"><svg class="icon"><use href="#icon-code"/></svg></button>
+        <button type="button" data-md="codeblock" title="Code block"><svg class="icon"><use href="#icon-code-block"/></svg></button>
+        <button type="button" data-md="link"      title="Link (Ctrl+K)"><svg class="icon"><use href="#icon-link"/></svg></button>
+        <button type="button" data-md="ul"        title="Bulleted list"><svg class="icon"><use href="#icon-list"/></svg></button>
+        <button type="button" data-md="ol"        title="Numbered list"><svg class="icon"><use href="#icon-list-ordered"/></svg></button>
+        <button type="button" data-md="quote"     title="Quote"><svg class="icon"><use href="#icon-quote"/></svg></button>
       </div>
     </div>
     <div class="md-write">
@@ -77,3 +78,30 @@
     {% endif %}
   </div>
 </form>
+
+<script>
+  // Scope toggle: light up the selected card + enable workspace input only when picked.
+  (function () {
+    const root = document.querySelector('[data-scope-toggle]');
+    if (!root) return;
+    const opts = root.querySelectorAll('.scope-option');
+    const wsInput = root.querySelector('[data-scope-input]');
+    function sync() {
+      opts.forEach(opt => {
+        const radio = opt.querySelector('input[type="radio"]');
+        opt.classList.toggle('is-active', radio.checked);
+      });
+      const wsRadio = root.querySelector('input[value="workspace"]');
+      if (wsInput) wsInput.disabled = !wsRadio.checked;
+    }
+    root.addEventListener('change', sync);
+    if (wsInput) {
+      wsInput.addEventListener('focus', () => {
+        const wsRadio = root.querySelector('input[value="workspace"]');
+        wsRadio.checked = true;
+        sync();
+      });
+    }
+    sync();
+  })();
+</script>

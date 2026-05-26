@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ entry.title if entry else 'Item' }}{% endblock %}
 {% block content %}
-<a href="/entries" class="back-link">← Back to Library</a>
+<a href="/entries" class="back-link"><svg class="icon"><use href="#icon-arrow-left"/></svg> Back to Library</a>
 
 {% if not entry %}
   <p class="muted">This item was not found. It may have been deleted.</p>
@@ -10,14 +10,14 @@
   <div class="meta badges">
     {% set scope = entry.metadata.get('_scope') or (entry.get('scope') if entry is mapping else None) %}
     {% if entry.scope == 'workspace' or scope == 'workspace' %}
-      <span class="tag tag-scope-workspace">📁 {{ entry.workspace or '?' }}{% if entry.repo_name %} · {{ entry.repo_name }}{% endif %}</span>
+      <span class="tag tag-scope-workspace"><svg class="icon"><use href="#icon-folder"/></svg>{{ entry.workspace or '?' }}{% if entry.repo_name %} · {{ entry.repo_name }}{% endif %}</span>
     {% else %}
-      <span class="tag tag-scope-global">🌐 Global</span>
+      <span class="tag tag-scope-global"><svg class="icon"><use href="#icon-globe"/></svg>Global</span>
     {% endif %}
-    {% if entry.source == 'ai' %}<span class="tag tag-source-ai">🤖 AI</span>
-    {% else %}<span class="tag tag-source-human">👤 Human</span>{% endif %}
-    {% if entry.approved %}<span class="tag tag-approved">✓ approved by {{ entry.approved_by or 'team' }}</span>
-    {% else %}<span class="tag tag-pending">⏳ pending approval</span>{% endif %}
+    {% if entry.source == 'ai' %}<span class="tag tag-source-ai"><svg class="icon"><use href="#icon-bot"/></svg>AI</span>
+    {% else %}<span class="tag tag-source-human"><svg class="icon"><use href="#icon-user"/></svg>Human</span>{% endif %}
+    {% if entry.approved %}<span class="tag tag-approved"><svg class="icon"><use href="#icon-check"/></svg>approved by {{ entry.approved_by or 'team' }}</span>
+    {% else %}<span class="tag tag-pending"><svg class="icon"><use href="#icon-clock"/></svg>pending approval</span>{% endif %}
     <span class="tag">{{ entry.kind.replace('_', ' ') }}</span>
     <span class="tag">topic: {{ entry.domain }}</span>
     {% if entry.superseded_by %}
@@ -37,13 +37,13 @@
     {% if entry.scope == 'workspace' %}
       <form method="post" action="/entries/{{ entry.id }}/rescope" class="inline" onsubmit="return confirm('Promote to global? It will apply to every workspace.');">
         <input type="hidden" name="scope" value="global">
-        <button type="submit" class="btn btn-secondary">↑ Move to Global</button>
+        <button type="submit" class="btn btn-secondary"><svg class="icon"><use href="#icon-arrow-up"/></svg>Move to Global</button>
       </form>
     {% else %}
       <form method="post" action="/entries/{{ entry.id }}/rescope" class="inline">
         <input type="hidden" name="scope" value="workspace">
         <input type="text" name="workspace" placeholder="workspace name" required style="max-width:160px">
-        <button type="submit" class="btn btn-secondary">↓ Move to Workspace</button>
+        <button type="submit" class="btn btn-secondary"><svg class="icon"><use href="#icon-arrow-down"/></svg>Move to Workspace</button>
       </form>
     {% endif %}
     <form method="post" action="/entries/{{ entry.id }}/delete" class="inline" onsubmit="return confirm('Delete this item? This cannot be undone.');">
