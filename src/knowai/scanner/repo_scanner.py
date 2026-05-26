@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -177,11 +178,14 @@ class RepoScanner:
     # ------------------------------------------------------------------
 
     def _walk(self):
-        for path in self.root.rglob("*"):
-            if any(part in _IGNORE_DIRS for part in path.parts):
-                continue
-            if path.is_file():
-                yield path.relative_to(self.root)
+        # os.walk with topdown=True lets us prune _IGNORE_DIRS before descent —
+        # avoids walking node_modules/.next, and onerror swallows races where
+        # dev tools delete transient files mid-scan.
+        for dirpath, dirnames, filenames in os.walk(self.root, topdown=True, onerror=lambda _e: None):
+            dirnames[:] = [d for d in dirnames if d not in _IGNORE_DIRS]
+            base = Path(dirpath)
+            for name in filenames:
+                yield (base / name).relative_to(self.root)
 
     def _count_files(self) -> int:
         return sum(1 for _ in self._walk())

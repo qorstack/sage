@@ -137,7 +137,7 @@ Both rows should show `Up X seconds (healthy)`.
 
 ### Step 3 — Open the dashboard
 
-Open <http://localhost:8080> in your browser.
+Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 You'll see the **Overview** page with all counts at 0.
 
@@ -189,12 +189,14 @@ knowai --version
 
 If `command not found`, open a new terminal (uv/pipx adds to your PATH on first install).
 
-### Step 6 — Give the CLI your credentials
+### Step 6 — Configure the CLI and link each repo to a workspace
 
-Drop one file in your home directory:
+Create a `knowai.config` at the root of every repo.
 
-```bash
-cat > ~/.knowai.config <<'EOF'
+```toml
+workspace = "my-product"
+repo_name = "aaa-api"
+
 [database]
 host     = "localhost"
 port     = 5432
@@ -202,29 +204,7 @@ user     = "knowai"
 password = "knowai"
 db       = "knowai"
 schema   = "public"
-EOF
 ```
-
-Verify:
-
-```bash
-knowai memory list   # prints [] or your entries — no error
-```
-
-### Step 7 — Link each repo to a workspace
-
-Drop a `./knowai.config` at the root of every repo that should join a workspace, then commit it:
-
-```toml
-workspace = "my-product"
-repo_name = "aaa-api"        # required — explicit, not folder-derived
-role      = "backend"        # optional
-domains   = ["payment"]      # optional
-```
-
-Write it by hand, or generate with `knowai link my-product --name aaa-api --role backend`. See [`knowai.config.example`](knowai.config.example).
-
-The same file can also carry a `[database]` section to override `~/.knowai.config` for that repo.
 
 **Why explicit `repo_name`:** folder names get renamed locally; repo identity shouldn't drift with them.
 
@@ -233,9 +213,9 @@ The same file can also carry a `[database]` section to override `~/.knowai.confi
 - Repo without `./knowai.config` → not linked. The CLI keeps working but stores data in a local per-repo fallback.
 - Dev without knowai installed → the file is just text in the repo. Nothing breaks.
 
-**Config precedence** (highest first): process env → `./knowai.config` (cwd or any parent) → `~/.knowai.config` → `.env`.
+**Config precedence** (highest first): process env → `./knowai.config` (cwd or any parent) → `~/.knowai.config` → `.env`. You can also put a shared `[database]` block in `~/.knowai.config` so per-repo files only need `workspace` + `repo_name`.
 
-### Step 8 — (optional) Seed knowledge from existing code
+### Step 7 — (optional) Seed knowledge from existing code
 
 For repos you've already built, `knowai generate` scans the code and turns each finding (overview, conventions, reusable assets, risk patterns) into a knowledge entry:
 
@@ -250,13 +230,14 @@ Add `--approve` to mark them approved on the spot (use when you trust the scan).
 
 Then refine in the dashboard — edit titles, delete noise, approve the keepers.
 
-### Step 9 — Connect to Claude Code
+### Step 8 — Connect to Claude Code
 
 Register knowai **once at user scope** so it works in every project — no need to re-register per repo:
 
 ```bash
 claude mcp add --scope user knowai -- knowai mcp
-claude mcp list      # should show: knowai ✓
+claude mcp list
+# should show: knowai ✓
 ```
 
 After this, **every chat with Claude in any folder** automatically queries knowai before generating code.
@@ -280,7 +261,7 @@ Edit `~/.cursor/mcp.json`:
 
 Restart Cursor.
 
-### Step 10 — Confirm the AI uses it
+### Step 9 — Confirm the AI uses it
 
 In your AI chat, type:
 
@@ -327,15 +308,24 @@ After submit you should land on the **original entry** (same id), not a new one.
 
 ### From the dashboard
 
-| URL                                      | What it shows                                                     |
-| ---------------------------------------- | ----------------------------------------------------------------- |
-| <http://localhost:8080>                  | **Home** — counts + recent activity                               |
-| <http://localhost:8080/entries>          | **Knowledge** — list of items, search/filter, edit/approve/delete |
-| <http://localhost:8080/entries?add=true> | **Add knowledge** — full-page editor (Title + markdown content)   |
-| <http://localhost:8080/entries/{id}>     | Item detail with Edit / Approve / Delete + history                |
-| <http://localhost:8080/syntheses>        | **Summaries** — per-domain AI summaries + drift detection         |
-| <http://localhost:8080/audit>            | **Activity** — full audit log, filter by action                   |
-| <http://localhost:8080/healthz>          | JSON status (for monitoring)                                      |
+| URL                                                                              | What it shows                                                     |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [http://localhost:8080](http://localhost:8080)                                   | **Home** — counts + recent activity                               |
+| [http://localhost:8080/entries](http://localhost:8080/entries)                   | **Knowledge** — list of items, search/filter, edit/approve/delete |
+| [http://localhost:8080/entries?add=true](http://localhost:8080/entries?add=true) | **Add knowledge** — full-page editor (Title + markdown content)   |
+| [http://localhost:8080/entries/{id}](http://localhost:8080/entries/%7Bid%7D)     | Item detail with Edit / Approve / Delete + history                |
+| [http://localhost:8080/syntheses](http://localhost:8080/syntheses)               | **Summaries** — per-domain AI summaries + drift detection         |
+| [http://localhost:8080/audit](http://localhost:8080/audit)                       | **Activity** — full audit log, filter by action                   |
+| [http://localhost:8080/healthz](http://localhost:8080/healthz)                   | JSON status (for monitoring)                                      |
+
+### From the CLI
+
+```bash
+knowai memory list                    # list all entries (prints [] when empty — verifies DB connection)
+knowai memory recall "OTP policy"     # fuzzy search approved entries
+knowai memory decide payment "..." --body "..."   # add a team decision
+knowai memory forget <entry-id>       # delete an entry
+```
 
 ### From psql (no password needed via `docker exec`)
 
@@ -375,7 +365,7 @@ docker compose pull web && docker compose up -d
 | Port `5432` / `8080` already in use       | Change `POSTGRES_PORT` / `WEB_PORT` in `.env`, then `docker compose up -d`                                                                                          |
 | `knowai: command not found`               | Open a new terminal (uv/pipx PATH not loaded yet)                                                                                                                   |
 | AI doesn't call knowai tools              | `~/.knowai.config` missing/misconfigured, OR Claude/Cursor started before you created it — restart the AI app and check `claude mcp list` shows `knowai ✓`          |
-| Two similar entries instead of one merged | See [Verify auto-merge](#verify-auto-merge) outcomes table above                                                                                                    |
+| Two similar entries instead of one merged | See[Verify auto-merge](#verify-auto-merge) outcomes table above                                                                                                     |
 | Embedding model OOM on first start        | Container needs ~2GB free RAM. Close other apps and `docker compose restart web`                                                                                    |
 | `docker pull qorstack/knowai` fails       | Image not published yet — wait for `Publish Docker image` workflow to finish. Or build locally via the [Build from source](#build-from-source-contributors) section |
 
