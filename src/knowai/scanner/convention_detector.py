@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from knowai.models.schema import ArchitecturePattern, Convention, ScanResult
+from knowai.scanner._safe_walk import safe_rglob
 
 
 class ConventionDetector:
@@ -23,8 +24,8 @@ class ConventionDetector:
 
     def _naming_conventions(self) -> list[Convention]:
         result: list[Convention] = []
-        ts_files = list(self.root.rglob("*.ts")) + list(self.root.rglob("*.tsx"))
-        ts_files = [f for f in ts_files if not any(p in str(f) for p in ["node_modules", ".next", "generated"])]
+        ts_files = list(safe_rglob(self.root, "*.ts")) + list(safe_rglob(self.root, "*.tsx"))
+        ts_files = [f for f in ts_files if "generated" not in str(f)]
 
         if ts_files[:20]:
             component_files = [f for f in ts_files if f.suffix == ".tsx"]
@@ -38,8 +39,7 @@ class ConventionDetector:
                         examples=["UserCard.tsx", "PaymentForm.tsx"],
                     ))
 
-        py_files = list(self.root.rglob("*.py"))
-        py_files = [f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)]
+        py_files = list(safe_rglob(self.root, "*.py"))
         if py_files:
             result.append(Convention(
                 name="python_naming",
@@ -149,7 +149,7 @@ class ConventionDetector:
             result.append(Convention(name="test_framework", rule="Use pytest. Test files must be named test_*.py"))
 
         # Check for co-located vs centralized tests
-        spec_count = sum(1 for _ in self.root.rglob("*.spec.ts"))
+        spec_count = sum(1 for _ in safe_rglob(self.root, "*.spec.ts"))
         centralized = (self.root / "tests").exists() or (self.root / "__tests__").exists()
         if spec_count > 5:
             result.append(Convention(name="test_location", rule="Tests are co-located with source files (*.spec.ts alongside source)"))

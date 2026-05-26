@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from knowai.models.schema import ReusableAsset, ScanResult
+from knowai.scanner._safe_walk import safe_rglob
 
 _IGNORE = {"node_modules", "__pycache__", ".venv", "venv", "dist", "build", ".next", "generated", "__generated__"}
 
@@ -28,8 +29,8 @@ class AssetDetector:
         assets: list[ReusableAsset] = []
         component_dirs = ["components", "ui", "shared", "common"]
         for dir_name in component_dirs:
-            for comp_dir in self.root.rglob(dir_name):
-                if not comp_dir.is_dir() or any(p in str(comp_dir) for p in _IGNORE):
+            for comp_dir in safe_rglob(self.root, dir_name):
+                if not comp_dir.is_dir():
                     continue
                 for f in comp_dir.glob("*.tsx"):
                     if f.stem.startswith("_") or f.stem == "index":
@@ -51,8 +52,8 @@ class AssetDetector:
             hook_dir = self.root / dir_name
             if not hook_dir.exists():
                 # try rglob
-                for found in self.root.rglob(dir_name):
-                    if found.is_dir() and not any(p in str(found) for p in _IGNORE):
+                for found in safe_rglob(self.root, dir_name):
+                    if found.is_dir():
                         hook_dir = found
                         break
                 else:
@@ -70,9 +71,7 @@ class AssetDetector:
                 ))
 
         # also pick up any use*.ts files outside hook dirs
-        for f in self.root.rglob("use*.ts*"):
-            if any(p in str(f) for p in _IGNORE):
-                continue
+        for f in safe_rglob(self.root, "use*.ts*"):
             rel = str(f.relative_to(self.root))
             if not any(a.path == rel for a in assets):
                 assets.append(ReusableAsset(
@@ -88,8 +87,8 @@ class AssetDetector:
         assets: list[ReusableAsset] = []
         util_dirs = ["utils", "lib", "helpers", "shared/utils"]
         for dir_name in util_dirs:
-            for util_dir in self.root.rglob(dir_name):
-                if not util_dir.is_dir() or any(p in str(util_dir) for p in _IGNORE):
+            for util_dir in safe_rglob(self.root, dir_name):
+                if not util_dir.is_dir():
                     continue
                 for f in util_dir.iterdir():
                     if f.suffix not in {".ts", ".js", ".py"} or f.stem == "index":
@@ -105,8 +104,8 @@ class AssetDetector:
 
     def _detect_services(self) -> list[ReusableAsset]:
         assets: list[ReusableAsset] = []
-        for f in self.root.rglob("*service*"):
-            if f.suffix not in {".ts", ".py"} or any(p in str(f) for p in _IGNORE):
+        for f in safe_rglob(self.root, "*service*"):
+            if f.suffix not in {".ts", ".py"}:
                 continue
             assets.append(ReusableAsset(
                 name=f.stem,
@@ -119,11 +118,12 @@ class AssetDetector:
 
     def _detect_python_assets(self) -> list[ReusableAsset]:
         assets: list[ReusableAsset] = []
-        for f in self.root.rglob("*.py"):
-            if any(p in str(f) for p in _IGNORE):
-                continue
+        for f in safe_rglob(self.root, "*.py"):
             # decorators, base classes as shared utilities
-            text = f.read_text(encoding="utf-8", errors="ignore")
+            try:
+                text = f.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
             if re.search(r"^class Base\w+", text, re.MULTILINE):
                 assets.append(ReusableAsset(
                     name=f.stem,

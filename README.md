@@ -122,12 +122,8 @@ volumes:
 docker compose up -d
 ```
 
-First run pulls the images (~30s). Then both services come up:
-
 - **`knowai-postgres`** on port `5432` — stores knowledge (schema auto-bootstraps)
 - **`knowai-web`** on port `8080` — team dashboard
-
-Wait until both are healthy:
 
 ```bash
 docker compose ps
@@ -138,8 +134,6 @@ Both rows should show `Up X seconds (healthy)`.
 ### Step 3 — Open the dashboard
 
 Open [http://localhost:8080](http://localhost:8080) in your browser.
-
-You'll see the **Overview** page with all counts at 0.
 
 ### Step 4 — Add your first knowledge entry
 

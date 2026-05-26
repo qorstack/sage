@@ -3,18 +3,13 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 
 from knowai.models.schema import ArchitecturePattern, ScanResult
+from knowai.scanner._safe_walk import _IGNORE_DIRS, safe_rglob
 from knowai.scanner.asset_detector import AssetDetector
 from knowai.scanner.convention_detector import ConventionDetector
-
-_IGNORE_DIRS = {
-    ".git", "node_modules", "__pycache__", ".venv", "venv", "dist",
-    "build", ".next", ".nuxt", "coverage", ".pytest_cache", ".ruff_cache",
-}
 
 
 class RepoScanner:
@@ -151,10 +146,13 @@ class RepoScanner:
 
     def _detect_api_clients(self) -> list[str]:
         clients: list[str] = []
-        generated_markers = ["generated", "gen", "openapi", "swagger-client", "__generated__"]
-        for d in self.root.rglob("*"):
-            if d.is_dir() and d.name.lower() in generated_markers:
-                clients.append(str(d.relative_to(self.root)))
+        generated_markers = {"generated", "gen", "openapi", "swagger-client", "__generated__"}
+        for d in safe_rglob(self.root):
+            try:
+                if d.is_dir() and d.name.lower() in generated_markers:
+                    clients.append(str(d.relative_to(self.root)))
+            except OSError:
+                continue
         return clients
 
     # ------------------------------------------------------------------
@@ -169,7 +167,7 @@ class RepoScanner:
             patterns.append("Business logic must not live in controllers/handlers")
             patterns.append("Infrastructure concerns must not leak into domain layer")
         if result.language in ("typescript", "javascript"):
-            if (self.root / "src" / "generated").exists() or any("generated" in str(p) for p in self.root.rglob("*.ts") if "generated" in str(p)):
+            if (self.root / "src" / "generated").exists() or any("generated" in str(p) for p in safe_rglob(self.root, "*.ts")):
                 patterns.append("Never manually edit files inside generated/ directories")
         return patterns
 
@@ -178,14 +176,12 @@ class RepoScanner:
     # ------------------------------------------------------------------
 
     def _walk(self):
-        # os.walk with topdown=True lets us prune _IGNORE_DIRS before descent —
-        # avoids walking node_modules/.next, and onerror swallows races where
-        # dev tools delete transient files mid-scan.
-        for dirpath, dirnames, filenames in os.walk(self.root, topdown=True, onerror=lambda _e: None):
-            dirnames[:] = [d for d in dirnames if d not in _IGNORE_DIRS]
-            base = Path(dirpath)
-            for name in filenames:
-                yield (base / name).relative_to(self.root)
+        for p in safe_rglob(self.root):
+            try:
+                if p.is_file():
+                    yield p.relative_to(self.root)
+            except OSError:
+                continue
 
     def _count_files(self) -> int:
         return sum(1 for _ in self._walk())
