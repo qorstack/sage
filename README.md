@@ -99,7 +99,7 @@ services:
       interval: 5s
 
   web:
-    image: qorstack/knowai:latest
+    image: ghcr.io/qorstack/knowai:latest
     container_name: knowai-web
     depends_on: { postgres: { condition: service_healthy } }
     environment:
