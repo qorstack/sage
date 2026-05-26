@@ -1,5 +1,7 @@
 # knowai
 
+![knowai](assets/logo-full.png)
+
 **Cognitive enforcement layer for AI software development.**
 
 > Knowledge is passive. Cognition must be enforced.
@@ -23,16 +25,28 @@ Memory:    "Use idempotency keys" (alice, approved)
 Risk:      refund → webhook → ledger
 ```
 
-Storage: **Postgres** with semantic auto-merge. Web dashboard for the team.
+AI-written entries land as **Pending** until a human approves them on the dashboard.
 
-Every entry has two axes so it's clear where it applies and who wrote it:
+---
 
-| Scope ↓ / Source → | 👤 Human (added in dashboard) | 🤖 AI (saved by Claude via MCP) |
-| --- | --- | --- |
-| 🌐 **Global** — every workspace | Team-wide policies | _(rare)_ |
-| 📁 **Workspace** — one project | Project decisions | Auto-tagged from `knowai.config` |
+## How knowai differs from generic knowledge tools
 
-AI-written entries land as **Pending** until a human reviews them on the dashboard.
+| Dimension       | RAG / Vector KB          | Generic Knowledge Graph | **knowai**                                                          |
+| --------------- | ------------------------ | ----------------------- | ------------------------------------------------------------------- |
+| Knowledge shape | text chunks + embeddings | static nodes/edges      | **Cognitive Graph** — domain × asset × convention × impact edge     |
+| When AI uses it | pulled at prompt time    | queried only when asked | **Mandatory call before any code change** (`analyze_intent`)        |
+| Who decides     | LLM decides              | LLM interprets          | **Rule-based engine** returns `proceed` / `warn` / `ask` / `reject` |
+| Team knowledge  | none / mixed in          | write your own schema   | `remember_team_decision` + approval queue                           |
+| Impact / risk   | none                     | manual queries          | **Blast radius + risk level computed automatically**                |
+| Enforcement     | passive                  | passive                 | **MCP-first + audit** — AI cannot skip it                           |
+
+> RAG and KGs are **a library**. knowai is **a checkpoint before code is written.**
+
+### Accuracy in practice
+
+Higher on real codebases — AI stops reinventing utilities, matches team style, and won't contradict past decisions. Risky changes are blocked before code is written.
+
+Doesn't help much on greenfield / one-shot scripts with no team context.
 
 ---
 
@@ -143,14 +157,26 @@ knowai install-claude-commands     # copies /knowai and /knowai-generate to ~/.c
 
 Two commands ship:
 
-| Command | Use it when |
-| --- | --- |
+| Command             | Use it when                                                                                                                                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/knowai <request>` | **Every feature / refactor / fix.** Forces Claude to run the full pipeline (analyze_intent → recall_context → get_reusable_assets → assess_risk_in_context) and open with a `Risk:` / `Decision:` header before writing code. |
-| `/knowai-generate` | **Once, then occasionally.** Have Claude read this repo and seed meaningful memory entries. Safe to re-run after refactors. |
+| `/knowai-generate`  | **Once, then occasionally.** Have Claude read this repo and seed meaningful memory entries. Safe to re-run after refactors.                                                                                                   |
 
 > Why a slash command? MCP tool descriptions only reach Claude when it _decides_ to use a tool — a plain prompt can slip past the pipeline. `/knowai` makes the consult mandatory.
 
-### 8. Verify
+### 8. Seed memory from the repo (once)
+
+Open Claude inside the repo and run:
+
+```text
+/knowai-generate
+```
+
+Claude will walk the codebase, extract meaningful conventions / decisions / reusable assets, and save them through MCP. Entries land as **Pending** for you to approve on the dashboard.
+
+Re-run after a big refactor or when onboarding a new repo — it's idempotent.
+
+### 9. Use it
 
 In Claude, try:
 
@@ -173,51 +199,24 @@ If not: `claude mcp list` shows `✗` → run `knowai mcp` in a terminal to see 
 
 ---
 
-## CLI cheat sheet
+## Updating
 
 ```bash
-knowai memory list                                # all entries
-knowai memory recall "OTP policy"                 # fuzzy search
-knowai memory decide payment "Use idempotency" --body "..."
-knowai memory forget <entry-id>
+# Upgrade the CLI + MCP server
+uv tool upgrade knowai
+
+# Then restart Claude Code so it reloads the MCP subprocess
+# (the old version is cached until restart)
+
+# Upgrade the dashboard
+docker compose pull web && docker compose up -d
 ```
 
-Dashboard URLs: `/entries` · `/syntheses` · `/audit` · `/healthz`
-
----
-
-## Stop / wipe
+Stop / wipe:
 
 ```bash
 docker compose stop                # keep data
 docker compose down -v             # wipe all data
-docker compose pull web && docker compose up -d   # upgrade
-```
-
----
-
-## Troubleshooting
-
-| Problem                                        | Fix                                                                                                    |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `docker compose up` fails                      | Docker Desktop not running                                                                             |
-| `knowai: command not found`                    | Open a new terminal (uv PATH not loaded)                                                               |
-| AI doesn't call knowai tools                   | `knowai.config` missing or AI app started before MCP registered — restart it                           |
-| AI entries land as Global instead of Workspace | Repo has no `knowai.config`, or it's missing `workspace`. Run `knowai link <workspace> --name <repo>`  |
-| Upgraded CLI but MCP still old                 | Restart Claude Code — it caches the MCP subprocess until restart                                       |
-| Two entries not merging                        | Bodies <0.92 cosine similarity. Reword closer, or check `docker compose logs web` for embedding errors |
-| Port already in use                            | Change `POSTGRES_PORT` / `WEB_PORT` in `.env`                                                          |
-
----
-
-## Build from source
-
-```bash
-git clone https://github.com/qorstack/knowai.git && cd knowai
-cp .env.example .env
-docker compose up -d --build
-uv sync --extra dev --extra postgres
-uv run pytest
 ```
 
 ---
