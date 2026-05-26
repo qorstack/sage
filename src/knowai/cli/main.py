@@ -183,10 +183,10 @@ def install_claude_commands(
     user: bool = typer.Option(True, "--user/--project", help="Install to ~/.claude/commands (user) or ./.claude/commands (project)"),
     force: bool = typer.Option(False, "--force", help="Overwrite existing files"),
 ):
-    """Install knowai's Claude Code slash commands (e.g. /knowai-seed).
+    """Install knowai's Claude Code slash commands (e.g. /knowai-generate).
 
     Copies the bundled command templates into your Claude Code commands
-    directory. After install, type `/knowai-seed` in Claude Code to have
+    directory. After install, type `/knowai-generate` in Claude Code to have
     Claude scan the repo and write semantically meaningful memory entries.
     """
     import importlib.resources as _res
@@ -215,7 +215,7 @@ def install_claude_commands(
 
     if copied:
         console.print(f"\n[green]Installed {len(copied)} command(s)[/green] to {target_dir}")
-        console.print("Open Claude Code and try [cyan]/knowai-seed[/cyan].")
+        console.print("Open Claude Code and try [cyan]/knowai-generate[/cyan].")
     else:
         console.print(f"\n[yellow]Nothing installed.[/yellow] Re-run with --force to overwrite {target_dir}.")
 

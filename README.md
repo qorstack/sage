@@ -124,23 +124,17 @@ claude mcp add --scope user knowai -- knowai mcp
 claude mcp list   # should show: knowai ✓
 ```
 
-**Cursor:** edit `~/.cursor/mcp.json`:
-
-```json
-{ "mcpServers": { "knowai": { "command": "knowai", "args": ["mcp"] } } }
-```
-
-### 7. (optional) Seed memory from existing code
+### 7. Seed memory from existing code
 
 ```bash
-knowai install-claude-commands     # one-time, copies /knowai-seed
+knowai install-claude-commands     # one-time, copies /knowai-generate
 ```
 
-In Claude Code, run `/knowai-seed` — Claude reads the repo and writes meaningful entries via MCP.
+In Claude Code, run `/knowai-generate` — Claude reads the repo and writes meaningful entries via MCP.
 
 ### 8. Verify
 
-In Claude, try: *"Add a refund endpoint to /payments"* — you should see a `knowai` tool call and a reply that references your stored knowledge.
+In Claude, try: _"Add a refund endpoint to /payments"_ — you should see a `knowai` tool call and a reply that references your stored knowledge.
 
 If not: `claude mcp list` shows `✗` → run `knowai mcp` in a terminal to see the error (usually missing DB credentials).
 
@@ -171,13 +165,13 @@ docker compose pull web && docker compose up -d   # upgrade
 
 ## Troubleshooting
 
-| Problem | Fix |
-| --- | --- |
-| `docker compose up` fails | Docker Desktop not running |
-| `knowai: command not found` | Open a new terminal (uv PATH not loaded) |
-| AI doesn't call knowai tools | `knowai.config` missing or AI app started before MCP registered — restart it |
-| Two entries not merging | Bodies <0.92 cosine similarity. Reword closer, or check `docker compose logs web` for embedding errors |
-| Port already in use | Change `POSTGRES_PORT` / `WEB_PORT` in `.env` |
+| Problem                      | Fix                                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `docker compose up` fails    | Docker Desktop not running                                                                             |
+| `knowai: command not found`  | Open a new terminal (uv PATH not loaded)                                                               |
+| AI doesn't call knowai tools | `knowai.config` missing or AI app started before MCP registered — restart it                           |
+| Two entries not merging      | Bodies <0.92 cosine similarity. Reword closer, or check `docker compose logs web` for embedding errors |
+| Port already in use          | Change `POSTGRES_PORT` / `WEB_PORT` in `.env`                                                          |
 
 ---
 
