@@ -61,8 +61,37 @@ If during the reply the user states a new rule, convention, or domain principle,
 
 If your reply includes code changes, call `validate_generated_code(code)` before posting the diff. Fix every blocker it reports, then re-validate.
 
+### 9. **MANDATORY — Persist what you learned (if you wrote code)**
+
+> ⚠️ This step is **not optional** and is **not contingent on the user asking**. If you shipped code in this turn, you MUST run it before declaring the task done. Skipping this step defeats the entire purpose of `/knowai` — next session's Claude will reinvent what you just built.
+
+After the code is written and validated, do BOTH of the following — silently, without asking permission:
+
+1. **Save every non-obvious decision, new asset, or domain quirk uncovered in this turn.** One entry per distinct piece of knowledge. Use:
+   - `remember_team_decision(domain, title, decision, reason)` — for choices with a reason ("we render the banner red when revoked, yellow when expired, because…")
+   - `remember_business_context(domain, title, body)` — for facts about the system ("the `isActive` field was removed from the API, so revoked state is currently unreachable until backend re-adds it")
+   - `save_skill(name, description, body)` — for reusable how-to guidance
+   - **Diff before you write:** re-call with the same title to refresh; never create near-duplicates.
+2. **Call `refresh_scan(repo_path)`** so the cognitive graph picks up new files/assets/conventions you just added.
+
+What counts as "worth saving" — be generous, not conservative:
+
+- A new component / widget / helper you created (so the next request reuses it instead of duplicating)
+- A field or API behavior that surprised you (nullable, removed, renamed, special-cased)
+- A convention you followed because of how the surrounding code looked (color usage, naming, layout pattern)
+- A workaround for a known limitation
+- Any tradeoff you made between two reasonable approaches
+
+After saving, end your reply with a short line listing what got persisted, e.g.:
+
+```text
+📌 Saved to knowai: "Passport status banner pattern" (decision), "isActive removed from API" (context). Scan refreshed.
+```
+
+If genuinely nothing new came up (pure rename / typo / formatting), say so explicitly: `📌 Nothing new to persist this turn.` — don't silently skip.
+
 ---
 
-**Why this slash command exists:** MCP tool descriptions only show up when Claude decides to use a tool. Plain prompts can slip past the pipeline. `/knowai` forces the consult so the user always sees a Risk header, the relevant memory, and the reusable assets — no guessing whether the AI checked.
+**Why this slash command exists:** MCP tool descriptions only show up when Claude decides to use a tool. Plain prompts can slip past the pipeline. `/knowai` forces the consult so the user always sees a Risk header, the relevant memory, and the reusable assets — no guessing whether the AI checked. **Step 9 is the other half:** without it, knowai becomes a one-way read and the graph never grows from the work you actually do.
 
 The user's actual request is below:
