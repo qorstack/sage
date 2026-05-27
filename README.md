@@ -173,6 +173,8 @@ When Claude saves memory via MCP, knowai auto-tags it with `scope=workspace`, th
 
 ### 6. Register knowai with Claude Code
 
+Need Claude Code first? Install it from [claude.com/claude-code](https://claude.com/claude-code) (`npm install -g @anthropic-ai/claude-code`). Then:
+
 ```bash
 claude mcp add --scope user knowai -- knowai mcp
 claude mcp list   # should show: knowai ✓
