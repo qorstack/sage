@@ -1918,6 +1918,8 @@ POSTGRES_PORT=5432
 WEB_PORT=8080
 """
 
+# Postgres only — the dashboard runs locally via `precept web`, so quickstart
+# needs no published container image.
 _QUICKSTART_COMPOSE = """\
 services:
   postgres:
@@ -1932,18 +1934,6 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 5s
-
-  web:
-    image: ghcr.io/qorstack/precept:latest
-    container_name: precept-web
-    depends_on: { postgres: { condition: service_healthy } }
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-    ports: ["${WEB_PORT}:8080"]
 
 volumes:
   precept_pgdata:
@@ -2014,14 +2004,31 @@ def quickstart(
     console.print(Panel(
         "Open Claude Code in any repo and try:\n"
         "  [cyan]/precept add a refund endpoint to /payments[/cyan]\n\n"
-        "Dashboard: [cyan]http://localhost:8080[/cyan]  "
-        "[dim](needs the ghcr.io/qorstack/precept image published)[/dim]",
+        "Open the dashboard:\n"
+        "  [cyan]precept web[/cyan]  →  http://localhost:8080",
         title="[bold green]Precept is ready[/bold green]",
     ))
 
 
 # alias: `precept up`
 app.command(name="up")(quickstart)
+
+
+@app.command()
+def web(
+    host: str = typer.Option("0.0.0.0", "--host", help="Bind address"),
+    port: int = typer.Option(8080, "--port", "-p", help="Port for the dashboard"),
+):
+    """
+    Run the Precept dashboard locally.
+
+    Reads the same POSTGRES_* env / precept.config as the MCP server, so it
+    shows the memory, approvals, syntheses, and audit log for your team.
+    """
+    import uvicorn
+
+    console.print(f"[bold green]Precept dashboard[/bold green] → http://localhost:{port}  [dim](Ctrl-C to stop)[/dim]")
+    uvicorn.run("precept.web.app:app", host=host, port=port)
 
 
 @app.command()
