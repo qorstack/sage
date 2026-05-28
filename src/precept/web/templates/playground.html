@@ -5,7 +5,7 @@
 <div class="page-head">
   <div>
     <h1>Try Precept</h1>
-    <p class="subtitle">Type a change request. Precept's rule-based engine returns a verdict — no repo, no API key, no LLM.</p>
+    <p class="subtitle">Type a change request. Precept's rule-based engine replies exactly like it does to your AI agent — no repo, no API key, no LLM.</p>
   </div>
 </div>
 
@@ -24,62 +24,41 @@
     <a href="/playground?q=fix+typo+in+readme">fix a typo</a>
   </p>
 
-{% elif report %}
+{% elif report_md %}
   {% set colors = {'proceed':'#16a34a','warn':'#d97706','ask':'#2563eb','reject':'#dc2626'} %}
-  {% set c = colors.get(report.risk.decision.value, '#2563eb') %}
-  <div style="border:1px solid #2a2a2a;border-left:6px solid {{ c }};border-radius:10px;padding:18px 20px;margin:12px 0">
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-size:24px;font-weight:800;letter-spacing:.5px;color:{{ c }}">{{ report.risk.decision.value|upper }}</span>
-      <span class="tag">risk: {{ report.risk.level.value|upper }}</span>
-      <span class="tag">domain: {{ report.intent.detected_domain }}</span>
-      <span class="tag">action: {{ report.intent.detected_action }}</span>
-    </div>
+  {% set c = colors.get(decision, '#2563eb') %}
 
-    {% if report.risk.warnings %}
-      <h3 style="margin:16px 0 6px">Why Precept paused</h3>
-      <ul style="margin:0;padding-left:18px">
-        {% for w in report.risk.warnings %}<li>{{ w }}</li>{% endfor %}
-      </ul>
-    {% endif %}
-
-    {% if report.impact.cascade_risks %}
-      <h3 style="margin:16px 0 6px">Blast radius</h3>
-      <ul style="margin:0;padding-left:18px">
-        {% for r in report.impact.cascade_risks %}<li>{{ r }}</li>{% endfor %}
-      </ul>
-    {% endif %}
-
-    {% if report.intent.inferred_requirements %}
-      <h3 style="margin:16px 0 6px">Requirements it inferred</h3>
-      <ul style="margin:0;padding-left:18px">
-        {% for r in report.intent.inferred_requirements %}<li>{{ r }}</li>{% endfor %}
-      </ul>
-    {% endif %}
-
-    {% if report.suggested_plan %}
-      <h3 style="margin:16px 0 6px">Suggested workflow</h3>
-      <ol style="margin:0;padding-left:18px">
-        {% for step in report.suggested_plan %}<li>{{ step }}</li>{% endfor %}
-      </ol>
-    {% endif %}
+  {# The request, shown like the message the dev sent the agent #}
+  <div style="display:flex;justify-content:flex-end;margin:14px 0">
+    <div style="background:#1e293b;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:80%">{{ q }}</div>
   </div>
 
-  {% if pack %}
-    <div style="border:1px solid #2a2a2a;border-radius:10px;padding:18px 20px;margin:12px 0">
-      <h2 style="margin-top:0">Built-in knowledge for <span class="tag">{{ pack.domain }}</span></h2>
-      <p class="muted">{{ pack.description }}</p>
-      {% if pack.risk_flags %}
-        <h3 style="margin:14px 0 6px">Risk flags</h3>
-        <ul style="margin:0;padding-left:18px">{% for r in pack.risk_flags %}<li>{{ r }}</li>{% endfor %}</ul>
-      {% endif %}
-      {% if pack.forbidden_shortcuts %}
-        <h3 style="margin:14px 0 6px">Forbidden shortcuts</h3>
-        <ul style="margin:0;padding-left:18px">{% for r in pack.forbidden_shortcuts %}<li>{{ r }}</li>{% endfor %}</ul>
-      {% endif %}
+  {# Precept's reply, rendered from markdown like a real agent response #}
+  <div style="display:flex;gap:10px;align-items:flex-start">
+    <div style="flex:0 0 28px;height:28px;border-radius:6px;background:{{ c }};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff">P</div>
+    <div style="flex:1;border:1px solid #2a2a2a;border-left:4px solid {{ c }};border-radius:2px 12px 12px 12px;padding:4px 20px;background:#0f1117">
+      <div id="reply" class="md"></div>
     </div>
-  {% endif %}
+  </div>
+  <pre id="reply-src" hidden>{{ report_md }}</pre>
 
-  <p class="muted"><small>Connected to your repo, Precept also lists the exact reusable assets to reuse and your team's approved decisions for this domain.</small></p>
+  <p class="muted" style="margin-top:18px"><small>This is the live rule-based engine using built-in domain knowledge. Pointed at your repo, it also names the exact reusable assets and your team's approved decisions.</small></p>
+
+  <script>
+  window.addEventListener('DOMContentLoaded', function () {
+    var src = document.getElementById('reply-src');
+    var out = document.getElementById('reply');
+    if (!src || !out) return;
+    var md = src.textContent;
+    if (window.marked && marked.parse) {
+      out.innerHTML = marked.parse(md);
+    } else {
+      out.innerHTML = '<pre>' + md.replace(/[&<>]/g, function (ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch];
+      }) + '</pre>';
+    }
+  });
+  </script>
 
 {% else %}
   <p class="muted">No verdict — try rephrasing the request.</p>
