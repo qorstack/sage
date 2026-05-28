@@ -59,35 +59,19 @@ Most AI dev tools make your agent **write more** or **know more**. Precept is th
 
 **Positioning:** the governance + guardrail layer for teams letting AI agents touch real codebases — it decides what the agent may reuse, what it might break, and when a human must sign off.
 
-### vs RAG / knowledge graphs, in detail
+### What makes it different
 
-| Dimension       | RAG / Vector KB          | Generic Knowledge Graph | **Precept**                                                         |
-| --------------- | ------------------------ | ----------------------- | ------------------------------------------------------------------- |
-| Knowledge shape | text chunks + embeddings | static nodes/edges      | **Cognitive Graph** — domain × asset × convention × impact edge     |
-| When AI uses it | pulled at prompt time    | queried only when asked | **Mandatory call before any code change** (`analyze_intent`)        |
-| Who decides     | LLM decides              | LLM interprets          | **Rule-based engine** returns `proceed` / `warn` / `ask` / `reject` |
-| Team knowledge  | none / mixed in          | write your own schema   | `remember_team_decision` + approval queue                           |
-| Impact / risk   | none                     | manual queries          | **Blast radius + risk level computed automatically**                |
-| Enforcement     | passive                  | passive                 | **MCP-first + audit** — AI cannot skip it                           |
+- **Mandatory, not optional** — the agent must call `analyze_intent` before any code change, not "if it remembers to." RAG and wikis are a library; Precept is a checkpoint.
+- **A decision, not a document** — a rule-based `proceed / warn / ask / reject`, computed with no LLM (deterministic, free, no API key).
+- **Knows the blast radius** — reusable assets, affected domains, and cascade risk pulled straight from your repo's cognitive graph (domain × asset × convention × impact).
+- **Team decisions are binding** — approved decisions + an approval queue + audit. AI can make a call _stricter_, never silently looser.
 
-> RAG and KGs are **a library**. Precept is **a checkpoint before code is written.**
+### Where it shines
 
-### Accuracy in practice
+- ✅ Real codebases with team conventions — payment, auth, webhook, money logic; multi-repo products
+- ➖ Greenfield throwaways and one-shot scripts with no team context
 
-Higher on real codebases — AI stops reinventing utilities, matches team style, and won't contradict past decisions. Risky changes are blocked before code is written.
-
-Doesn't help much on greenfield / one-shot scripts with no team context.
-
-### The more you use it, the less it costs
-
-**Cheaper over time** — because the AI gets more accurate the longer you use it:
-
-- Reuses approved team decisions instead of re-deriving them every session
-- Stops writing code that gets rejected and rewritten (the biggest token sink)
-- Catches risky changes before code is generated, not after
-- Pulls only the relevant assets / conventions for each request, not the whole repo
-
-A small upfront investment makes this possible: seed memory once with `/precept-generate`, then let every `/precept` call run the full pipeline so each change starts from real context.
+**It gets cheaper the more you use it** — reuses approved decisions instead of re-deriving them every session, kills the rejected-then-rewritten token churn, and pulls only the relevant context per request. Seed once with `/precept-generate`, then every `/precept` call starts from real context.
 
 ---
 
