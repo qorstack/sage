@@ -71,13 +71,25 @@
     <button type="submit">Apply</button>
   </form>
 
+  <form id="bulk-form" method="post" action="/entries/approve-bulk">
+  <div class="bulk-bar" style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+    <button type="submit" id="bulk-approve" class="btn" disabled>
+      <svg class="icon"><use href="#icon-check"/></svg>Approve selected (<span id="sel-count">0</span>)
+    </button>
+    <span class="muted" style="font-size:13px">Tick rows to approve several at once.</span>
+  </div>
   <table class="tbl">
     <thead>
-      <tr><th>Title</th><th>Scope</th><th>Source</th><th>Status</th><th>Updated</th></tr>
+      <tr><th style="width:28px"><input type="checkbox" id="select-all" title="Select all pending" style="accent-color:var(--primary)"></th><th>Title</th><th>Scope</th><th>Source</th><th>Status</th><th>Updated</th></tr>
     </thead>
     <tbody>
     {% for r in rows %}
       <tr class="{{ 'row-superseded' if r.superseded_by else '' }}">
+        <td>
+          {% if not r.approved and not r.superseded_by %}
+            <input type="checkbox" class="row-check" name="ids" value="{{ r.id }}" style="accent-color:var(--primary)">
+          {% endif %}
+        </td>
         <td>
           <a href="/entries/{{ r.id }}">{{ r.title }}</a>
           {% if r.domain and r.domain != 'general' %}
@@ -106,7 +118,7 @@
         <td class="mono"><small>{{ r.updated_at.strftime('%Y-%m-%d %H:%M') if r.updated_at else '' }}</small></td>
       </tr>
     {% else %}
-      <tr><td colspan="5" class="muted">
+      <tr><td colspan="6" class="muted">
         {% if filter_q or filter_domain or filter_workspace or filter_source or filter_status %}
           No items match. <a href="/entries">Clear filters</a>.
         {% else %}Nothing here yet. Click <strong>+ Add new</strong> to write your first item.
@@ -115,7 +127,28 @@
     {% endfor %}
     </tbody>
   </table>
+  </form>
   <p class="muted"><small>Showing up to 200 items.</small></p>
+
+  <script>
+  (function () {
+    const all = document.getElementById('select-all');
+    const checks = Array.from(document.querySelectorAll('.row-check'));
+    const btn = document.getElementById('bulk-approve');
+    const cnt = document.getElementById('sel-count');
+    const bar = document.querySelector('.bulk-bar');
+    if (checks.length === 0) { if (bar) bar.style.display = 'none'; return; }
+    function update() {
+      const n = checks.filter(c => c.checked).length;
+      cnt.textContent = n;
+      btn.disabled = n === 0;
+      if (all) all.checked = n === checks.length;
+    }
+    if (all) all.addEventListener('change', () => { checks.forEach(c => { c.checked = all.checked; }); update(); });
+    checks.forEach(c => c.addEventListener('change', update));
+    update();
+  })();
+  </script>
 {% endif %}
 
 {% endblock %}

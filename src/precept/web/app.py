@@ -421,20 +421,40 @@ def knowledge_create(
     return RedirectResponse(url=f"/entries/{saved.id}", status_code=303)
 
 
-@app.post("/entries/{entry_id}/approve")
-def entry_approve(request: Request, entry_id: str, approver: str = Form("")):
-    actor = _author_from(request, approver)
-    with _pool().connection() as conn, conn.cursor() as cur:
+def _approve_ids(cur, ids: list[str], actor: str) -> int:
+    """Approve each not-yet-approved id, logging an audit row. Returns count approved."""
+    approved = 0
+    for entry_id in ids:
         cur.execute(
             "UPDATE memory_entries SET approved = TRUE, approved_by = %s WHERE id = %s AND NOT approved",
             (actor, entry_id),
         )
         if cur.rowcount:
+            approved += 1
             cur.execute(
                 "INSERT INTO memory_audit_log (entry_id, action, actor) VALUES (%s, 'approve', %s)",
                 (entry_id, actor),
             )
+    return approved
+
+
+@app.post("/entries/{entry_id}/approve")
+def entry_approve(request: Request, entry_id: str):
+    actor = _author_from(request)
+    with _pool().connection() as conn, conn.cursor() as cur:
+        _approve_ids(cur, [entry_id], actor)
     return RedirectResponse(url=f"/entries/{entry_id}", status_code=303)
+
+
+@app.post("/entries/approve-bulk")
+def entries_approve_bulk(request: Request, ids: list[str] = Form(default=[])):
+    """Approve many entries at once from the filtered Knowledge list."""
+    if ids:
+        actor = _author_from(request)
+        with _pool().connection() as conn, conn.cursor() as cur:
+            _approve_ids(cur, ids, actor)
+    back = request.headers.get("referer") or "/entries"
+    return RedirectResponse(url=back, status_code=303)
 
 
 @app.post("/entries/{entry_id}/delete")

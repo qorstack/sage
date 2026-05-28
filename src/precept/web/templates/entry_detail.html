@@ -30,7 +30,6 @@
     <a class="btn btn-secondary" href="/entries/{{ entry.id }}/edit">Edit</a>
     {% if not entry.approved %}
       <form method="post" action="/entries/{{ entry.id }}/approve" class="inline">
-        <input type="text" name="approver" placeholder="your name (optional)">
         <button type="submit" class="btn">Approve</button>
       </form>
     {% endif %}
