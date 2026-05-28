@@ -34,6 +34,27 @@ def test_search_by_keyword(tmp_path):
     assert results[0].domain == "payment"
 
 
+def test_search_ranks_title_and_partial_matches(tmp_path):
+    store = FileMemoryStore(tmp_path / "memory.json")
+    # Body mentions "idempotency" but title is off-topic.
+    store.save(MemoryEntry(id="", kind=MemoryKind.TEAM_DECISION, domain="payment", title="Refund flow", body="Refunds occasionally touch idempotency keys", approved=True, approved_by="team"))
+    # Title is squarely on-topic — should outrank the body-only match.
+    on_topic = store.save(MemoryEntry(id="", kind=MemoryKind.TEAM_DECISION, domain="payment", title="Idempotency keys required", body="All payment calls need a key", approved=True, approved_by="team"))
+
+    # Partial/stem query ("idempot") must still match "idempotency".
+    results = store.search("idempot keys")
+    assert results, "partial-stem query should return matches"
+    assert results[0].id == on_topic.id
+
+
+def test_search_fuzzy_typo(tmp_path):
+    store = FileMemoryStore(tmp_path / "memory.json")
+    target = store.save(MemoryEntry(id="", kind=MemoryKind.BUSINESS_CONTEXT, domain="auth", title="Webhook signature verification", body="Verify the HMAC signature on every webhook", approved=True, approved_by="human"))
+    # "webhok" is a typo — trigram fuzzy on the title should still surface it.
+    results = store.search("webhok signature")
+    assert any(r.id == target.id for r in results)
+
+
 def test_unapproved_not_returned_after_filter(tmp_path):
     store = FileMemoryStore(tmp_path / "memory.json")
     store.save(MemoryEntry(id="", kind=MemoryKind.BUSINESS_CONTEXT, domain="auth", title="Draft rule", body="Not yet approved", approved=False))

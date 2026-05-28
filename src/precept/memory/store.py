@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -38,6 +39,43 @@ def _entry_id(kind: str, domain: str, title: str) -> str:
 def _safe_filename(s: str) -> str:
     """Make a string safe to use as a filename."""
     return "".join(c if c.isalnum() or c in "-_" else "_" for c in s)
+
+
+# ------------------------------------------------------------------
+# Lightweight relevance scoring for the dependency-free file store.
+# Not as good as the pgvector/Qdrant paths, but ranks far better than
+# raw substring counting: weights title/tag hits, gives partial credit
+# for stem overlap (idempot → idempotency), and adds a trigram fuzzy
+# fallback so typos / morphology still surface the right entry.
+# ------------------------------------------------------------------
+
+_WORD_RE = re.compile(r"\w+")
+
+
+def _tokenize(text: str) -> set[str]:
+    return set(_WORD_RE.findall(text.lower()))
+
+
+def _trigrams(s: str) -> set[str]:
+    s = f"  {s.lower().strip()}  "
+    return {s[i : i + 3] for i in range(len(s) - 2)}
+
+
+def _trigram_sim(a: str, b: str) -> float:
+    ta, tb = _trigrams(a), _trigrams(b)
+    if not ta or not tb:
+        return 0.0
+    return len(ta & tb) / len(ta | tb)
+
+
+def _token_score(q_tokens: set[str], text_tokens: set[str], exact_w: float, partial_w: float) -> float:
+    score = 0.0
+    for qt in q_tokens:
+        if qt in text_tokens:
+            score += exact_w
+        elif any(qt in tt or tt in qt for tt in text_tokens):
+            score += partial_w
+    return score
 
 
 # ------------------------------------------------------------------
@@ -216,17 +254,23 @@ class FileMemoryStore(MemoryStore):
         return MemoryEntry(**raw) if raw else None
 
     def search(self, query: str, kind: MemoryKind | None = None, domain: str = "", limit: int = 10) -> list[MemoryEntry]:
-        q = query.lower()
-        results: list[tuple[int, MemoryEntry]] = []
+        q_tokens = _tokenize(query)
+        if not q_tokens:
+            return []
+        results: list[tuple[float, MemoryEntry]] = []
         for raw in self._load_all_entries():
             e = MemoryEntry(**raw)
             if kind and e.kind != kind:
                 continue
             if domain and e.domain != domain:
                 continue
-            text = f"{e.title} {e.body} {' '.join(e.tags)}".lower()
-            score = sum(1 for word in q.split() if word in text)
-            if score:
+            score = (
+                _token_score(q_tokens, _tokenize(e.title), exact_w=3.0, partial_w=1.5)
+                + _token_score(q_tokens, _tokenize(" ".join(e.tags)), exact_w=2.0, partial_w=0.8)
+                + _token_score(q_tokens, _tokenize(e.body), exact_w=1.0, partial_w=0.4)
+                + 1.5 * _trigram_sim(query, e.title)
+            )
+            if score > 0:
                 results.append((score, e))
         results.sort(key=lambda x: x[0], reverse=True)
         return [e for _, e in results[:limit]]
