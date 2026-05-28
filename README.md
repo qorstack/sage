@@ -6,6 +6,10 @@
 
 AI agents write code faster than ever — and break prod faster than ever. Precept is the checkpoint they hit _before_ writing a line: it tells them what your team already decided, what they're about to break, and when to stop.
 
+<p align="center">
+  <img src="assets/demo/playground-demo.gif" alt="Precept returning a live verdict on a change request" width="820">
+</p>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -34,11 +38,30 @@ Risk:      refund → webhook → ledger
 
 **After Precept:** the agent reuses `PaymentClient`, follows the team rule, and pauses on the HIGH-risk change until a human approves. AI-written knowledge lands as **Pending** until a human approves it on the dashboard.
 
+<p align="center">
+  <img src="assets/demo/dashboard.png" alt="Precept dashboard — pending review, team knowledge, and recent activity" width="820">
+</p>
+
 ---
 
-## How Precept differs from generic knowledge tools
+## Why Precept, not just another AI tool
 
-| Dimension       | RAG / Vector KB          | Generic Knowledge Graph | **precept**                                                         |
+Most AI dev tools make your agent **write more** or **know more**. Precept is the only layer that makes it **stop and check before it acts** — and it rides on top of whatever agent you already use, over MCP.
+
+| Category               | Examples                              | What they do                          | What Precept adds                                                                |
+| ---------------------- | ------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------- |
+| Autonomous coding agents | Claude Code, Cursor, Copilot, Hermes | Write & edit code fast                | A pre-write checkpoint — reuse, blast radius, team rules, a binding proceed/ask/reject |
+| RAG / wikis / Obsidian | Notion, Obsidian, vector KBs          | Store knowledge you must remember to read | **Enforced** consultation: the agent _must_ query before coding              |
+| Codebase indexers      | CodeGraph, Sourcegraph, Repowise      | Feed the agent more context           | A _decision_, not just context: risk level + cascade + a human-approval gate    |
+| Decision records       | git-trailer / commit-log tools        | Record "why" after the fact           | Enforce those decisions _before_ the next change                                 |
+
+> Precept doesn't compete with your agent — it's the **seatbelt your agent wears**. More agent autonomy makes Precept _more_ valuable, not less.
+
+**Positioning:** the governance + guardrail layer for teams letting AI agents touch real codebases — it decides what the agent may reuse, what it might break, and when a human must sign off.
+
+### vs RAG / knowledge graphs, in detail
+
+| Dimension       | RAG / Vector KB          | Generic Knowledge Graph | **Precept**                                                         |
 | --------------- | ------------------------ | ----------------------- | ------------------------------------------------------------------- |
 | Knowledge shape | text chunks + embeddings | static nodes/edges      | **Cognitive Graph** — domain × asset × convention × impact edge     |
 | When AI uses it | pulled at prompt time    | queried only when asked | **Mandatory call before any code change** (`analyze_intent`)        |
