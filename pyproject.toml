@@ -68,9 +68,6 @@ packages = ["src/precept"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/precept/memory/sql/schema.sql" = "precept/memory/sql/schema.sql"
-"src/precept/web/templates" = "precept/web/templates"
-"src/precept/web/static" = "precept/web/static"
-"src/precept/claude_commands" = "precept/claude_commands"
 
 [tool.hatch.version]
 path = "src/precept/__init__.py"
