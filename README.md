@@ -4,11 +4,22 @@
 
 **The guardrail that stops your AI agent from breaking your codebase.**
 
-AI agents write code faster than ever — and break prod faster than ever. Precept is the checkpoint they hit _before_ writing a line: it tells them what your team already decided, what they're about to break, and when to stop.
+<table>
+<tr>
+<th>❌ Without Precept</th>
+<th>✅ With Precept</th>
+</tr>
+<tr>
+<td valign="top" width="50%">
+  <img src="assets/demo/without-precept.gif" alt="Agent ships a new OAuthClient and stores tokens in localStorage — reviewer catches it two days later" width="100%">
+</td>
+<td valign="top" width="50%">
+  <img src="assets/demo/with-precept.gif" alt="Agent calls analyze_intent first, gets ASK + reuse hints, pauses for human sign-off" width="100%">
+</td>
+</tr>
+</table>
 
-<p align="center">
-  <img src="assets/demo/playground-demo.gif" alt="Precept returning a live verdict on a change request" width="820">
-</p>
+> Same prompt, same repo, two terminals. The left ships broken code; the right pauses on `ASK` until a human signs off.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -17,11 +28,11 @@ AI agents write code faster than ever — and break prod faster than ever. Prece
 
 ## The problem
 
-Coding agents (Claude Code, Cursor, Copilot, Hermes…) are getting more autonomous every month. That's great — until one confidently duplicates a service your team already wrote, ignores a rule it agreed on six months ago, and ships it.
+AI agents write code faster than ever — and break prod faster than ever. Coding agents (Claude Code, Cursor, Copilot, Hermes…) are getting more autonomous every month. That's great — until one confidently duplicates a service your team already wrote, ignores a rule it agreed on six months ago, and ships it.
 
-More autonomy means more speed _and_ more blast radius. Precept is the seatbelt.
+More autonomy means more speed _and_ more blast radius. Precept is the seatbelt: the checkpoint your agent hits _before_ writing a line — it tells them what your team already decided, what they're about to break, and when to stop.
 
-## What it does
+## What Precept tells your agent
 
 Precept sits between your AI agent and your repo over MCP. Before the agent writes code, it must ask Precept — and gets back this:
 
@@ -34,103 +45,7 @@ Team rule: "Sessions live server-side — never localStorage" (alice, approved)
 Risk:      auth → session → audit log
 ```
 
-**Before Precept:** the agent rolls a fresh OAuth flow, drops tokens in `localStorage`, ships it. You catch it in review — or after a breach.
-
-**After Precept:** the agent reuses `AuthService`, follows the team rule, and pauses on the HIGH-risk change until a human approves. AI-written knowledge lands as **Pending** until a human approves it on the dashboard.
-
-<p align="center">
-  <img src="assets/demo/dashboard.png" alt="Precept dashboard — pending review, team knowledge, and recent activity" width="820">
-</p>
-
----
-
-## "Just put it in CLAUDE.md / docs/"
-
-Docs are passive. The agent reads them only if it remembers to, and only the slice that fits in its context window. Same repo, same prompt, two setups:
-
-Same prompt. Same repo. Two terminals.
-
-<table>
-<tr>
-<th>❌ Without Precept</th>
-<th>✅ With Precept</th>
-</tr>
-<tr>
-<td valign="top">
-
-```text
-$ claude "add Google SSO to /login"
-
-⚙ Reading repo...
-✓ Created auth/sso/google.ts
-✓ Created OAuthClient.ts
-✓ Stored access_token in localStorage
-✓ Committed: feat(auth): Google SSO
-
-
-─ 2 days later, in PR review ─
-
-reviewer: "We already have AuthService —
-           why a new OAuthClient?"
-reviewer: "Tokens in localStorage??
-           that breaks our session policy."
-
-→ Revert. Rewrite. Re-review.
-```
-
-</td>
-<td valign="top">
-
-```text
-$ claude /precept "add Google SSO to /login"
-
-⚙ analyze_intent...
-
-┌──────────────────────────────────┐
-│ Domain:   auth (HIGH)            │
-│ Decision: ASK                    │
-│ Reuse:    AuthService,           │
-│           SessionStore           │
-│ Rule:     "Sessions live         │
-│            server-side — never   │
-│            localStorage"         │
-│            (alice, approved)     │
-│ Risk:     auth → session →       │
-│           audit log              │
-└──────────────────────────────────┘
-
-⏸ Pausing for human sign-off.
-```
-
-</td>
-</tr>
-</table>
-
-If the agent ever tries to push past `ASK`, the pre-commit hook and the CI cognition gate reject the merge — so the wrong path on the left literally can't ship.
-
-|                               | `CLAUDE.md` / wiki / RAG           | Precept                         |
-| ----------------------------- | ---------------------------------- | ------------------------------- |
-| Consulted before code         | Optional — if the agent samples it | Mandatory MCP call              |
-| Knows the blast radius        | Static prose                       | Graph traversal in real time    |
-| Returns a verdict             | Facts only                         | `proceed / warn / ask / reject` |
-| Enforceable in CI             | CI can't parse "remember to…"      | Exit codes `0 / 1 / 2`          |
-| Tracks who approved each rule | Anyone edits the file              | Approval queue + audit log      |
-
-> Precept doesn't replace your agent or your docs — it's the **mandatory checkpoint** between them and prod. More agent autonomy makes Precept _more_ valuable, not less.
-
-### What makes it different
-
-- **Mandatory, not optional** — the agent must call `analyze_intent` before any code change, not "if it remembers to." RAG and wikis are a library; Precept is a checkpoint.
-- **A decision, not a document** — a rule-based `proceed / warn / ask / reject`, computed with no LLM (deterministic, free, no API key).
-- **Knows the blast radius** — reusable assets, affected domains, and cascade risk pulled straight from your repo's cognitive graph (domain × asset × convention × impact).
-- **Team decisions are binding** — approved decisions + an approval queue + audit. AI can make a call _stricter_, never silently looser.
-
-### Where it shines
-
-- ✅ Real codebases with team conventions — auth, webhook, order/state machines, money logic, multi-repo products
-- ➖ Greenfield throwaways and one-shot scripts with no team context
-
-**It gets cheaper the more you use it** — reuses approved decisions instead of re-deriving them every session, kills the rejected-then-rewritten token churn, and pulls only the relevant context per request. Seed once with `/precept-generate`, then every `/precept` call starts from real context.
+The agent reuses `AuthService`, follows the team rule, and pauses on the HIGH-risk change until a human approves. AI-written knowledge lands as **Pending** until a human approves it on the dashboard.
 
 ---
 
@@ -153,8 +68,6 @@ Then open Claude Code in any repo and try:
 
 Prefer the terminal? `precept "add Google SSO to /login"` runs the same engine and prints the verdict.
 
-Prefer to wire it up yourself? The manual steps are below.
-
 <details>
 <summary><b>Prerequisites</b></summary>
 
@@ -165,6 +78,36 @@ Prefer to wire it up yourself? The manual steps are below.
 - ~2GB free RAM
 
 </details>
+
+---
+
+## Why Precept beats `CLAUDE.md` / docs/
+
+Docs are passive. The agent reads them only if it remembers to, and only the slice that fits in its context window.
+
+|                               | `CLAUDE.md` / wiki / RAG           | Precept                         |
+| ----------------------------- | ---------------------------------- | ------------------------------- |
+| Consulted before code         | Optional — if the agent samples it | Mandatory MCP call              |
+| Knows the blast radius        | Static prose                       | Graph traversal in real time    |
+| Returns a verdict             | Facts only                         | `proceed / warn / ask / reject` |
+| Enforceable in CI             | CI can't parse "remember to…"      | Exit codes `0 / 1 / 2`          |
+| Tracks who approved each rule | Anyone edits the file              | Approval queue + audit log      |
+
+### What makes it different
+
+- **Mandatory, not optional** — the agent must call `analyze_intent` before any code change, not "if it remembers to." RAG and wikis are a library; Precept is a checkpoint.
+- **A decision, not a document** — a rule-based `proceed / warn / ask / reject`, computed with no LLM (deterministic, free, no API key).
+- **Knows the blast radius** — reusable assets, affected domains, and cascade risk pulled straight from your repo's cognitive graph (domain × asset × convention × impact).
+- **Team decisions are binding** — approved decisions + an approval queue + audit. AI can make a call _stricter_, never silently looser.
+
+### Where it shines
+
+- ✅ Real codebases with team conventions — auth, webhook, order/state machines, money logic, multi-repo products
+- ➖ Greenfield throwaways and one-shot scripts with no team context
+
+**It gets cheaper the more you use it** — reuses approved decisions instead of re-deriving them every session, kills the rejected-then-rewritten token churn, and pulls only the relevant context per request. Seed once with `/precept-generate`, then every `/precept` call starts from real context.
+
+> Precept doesn't replace your agent or your docs — it's the **mandatory checkpoint** between them and prod. More agent autonomy makes Precept _more_ valuable, not less.
 
 ---
 
@@ -220,7 +163,8 @@ Generic config most clients accept:
 
 ---
 
-## Manual setup
+<details>
+<summary><b>Manual setup (skip if you ran <code>precept quickstart</code>)</b></summary>
 
 ### Part 1 — Dashboard
 
@@ -274,9 +218,11 @@ docker compose up -d
 open http://localhost:8080
 ```
 
-Use the dashboard to add knowledge entries by hand. Done — or continue to Part 2 for AI integration.
+<p align="center">
+  <img src="assets/demo/dashboard.png" alt="Precept dashboard — pending review, team knowledge, and recent activity" width="820">
+</p>
 
----
+Use the dashboard to add knowledge entries by hand. Done — or continue to Part 2 for AI integration.
 
 ### Part 2 — AI integration
 
@@ -372,18 +318,20 @@ You should see a reply that opens with `Risk: <level> — <why>` / `Decision: ..
 
 If not: `claude mcp list` shows `✗` → run `precept mcp` in a terminal to see the error (usually missing DB credentials).
 
----
+</details>
 
-## Dashboard at a glance
+<details>
+<summary><b>Dashboard at a glance</b></summary>
 
 - **Home** — two hero cards: ⏳ **Pending review** (AI entries awaiting approval) + 🌐 **Global knowledge**. Plus a per-workspace breakdown.
 - **Knowledge** — workspace pills at the top, then filter by source (Human / AI), status (Approved / Pending), or domain. Every row shows scope + source badges.
 - **Entry detail** — full metadata strip plus a **Move to Global ↑** / **Move to Workspace ↓** button so you can re-scope without re-creating.
 - **Summaries / Activity** — per-domain AI syntheses and full audit log.
 
----
+</details>
 
-## Tips — fewer tokens, sharper answers
+<details>
+<summary><b>Tips — fewer tokens, sharper answers</b></summary>
 
 - **Use `/precept` only for real changes** — features, refactors, bug fixes. Skip it for renames, typos, formatting.
 - **Approve memory on the dashboard** — pending entries are not recalled in the next session. Approved ones are.
@@ -392,9 +340,10 @@ If not: `claude mcp list` shows `✗` → run `precept mcp` in a terminal to see
 - **Set `repo_name` precisely** in `precept.config` — scopes recall tighter, so Claude pulls less but more relevant context.
 - **Forget stale memory** — outdated decisions waste tokens and confuse Claude. Use `precept memory forget <id>` or the dashboard.
 
----
+</details>
 
-## Updating
+<details>
+<summary><b>Updating</b></summary>
 
 ```bash
 # Upgrade the CLI + MCP server
@@ -413,6 +362,8 @@ Stop / wipe:
 docker compose stop                # keep data
 docker compose down -v             # wipe all data
 ```
+
+</details>
 
 ---
 
