@@ -1799,7 +1799,7 @@ def check(
     Designed for CI: pipe a PR title/body in and gate the merge.
 
     \b
-    precept check "add a refund endpoint to /payments"
+    precept check "add Google SSO to /login"
     printf '%s' "$PR_TITLE" | precept check --strict
     """
     if not request.strip():
@@ -2057,7 +2057,7 @@ def quickstart(
     # 5. Next steps.
     console.print(Panel(
         "Open Claude Code in any repo and try:\n"
-        "  [cyan]/precept add a refund endpoint to /payments[/cyan]\n\n"
+        "  [cyan]/precept add Google SSO to /login[/cyan]\n\n"
         "Open the dashboard:\n"
         "  [cyan]precept web[/cyan]  →  http://localhost:8080",
         title="[bold green]Precept is ready[/bold green]",
