@@ -196,7 +196,7 @@ services:
       interval: 5s
 
   web:
-    image: ghcr.io/qorstack/preceptai:latest
+    image: ghcr.io/qorstack/precept:latest
     container_name: precept-web
     depends_on: { postgres: { condition: service_healthy } }
     environment:
