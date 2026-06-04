@@ -54,7 +54,7 @@ The agent reuses `AuthService`, follows the team rule, and pauses on the HIGH-ri
 Two commands. The first installs the CLI; the second wires up everything else.
 
 ```bash
-uv tool install git+https://github.com/qorstack/preceptai.git
+uv tool install --force git+https://github.com/qorstack/preceptai.git
 precept quickstart
 ```
 
