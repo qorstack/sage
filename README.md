@@ -174,8 +174,9 @@ Generic config most clients accept:
 POSTGRES_USER=precept
 POSTGRES_PASSWORD=precept
 POSTGRES_DB=precept
-POSTGRES_PORT=5432
-WEB_PORT=8080
+# Non-standard host ports — avoid clashes with anything already on 5432/8080.
+POSTGRES_PORT=55432
+WEB_PORT=9080
 ```
 
 #### 2. Create `docker-compose.yml`
@@ -215,7 +216,7 @@ volumes:
 
 ```bash
 docker compose up -d
-open http://localhost:8080
+open http://localhost:9080
 ```
 
 <p align="center">
@@ -257,7 +258,7 @@ repo_name = "aaa-api"
 
 [database]
 host     = "localhost"
-port     = 5432
+port     = 55432              # matches quickstart's POSTGRES_PORT
 user     = "precept"
 password = "precept"
 db       = "precept"

@@ -2,7 +2,7 @@
 precept dashboard — read-only web UI for monitoring memory entries,
 syntheses, audit log, and supersession/merge activity.
 
-Run: uvicorn precept.web.app:app --host 0.0.0.0 --port 8080
+Run: uvicorn precept.web.app:app --host 0.0.0.0 --port 9080
 
 Uses the same POSTGRES_* / PRECEPT_DB_SCHEMA env vars as the store, so a single
 .env file drives both backend and dashboard.

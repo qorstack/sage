@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -1963,8 +1964,11 @@ _QUICKSTART_ENV = """\
 POSTGRES_USER=precept
 POSTGRES_PASSWORD=precept
 POSTGRES_DB=precept
-POSTGRES_PORT=5432
-WEB_PORT=8080
+# Non-standard host ports to avoid clashing with anything already
+# running on 5432 / 8080. Inside the container Postgres still listens
+# on 5432; this is only how YOU reach it from the host.
+POSTGRES_PORT=55432
+WEB_PORT=9080
 """
 
 # Postgres only — the dashboard runs locally via `precept web`, so quickstart
@@ -2059,7 +2063,7 @@ def quickstart(
         "Open Claude Code in any repo and try:\n"
         "  [cyan]/precept add Google SSO to /login[/cyan]\n\n"
         "Open the dashboard:\n"
-        "  [cyan]precept web[/cyan]  →  http://localhost:8080",
+        "  [cyan]precept web[/cyan]  →  http://localhost:9080",
         title="[bold green]Precept is ready[/bold green]",
     ))
 
@@ -2071,7 +2075,10 @@ app.command(name="up")(quickstart)
 @app.command()
 def web(
     host: str = typer.Option("0.0.0.0", "--host", help="Bind address"),
-    port: int = typer.Option(8080, "--port", "-p", help="Port for the dashboard"),
+    port: int = typer.Option(
+        int(os.getenv("WEB_PORT", "9080")), "--port", "-p",
+        help="Port for the dashboard (default: $WEB_PORT or 9080)",
+    ),
 ):
     """
     Run the Precept dashboard locally.
