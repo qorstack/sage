@@ -168,6 +168,7 @@ precept mcp-config cursor      # or: claude · vscode · windsurf · cline · al
 | VS Code / Copilot agent | add to `.vscode/mcp.json` (uses a `servers` key)                            |
 | Windsurf                | add to `~/.codeium/windsurf/mcp_config.json`                                |
 | Cline                   | add to `cline_mcp_settings.json`                                            |
+| Hermes Agent            | add `precept mcp` to Hermes's MCP config - auto-discovered at startup       |
 
 Generic config most clients accept:
 
