@@ -83,14 +83,22 @@ body {
   z-index: 10;
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   font-family: var(--f-display);
   font-weight: 400;
   font-size: 18px;
   color: var(--ink);
   text-transform: uppercase;
   letter-spacing: 5px;
+  text-decoration: none;
 }
-.brand { text-decoration: none; }
+.brand-logo {
+  height: 30px;
+  width: auto;
+  display: block;
+}
 .topbar nav { display: flex; gap: 4px; align-items: center; height: 100%; }
 .topbar nav a {
   color: var(--muted);

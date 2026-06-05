@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}precept{% endblock %} — precept</title>
-  <link rel="icon" type="image/png" href="/static/logo.png">
+  <link rel="icon" type="image/png" href="/static/logo-mark.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;400;500&family=EB+Garamond:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -41,10 +41,12 @@
   </svg>
 
   <header class="topbar">
-    <a href="/" class="brand">precept</a>
+    <a href="/" class="brand">
+      <img src="/static/logo-mark.png" alt="" class="brand-logo">
+      <span>precept</span>
+    </a>
     <nav>
       <a href="/"           class="{{ 'on' if active == 'dashboard'  else '' }}">Home</a>
-      <a href="/playground" class="{{ 'on' if active == 'playground' else '' }}">Try it</a>
       <a href="/entries"    class="{{ 'on' if active == 'entries'    else '' }}">Knowledge</a>
       <a href="/syntheses"  class="{{ 'on' if active == 'syntheses'  else '' }}">Summaries</a>
       <a href="/audit"      class="{{ 'on' if active == 'audit'      else '' }}">Activity</a>
