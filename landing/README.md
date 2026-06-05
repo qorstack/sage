@@ -14,24 +14,20 @@ start index.html              # Windows
 python -m http.server 3000    # then visit http://localhost:3000
 ```
 
-## Deploy to Vercel
+## Deploy to GitHub Pages
 
-**Option A — CLI (fastest):**
+The repo ships a workflow at [`.github/workflows/pages.yml`](../.github/workflows/pages.yml)
+that publishes this `landing/` folder to GitHub Pages on every push to `main`.
 
-```bash
-cd landing
-npx vercel        # first run links/creates the project
-npx vercel --prod # promote to production
-```
+One-time setup (repo owner):
 
-Vercel auto-detects it as a static site (an `index.html` with no framework),
-so there is nothing to configure.
+1. GitHub → **Settings → Pages → Build and deployment → Source** = **GitHub Actions**.
+2. Merge to `main` (or run the workflow manually from the **Actions** tab → *Deploy
+   landing page to GitHub Pages* → **Run workflow**).
 
-**Option B — Git import:**
-
-1. Push this repo to GitHub.
-2. In Vercel → *New Project* → import the repo.
-3. Set **Root Directory** to `landing`. Framework preset: **Other**. Deploy.
+The site then lives at `https://qorstack.github.io/preceptai/`. The page is fully
+self-contained (inline CSS/JS, CDN fonts, only anchor + absolute links), so it works
+unchanged under the `/preceptai/` sub-path.
 
 ## Editing
 
