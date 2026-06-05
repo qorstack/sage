@@ -30,13 +30,13 @@
 
   {# The request, shown like the message the dev sent the agent #}
   <div style="display:flex;justify-content:flex-end;margin:14px 0">
-    <div style="background:#1e293b;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:80%">{{ q }}</div>
+    <div style="background:var(--primary);color:var(--on-primary);border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:80%">{{ q }}</div>
   </div>
 
   {# Precept's reply, rendered from markdown like a real agent response #}
   <div style="display:flex;gap:10px;align-items:flex-start">
     <div style="flex:0 0 28px;height:28px;border-radius:6px;background:{{ c }};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff">P</div>
-    <div style="flex:1;border:1px solid #2a2a2a;border-left:4px solid {{ c }};border-radius:2px 12px 12px 12px;padding:4px 20px;background:#0f1117">
+    <div style="flex:1;border:1px solid var(--hairline);border-left:4px solid {{ c }};border-radius:2px 12px 12px 12px;padding:4px 20px;background:var(--surface)">
       <div id="reply" class="md"></div>
     </div>
   </div>

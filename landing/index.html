@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRECEPT — Cognitive enforcement for AI software development</title>
+<meta name="description" content="Precept forces AI agents to understand a system — business logic, impact, risk, reusable assets — before they generate or modify code. The cognition layer that grows with your team." />
+
+<link rel="icon" type="image/png" href="logo.png" />
+<link rel="apple-touch-icon" href="logo.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;400;500&family=EB+Garamond:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    /* Surface — pure black, near-black tones only */
+    --canvas:           #000000;
+    --surface-soft:     #0d0d0d;
+    --surface-card:     #141414;
+    --surface-elevated: #1f1f1f;
+    --hairline:         #262626;
+    --hairline-strong:  #3a3a3a;
+
+    /* Text — monochrome */
+    --on-dark:     #ffffff;
+    --body:        #cccccc;
+    --body-strong: #e6e6e6;
+    --muted:       #999999;
+    --muted-soft:  #666666;
+
+    /* The single non-monochrome token, for inline links only */
+    --link: #c3d9f3;
+
+    --maxw: 1280px;
+    --section: 120px;
+
+    --f-display: "Saira Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --f-text:    "EB Garamond", Garamond, "Times New Roman", serif;
+    --f-mono:    "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--body);
+    font-family: var(--f-text);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  a { color: var(--link); text-decoration: none; }
+
+  /* Display — Saira Condensed, uppercase, wide-tracked, weight 400, never bold */
+  h1, h2, h3 {
+    font-family: var(--f-display); font-weight: 400; color: var(--on-dark);
+    text-transform: uppercase; margin: 0; line-height: 1.15;
+    text-wrap: balance;
+  }
+  .display-xl { font-size: clamp(40px, 7vw, 64px); letter-spacing: 4px; line-height: 1.08; }
+  .display-lg { font-size: clamp(32px, 5vw, 48px); letter-spacing: 3px; }
+  .display-md { font-size: clamp(26px, 3.4vw, 32px); letter-spacing: 2px; }
+  .display-sm { font-size: 22px; letter-spacing: 1.5px; }
+
+  /* Mono — buttons, nav, captions, labels. Always uppercase, tracked. */
+  .mono, .caption, .eyebrow, .nav-link, .btn, .os-tab, .step-h, .tag, .scope, .approved, .install-title, .install-foot, .date {
+    font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px;
+  }
+  .eyebrow { font-size: 11px; letter-spacing: 2.5px; color: var(--muted); margin-bottom: 22px; }
+  .caption { font-size: 11px; color: var(--muted); }
+
+  code { font-family: var(--f-mono); text-transform: none; letter-spacing: 0; color: var(--body-strong); }
+  pre  { font-family: var(--f-mono); text-transform: none; letter-spacing: 0; }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
+
+  /* ─── Buttons — transparent, 1px white outline, pill ─── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+    font-size: 13px; letter-spacing: 2.5px; line-height: 1;
+    padding: 15px 32px; min-height: 44px; border-radius: 9999px;
+    background: transparent; color: var(--on-dark); border: 1px solid var(--on-dark);
+    cursor: pointer; transition: background .25s ease, color .25s ease;
+  }
+  .btn:hover { background: var(--on-dark); color: var(--canvas); }
+  .btn-quiet { border-color: var(--hairline-strong); color: var(--body); }
+  .btn-quiet:hover { background: transparent; border-color: var(--on-dark); color: var(--on-dark); }
+
+  /* ─── Nav — transparent, wordmark centered ─── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(0,0,0,0.72); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .nav-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 60px; }
+  .nav-left { display: flex; gap: 26px; align-items: center; }
+  .nav-right { display: flex; gap: 22px; align-items: center; justify-content: flex-end; }
+  .nav-link { font-size: 12px; color: var(--muted); }
+  .nav-link:hover { color: var(--on-dark); }
+  .nav-center { display: inline-flex; align-items: center; gap: 12px; justify-self: center; }
+  .brand-logo { width: 26px; height: 26px; display: block; filter: grayscale(1) brightness(1.7) contrast(0.85); opacity: 0.9; }
+  .wordmark { font-family: var(--f-display); font-weight: 400; text-transform: uppercase; color: var(--on-dark); font-size: 16px; letter-spacing: 6px; }
+  @media (max-width: 760px) { .nav-left { display: none; } .nav-inner { grid-template-columns: 1fr auto; } }
+
+  /* ─── Hero ─── */
+  header.hero { padding: 120px 0 var(--section); text-align: center; }
+  .hero-inner { max-width: 960px; margin: 0 auto; }
+  .hero h1 { margin: 0 auto; max-width: 24ch; }
+  .hero .lead {
+    font-family: var(--f-text); font-size: clamp(18px, 2.2vw, 22px); color: var(--body-strong);
+    max-width: 60ch; margin: 32px auto 0; line-height: 1.55;
+  }
+  .hero .cta-row { display: flex; gap: 18px; justify-content: center; margin-top: 48px; flex-wrap: wrap; }
+
+  /* ─── Sections ─── */
+  section { padding: var(--section) 0; border-top: 1px solid var(--hairline); }
+  .sec-head { max-width: 64ch; margin: 0 auto 64px; text-align: center; }
+  .sec-head h2 { margin-bottom: 22px; }
+  .sec-head p { color: var(--body); font-size: 18px; }
+
+  .grid { display: grid; gap: 40px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 860px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* feature columns (flat, hairline-separated) */
+  .col { padding: 0; }
+  .col h3 { margin-bottom: 16px; }
+  .col p { color: var(--body); font-size: 16px; }
+  .col .ico { width: 40px; height: 40px; margin-bottom: 22px; display: grid; place-items: center; border: 1px solid var(--hairline-strong); border-radius: 0; }
+  .col .ico svg { width: 20px; height: 20px; stroke: var(--on-dark); fill: none; stroke-width: 1.4; }
+
+  .feature-row { display: flex; gap: 16px; align-items: flex-start; padding: 22px 0; border-bottom: 1px solid var(--hairline); }
+  .feature-row:last-child { border-bottom: 0; }
+  .feature-row .mk { color: var(--on-dark); flex: none; font-family: var(--f-mono); }
+  .feature-row b { color: var(--on-dark); font-weight: 400; }
+  .feature-row div { font-size: 16px; }
+
+  /* ─── Install block (transparent, hairline, mono) ─── */
+  .install { max-width: 720px; margin: 0 auto; border: 1px solid var(--hairline); }
+  .install-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--hairline); }
+  .install-title { font-size: 11px; color: var(--muted); }
+  .os-tabs { display: inline-flex; gap: 24px; }
+  .os-tab { font-size: 11px; color: var(--muted); background: none; border: 0; padding: 4px 0; cursor: pointer; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
+  .os-tab.on { color: var(--on-dark); border-bottom-color: var(--on-dark); }
+  .mode-tab { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--muted); background: none; border: 0; padding: 4px 0; cursor: pointer; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
+  .mode-tab.on { color: var(--on-dark); border-bottom-color: var(--on-dark); }
+  .install-body { padding: 8px 22px 22px; }
+  .step { padding: 24px 0; border-bottom: 1px solid var(--hairline); }
+  .step:last-child { border-bottom: 0; }
+  .step-h { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; font-size: 12px; color: var(--on-dark); }
+  .step-h .n { color: var(--muted-soft); }
+  .step-h .copy { margin-left: auto; }
+  .copy { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 10px; background: transparent; color: var(--muted); border: 1px solid var(--hairline-strong); padding: 6px 12px; border-radius: 9999px; cursor: pointer; transition: color .2s, border-color .2s; }
+  .copy:hover { color: var(--on-dark); border-color: var(--on-dark); }
+  .step-cmd { margin: 0; font-size: 13px; line-height: 1.85; color: var(--body-strong); background: var(--surface-soft); border: 1px solid var(--hairline); padding: 14px 16px; overflow-x: auto; white-space: pre; }
+  .step-cmd .m { color: var(--muted-soft); }
+  .install-foot { padding: 16px 22px; border-top: 1px solid var(--hairline); font-size: 11px; color: var(--muted); }
+  .install-foot a { color: var(--link); }
+  @media (max-width: 560px) { .install-bar { flex-direction: column; gap: 14px; align-items: flex-start; } }
+
+  /* ─── Usage: command + cognition report (spec-cell style) ─── */
+  .codeblock { border: 1px solid var(--hairline); }
+  .codeblock .head { padding: 14px 18px; border-bottom: 1px solid var(--hairline); font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--muted); display:flex; justify-content:space-between; align-items:center; }
+  .codeblock pre { margin: 0; padding: 18px; font-size: 13.5px; line-height: 1.85; color: var(--body-strong); overflow-x: auto; white-space: pre; }
+  .codeblock pre .m { color: var(--muted-soft); }
+
+  .report { border: 1px solid var(--hairline); }
+  .report .row { display: flex; gap: 20px; padding: 18px 20px; border-bottom: 1px solid var(--hairline); align-items: flex-start; }
+  .report .row:last-child { border-bottom: 0; }
+  .report .k { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 10px; color: var(--muted); width: 92px; flex: none; padding-top: 4px; }
+  .report .v { font-size: 16px; color: var(--body); }
+  .report .v b { color: var(--on-dark); font-weight: 400; }
+  .tag { display: inline-block; font-size: 10px; color: var(--muted); margin: 2px 18px 2px 0; }
+  .badge-ask { display: inline-block; font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2.5px; font-size: 11px; color: var(--on-dark); border: 1px solid var(--on-dark); border-radius: 9999px; padding: 5px 14px; }
+
+  /* ─── Team knowledge memo ─── */
+  .memo { background: var(--surface-card); padding: 28px; }
+  .memo .top { display: flex; gap: 18px; margin-bottom: 18px; flex-wrap: wrap; }
+  .scope, .approved { font-size: 10px; color: var(--muted); }
+  .memo h3 { margin-bottom: 12px; }
+  .memo p { font-size: 16px; color: var(--body); margin: 0; }
+  .memo .date { font-size: 10px; color: var(--muted-soft); margin-top: 18px; display: block; }
+
+  /* ─── Final CTA ─── */
+  .final { text-align: center; padding: 160px 0; }
+  .final h2 { max-width: 20ch; margin: 0 auto 26px; }
+  .final p { color: var(--muted); font-size: 18px; max-width: 52ch; margin: 0 auto 44px; font-family: var(--f-text); }
+
+  footer { border-top: 1px solid var(--hairline); padding: 80px 0 56px; text-align: center; }
+  .foot-links { display: flex; gap: 34px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+  .foot-links a { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--muted); }
+  .foot-links a:hover { color: var(--on-dark); }
+  .foot-wordmark { font-family: var(--f-display); text-transform: uppercase; letter-spacing: 8px; font-size: 22px; color: var(--on-dark); }
+  .foot-legal { margin-top: 22px; font-size: 13px; color: var(--muted-soft); font-family: var(--f-text); }
+</style>
+</head>
+<body>
+
+<!-- ─── Nav ─── -->
+<nav>
+  <div class="wrap nav-inner">
+    <div class="nav-left">
+      <a href="#why" class="nav-link">Why</a>
+      <a href="#install" class="nav-link">Install</a>
+      <a href="#usage" class="nav-link">How it works</a>
+    </div>
+    <div class="nav-center">
+      <img class="brand-logo" src="logo.png" alt="">
+      <span class="wordmark">Precept</span>
+    </div>
+    <div class="nav-right">
+      <a href="https://github.com/qorstack/preceptai" target="_blank" rel="noopener" class="nav-link">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── Hero ─── -->
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Open Source · MIT License</div>
+    <h1 class="display-xl">The cognition layer that grows with your team.</h1>
+    <p class="lead">
+      Your AI understands before it codes — and your team's knowledge compounds every commit.
+      Precept makes the agents you already use grasp what your team has decided, what a change
+      will break, and what to reuse, then remembers it for next time.
+    </p>
+
+    <!-- Install -->
+    <div class="install" id="install" style="margin-top:64px; text-align:left;">
+      <div class="install-bar">
+        <span class="install-title">Get started</span>
+        <div class="os-tabs">
+          <button class="mode-tab on" data-mode="agent">Let your AI do it</button>
+          <button class="mode-tab" data-mode="manual">Run it yourself</button>
+        </div>
+      </div>
+
+      <!-- Agent mode: paste the prompt -->
+      <div class="install-body mode-panel" data-mode-panel="agent">
+        <div class="step" style="border-bottom:0;">
+          <div class="step-h">Paste this to your agent <button class="copy" data-copy="Set up Precept on this machine so my coding agent consults it before writing code. 1) Install the CLI: uv tool install --force git+https://github.com/qorstack/preceptai.git  2) Make a dedicated folder (e.g. ~/precept), cd into it, and run: precept quickstart — it scaffolds the stack into that folder, starts Postgres and the dashboard, registers the MCP server globally with Claude Code, and installs the /precept slash commands.  3) Verify the dashboard answers at http://localhost:9080 and `claude mcp list` shows precept. If any step fails, read the error, fix the root cause, retry, and report what you changed.">Copy prompt</button></div>
+          <pre class="step-cmd" style="white-space:pre-wrap;">Set up Precept on this machine so my coding agent consults it before writing code.
+
+<span class="m">1.</span> Install the CLI: uv tool install --force git+https://github.com/qorstack/preceptai.git
+<span class="m">2.</span> Make a dedicated folder (e.g. ~/precept), cd into it, and run precept quickstart — it scaffolds the stack there, starts Postgres + the dashboard, registers the MCP server globally with Claude Code, and installs the /precept slash commands.
+<span class="m">3.</span> Verify the dashboard answers at http://localhost:9080 and claude mcp list shows precept.
+
+If any step fails, read the error, fix the root cause, retry, and report what you changed.</pre>
+        </div>
+      </div>
+
+      <!-- Manual mode: OS-tabbed steps -->
+      <div class="install-body mode-panel" data-mode-panel="manual" style="display:none;">
+        <div class="step">
+          <div class="step-h"><span class="n">01</span> Install <button class="copy copy-os">Copy</button></div>
+          <div class="os-tabs" style="margin-bottom:12px;">
+            <button class="os-tab on" data-os="unix">macOS / Linux</button>
+            <button class="os-tab" data-os="win">Windows</button>
+          </div>
+          <pre class="step-cmd" data-os-panel="unix">curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install --force git+https://github.com/qorstack/preceptai.git</pre>
+          <pre class="step-cmd" data-os-panel="win" style="display:none">irm https://astral.sh/uv/install.ps1 | iex
+uv tool install --force git+https://github.com/qorstack/preceptai.git</pre>
+        </div>
+        <div class="step">
+          <div class="step-h"><span class="n">02</span> Set up <button class="copy" data-copy="mkdir -p ~/precept && cd ~/precept && precept quickstart">Copy</button></div>
+          <pre class="step-cmd"><span class="m"># a permanent home for the stack</span>
+mkdir -p ~/precept && cd ~/precept
+precept quickstart</pre>
+        </div>
+      </div>
+
+      <div class="install-foot">Dashboard → localhost:9080 · .env + docker-compose.yml land in that folder; the MCP server &amp; slash commands install globally (every repo).</div>
+    </div>
+
+    <div class="cta-row">
+      <a href="#install" class="btn">Install Precept</a>
+      <a href="https://github.com/qorstack/preceptai" target="_blank" rel="noopener" class="btn btn-quiet">Star on GitHub</a>
+    </div>
+  </div>
+</header>
+
+<!-- ─── Why ─── -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The problem</div>
+      <h2 class="display-lg">AI agents generate confidently. They rarely understand.</h2>
+      <p>They reinvent helpers that already exist, miss the payment flow three files over, and ship changes your team explicitly decided against last quarter. Markdown docs don't fix this — agents skip them. Precept makes understanding a required tool call, not a suggestion.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="col">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+        <h3 class="display-sm">Intent → Impact → Risk</h3>
+        <p>Every request runs through a rule-based pipeline that names the domain, the blast radius, and a binding decision — no LLM, fully reproducible.</p>
+      </div>
+      <div class="col">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <h3 class="display-sm">Reuse before you create</h3>
+        <p>Surfaces the exact existing assets and conventions to follow, so agents import instead of reinventing.</p>
+      </div>
+      <div class="col">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3 class="display-sm">Binding risk gates</h3>
+        <p>ASK pauses for a human. REJECT stops cold. Code is validated before it's written.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Not another agent ─── -->
+<section id="different">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Where it fits</div>
+      <h2 class="display-lg">Not another agent. The layer your agents are missing.</h2>
+      <p>Coding agents are great at producing code. None of them make sure it's the right code for your system, or that it respects what your team already decided. Precept sits in front of them over MCP and makes understanding mandatory.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="col">
+        <div class="eyebrow" style="margin-bottom:24px;">Today's AI coding agents</div>
+        <div class="feature-row"><span class="mk">—</span><div>Generate &amp; edit code, fast</div></div>
+        <div class="feature-row"><span class="mk">—</span><div>Personal, per-session memory</div></div>
+        <div class="feature-row"><span class="mk">—</span><div>One developer, one machine</div></div>
+        <div class="feature-row"><span class="mk">—</span><div>Optimize for speed of output</div></div>
+      </div>
+      <div class="col">
+        <div class="eyebrow" style="margin-bottom:24px; color:var(--on-dark);">Precept · the cognition layer</div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Enforces understanding</b> before any code is written</div></div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Team-shared, human-approved</b> memory — git-synced</div></div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Every repo, any MCP client</b> — one shared brain</div></div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Optimizes for correctness</b> &amp; team alignment</div></div>
+      </div>
+    </div>
+    <p style="text-align:center; color:var(--muted); margin-top:48px; font-size:16px;">
+      Point it at the agents you already use — Claude Code · Cursor · Cline · Hermes Agent · any MCP client. It doesn't replace them. It makes them think first.
+    </p>
+  </div>
+</section>
+
+
+<!-- ─── Usage ─── -->
+<section id="usage">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">How it works</div>
+      <h2 class="display-lg">Your agent asks. Precept answers with cognition.</h2>
+      <p>Before touching code, the agent calls analyze_intent over MCP and gets a structured report it must respect. Here's what it sees for a real request.</p>
+    </div>
+
+    <div class="grid grid-2" style="align-items:start; max-width:980px; margin:0 auto;">
+      <div class="codeblock">
+        <div class="head"><span>In Claude Code</span></div>
+        <pre>/precept add a refund endpoint to /payments</pre>
+        <div class="head" style="border-top:1px solid var(--hairline)"><span>What the agent must do</span></div>
+        <pre><span class="m">1.</span> analyze_intent()      <span class="m"># first, always</span>
+<span class="m">2.</span> get_reusable_assets()  <span class="m"># reuse, not reinvent</span>
+<span class="m">3.</span> assess_risk_in_context()
+<span class="m">4.</span> validate_generated_code() <span class="m"># before write</span></pre>
+      </div>
+
+      <div class="report">
+        <div class="row"><div class="k">Domain</div><div class="v"><b>payment</b> · action: <b>create</b></div></div>
+        <div class="row"><div class="k">Requires</div><div class="v"><span class="tag">Idempotency key</span><span class="tag">Audit log</span><span class="tag">Amount validation</span></div></div>
+        <div class="row"><div class="k">Impact</div><div class="v"><b>3 services</b>, 7 files — touches the settlement worker &amp; webhook retry path.</div></div>
+        <div class="row"><div class="k">Reuse</div><div class="v"><code>payments/refund_service.py</code> already exists — extend it, don't recreate.</div></div>
+        <div class="row"><div class="k">Decision</div><div class="v"><span class="badge-ask">Ask — human confirmation</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Team knowledge ─── -->
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Team knowledge</div>
+      <h2 class="display-lg">One brain your whole team — and every agent — shares.</h2>
+      <p>When someone states a team decision, Precept captures it, a human approves it, and it git-syncs to everyone. The next time any agent in any repo touches that domain, the decision is right there in the report. Personal agent memory can't do this — it isn't governed, approved, or shared.</p>
+    </div>
+
+    <div class="grid grid-2" style="align-items:start; max-width:980px; margin:0 auto;">
+      <div>
+        <div class="codeblock" style="margin-bottom:24px;">
+          <div class="head"><span>Save a team decision</span><button class="copy" data-copy='precept memory decide payment "Use idempotency keys"'>Copy</button></div>
+          <pre>precept memory decide payment \
+  "Use idempotency keys" \
+  --body "All payment calls require an
+  idempotency key. No exceptions."</pre>
+        </div>
+        <div class="memo">
+          <div class="top">
+            <span class="scope">Workspace · Payment</span>
+            <span class="approved">✓ Approved · git-synced</span>
+          </div>
+          <h3 class="display-sm">Use idempotency keys</h3>
+          <p>All payment calls require an idempotency key. No exceptions. Surfaced automatically on every payment-domain request.</p>
+          <span class="date">Decided by @team · recalled in 14 sessions</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Human-approved memory.</b> AI proposes, a person ratifies. Nothing trusted lands unreviewed.</div></div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Workspace-scoped &amp; multi-repo.</b> One knowledge home, auto-linked across every repo in the product.</div></div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Audit log.</b> Every recall, save, and decision is recorded — who, what, when.</div></div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Approval gates.</b> High-risk changes wait in a queue until a human approves or rejects.</div></div>
+        <div class="feature-row"><span class="mk">✓</span><div><b>Tool-agnostic.</b> Any MCP client — Claude Code, Cursor, Cline — calls the same brain.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Final CTA ─── -->
+<section class="final">
+  <div class="wrap">
+    <div class="eyebrow">Ship code your team actually agreed on</div>
+    <h2 class="display-lg">Make your agents understand before they act.</h2>
+    <p>Open source. MCP-native. Two commands to a governed, shared cognition layer.</p>
+    <div class="cta-row" style="justify-content:center; display:flex; gap:18px; flex-wrap:wrap;">
+      <a href="#install" class="btn">Install Precept</a>
+      <a href="https://github.com/qorstack/preceptai" target="_blank" rel="noopener" class="btn btn-quiet">Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-links">
+      <a href="#why">Why</a>
+      <a href="#install">Install</a>
+      <a href="#usage">How it works</a>
+      <a href="#team">Team knowledge</a>
+      <a href="https://github.com/qorstack/preceptai" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="foot-wordmark">Precept</div>
+    <div class="foot-legal">Cognitive enforcement for AI software development · MIT License</div>
+  </div>
+</footer>
+
+<script>
+  function doCopy(btn, text) {
+    navigator.clipboard.writeText(text).then(function () {
+      var t = btn.textContent; btn.textContent = 'Copied'; btn.style.color = '#fff';
+      setTimeout(function () { btn.textContent = t; btn.style.color = ''; }, 1400);
+    });
+  }
+  document.querySelectorAll('.copy[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () { doCopy(b, b.getAttribute('data-copy')); });
+  });
+
+  // install mode toggle (let your AI do it / run it yourself)
+  document.querySelectorAll('.mode-tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      var mode = t.getAttribute('data-mode');
+      document.querySelectorAll('.mode-tab').forEach(function (x) { x.classList.toggle('on', x === t); });
+      document.querySelectorAll('[data-mode-panel]').forEach(function (p) {
+        p.style.display = p.getAttribute('data-mode-panel') === mode ? '' : 'none';
+      });
+    });
+  });
+
+  // OS tabs (auto-detect Windows)
+  var currentOS = /Win/i.test(navigator.userAgent) ? 'win' : 'unix';
+  function applyOS() {
+    document.querySelectorAll('.os-tab').forEach(function (t) {
+      t.classList.toggle('on', t.getAttribute('data-os') === currentOS);
+    });
+    document.querySelectorAll('[data-os-panel]').forEach(function (p) {
+      p.style.display = p.getAttribute('data-os-panel') === currentOS ? '' : 'none';
+    });
+  }
+  document.querySelectorAll('.os-tab').forEach(function (t) {
+    t.addEventListener('click', function () { currentOS = t.getAttribute('data-os'); applyOS(); });
+  });
+  applyOS();
+
+  var copyOs = document.querySelector('.copy-os');
+  if (copyOs) copyOs.addEventListener('click', function () {
+    var panel = document.querySelector('[data-os-panel="' + currentOS + '"]');
+    doCopy(copyOs, panel ? panel.textContent.trim() : '');
+  });
+</script>
+</body>
+</html>

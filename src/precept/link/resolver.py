@@ -68,6 +68,27 @@ def resolve_workspace(repo_path: str | Path = ".") -> WorkspaceResolution | None
     )
 
 
+def scope_tag(repo_path: str | Path = ".") -> tuple[str, str, str]:
+    """
+    Derive (scope, workspace, repo_name) for a memory entry from the repo's
+    link config — searched UP the tree (like resolve_workspace), then falling
+    back to the user-global ~/.precept.config. Returns ("global", "", "") only
+    when the repo is genuinely unlinked, so a stray entry is still visible
+    rather than silently lost.
+
+    Returns plain strings (the scope is a `MemoryScope` *value*) so the link
+    layer stays decoupled from the memory layer; callers map via MemoryScope().
+    """
+    res = resolve_workspace(repo_path)
+    if res is not None and res.link.workspace:
+        return "workspace", res.link.workspace, res.link.resolved_repo_name(res.repo_path)
+    from precept.link.config import load_global_link
+    glob = load_global_link()
+    if glob and glob.get("workspace"):
+        return "workspace", str(glob["workspace"]), Path(repo_path).resolve().name
+    return "global", "", ""
+
+
 def workspace_setup_hint(repo_path: str | Path = ".") -> str | None:
     """
     Return a one-line setup hint when the link declares a knowledge_remote

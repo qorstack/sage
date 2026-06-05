@@ -1,42 +1,44 @@
 /* ─────────────────────────────────────────────────────────
-   precept dashboard — dark theme, blue accent
+   precept dashboard — light theme, heavy-blue accent
+   Airbnb token language (white canvas, ink #222, #ddd hairlines,
+   soft radii, single shadow tier) with blue as the brand voltage.
    ───────────────────────────────────────────────────────── */
 
 :root {
-  /* Accent (blue stays primary) */
-  --primary:          #4f8aff;
-  --primary-active:   #6ea0ff;
-  --primary-disabled: #1e2a44;
-  --primary-soft:     rgba(79,138,255,0.14);
+  /* Accent — heavy blue is the single brand voltage (Airbnb uses one) */
+  --primary:          #1d4ed8;   /* deep blue — CTAs, links, active nav, brand */
+  --primary-active:   #1e40af;   /* darker on press */
+  --primary-disabled: #c7d6f7;   /* pale tint for disabled CTAs */
+  --primary-soft:     rgba(29,78,216,0.10);
 
-  /* Surface */
-  --canvas:        #0d1117;
-  --surface:       #161b22;
-  --surface-soft:  #1a212b;
-  --surface-strong:#22272f;
-  --surface-hover: #1f2530;
+  /* Surface — white canvas, no dark mode on the public dashboard */
+  --canvas:        #ffffff;
+  --surface:       #ffffff;
+  --surface-soft:  #f7f7f7;
+  --surface-strong:#f2f2f2;
+  --surface-hover: #f7f7f7;
 
   /* Hairlines */
-  --hairline:      #30363d;
-  --hairline-soft: #21262d;
-  --border-strong: #484f58;
+  --hairline:      #dddddd;
+  --hairline-soft: #ebebeb;
+  --border-strong: #c1c1c1;
 
   /* Text */
-  --ink:        #e6edf3;
-  --body:       #c9d1d9;
-  --muted:      #8b949e;
-  --muted-soft: #6e7681;
+  --ink:        #222222;
+  --body:       #3f3f3f;
+  --muted:      #6a6a6a;
+  --muted-soft: #929292;
   --on-primary: #ffffff;
 
-  /* Semantic */
-  --good:       #3fb950;
-  --good-soft:  rgba(63,185,80,0.16);
-  --warn:       #d29922;
-  --warn-soft:  rgba(210,153,34,0.16);
-  --bad:        #f85149;
-  --bad-soft:   rgba(248,81,73,0.16);
-  --merge:      #a371f7;
-  --merge-soft: rgba(163,113,247,0.18);
+  /* Semantic — tuned for contrast on white */
+  --good:       #1a7f37;
+  --good-soft:  rgba(26,127,55,0.12);
+  --warn:       #9a6700;
+  --warn-soft:  rgba(154,103,0,0.12);
+  --bad:        #c13515;
+  --bad-soft:   rgba(193,53,21,0.10);
+  --merge:      #6d28d9;
+  --merge-soft: rgba(109,40,217,0.12);
 
   /* Shape */
   --r-sm: 8px;
@@ -44,8 +46,8 @@
   --r-lg: 24px;
   --r-full: 9999px;
 
-  /* Elevation — single shadow tier */
-  --shadow-1: rgba(0,0,0,0.35) 0 4px 14px 0, rgba(0,0,0,0.5) 0 1px 2px 0;
+  /* Elevation — single shadow tier (Airbnb) */
+  --shadow-1: rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0;
 }
 
 * { box-sizing: border-box; }
@@ -80,8 +82,7 @@ body {
   color: var(--primary);
   letter-spacing: -0.2px;
 }
-/* Drop the baked-in black background of logo PNGs so they blend with --canvas */
-.brand img { mix-blend-mode: lighten; }
+.brand { text-decoration: none; }
 .topbar nav { display: flex; gap: 4px; align-items: center; height: 100%; }
 .topbar nav a {
   color: var(--muted);
@@ -148,7 +149,7 @@ a:hover { text-decoration: underline; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  background: linear-gradient(135deg, rgba(79,138,255,0.14), rgba(79,138,255,0.04));
+  background: linear-gradient(135deg, rgba(29,78,216,0.10), rgba(29,78,216,0.03));
   border: 1px solid var(--hairline);
   border-radius: var(--r-md);
   padding: 20px 24px;

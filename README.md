@@ -52,13 +52,29 @@ The agent reuses `AuthService`, follows the team rule, and pauses on the HIGH-ri
 ## Quickstart
 
 Two commands. The first installs the CLI; the second wires up everything else.
+**Run `quickstart` from a dedicated folder you'll remember** — it drops the
+stack's files into the current directory.
 
 ```bash
 uv tool install --force git+https://github.com/qorstack/preceptai.git
-precept quickstart
+mkdir -p ~/precept && cd ~/precept   # a permanent home for the stack
+precept quickstart                    # safe to re-run; --force to update
 ```
 
-`precept quickstart` scaffolds `.env` + `docker-compose.yml`, starts Postgres + the dashboard, registers the MCP server with Claude Code, and installs the `/precept` slash commands. It's safe to re-run — existing files are left untouched.
+### What it creates, and where
+
+Three different locations — this is the part that trips people up:
+
+| Thing                                                      | Where it lands                                                                           |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `.env` + `docker-compose.yml` (Postgres + dashboard stack) | **the folder you ran `quickstart` in** — `cd` back here to run `docker compose …`        |
+| `precept-postgres` + `precept-web` containers              | Docker — dashboard at `http://localhost:9080`, Postgres host port `55432`                |
+| MCP server registration + `/precept` slash commands        | **global** (Claude Code user config + `~/.claude/commands/`) — available in _every_ repo |
+
+So the stack files are tied to that one folder; the MCP server and slash
+commands are global. It's safe to re-run — existing files are left untouched
+(use `precept quickstart --force` to refresh the compose file and pull the
+latest dashboard image).
 
 Then open Claude Code in any repo and try:
 
@@ -152,6 +168,7 @@ precept mcp-config cursor      # or: claude · vscode · windsurf · cline · al
 | VS Code / Copilot agent | add to `.vscode/mcp.json` (uses a `servers` key)                            |
 | Windsurf                | add to `~/.codeium/windsurf/mcp_config.json`                                |
 | Cline                   | add to `cline_mcp_settings.json`                                            |
+| Hermes Agent            | add `precept mcp` to Hermes's MCP config - auto-discovered at startup       |
 
 Generic config most clients accept:
 

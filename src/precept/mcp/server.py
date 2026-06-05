@@ -176,18 +176,16 @@ def _ai_auto_approve(repo_path: str) -> bool:
 def _ai_scope_tag(repo_path: str) -> tuple[MemoryScope, str, str]:
     """
     For AI-written memory: derive (scope, workspace, repo_name) from the repo's
-    precept.config. If the repo isn't linked to a workspace, fall back to global
-    so the entry is still visible (Claude shouldn't lose work just because the
-    user forgot to run `precept link`).
+    precept.config (searched up the tree, then ~/.precept.config). If the repo
+    isn't linked to any workspace, fall back to global so the entry is still
+    visible (Claude shouldn't lose work just because the user forgot to link).
     """
     try:
-        from precept.link.config import load_link
-        link = load_link(repo_path)
+        from precept.link.resolver import scope_tag
+        scope, workspace, repo_name = scope_tag(repo_path)
+        return MemoryScope(scope), workspace, repo_name
     except Exception:
-        link = None
-    if link and link.workspace:
-        return MemoryScope.WORKSPACE, link.workspace, (link.repo_name or "")
-    return MemoryScope.GLOBAL, "", ""
+        return MemoryScope.GLOBAL, "", ""
 
 
 # Throttle auto-pull so we don't hammer git on every MCP read. One pull per

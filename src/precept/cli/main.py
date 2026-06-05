@@ -437,6 +437,9 @@ def memory(
         if not query or not body:
             console.print("[red]Usage:[/red] precept memory decide <domain> \"<title>\" --body \"<decision>\"")
             raise typer.Exit(1)
+        from precept.link.resolver import scope_tag
+        from precept.memory.schema import MemoryScope
+        _scope, _ws, _repo = scope_tag(repo_path)
         entry = MemoryEntry(
             id="",
             kind=MemoryKind.TEAM_DECISION,
@@ -446,6 +449,9 @@ def memory(
             approved=True,
             approved_by="team",
             repo_path=repo_path,
+            scope=MemoryScope(_scope),
+            workspace=_ws,
+            repo_name=_repo,
         )
         saved = store.save(entry)
         console.print(f"[green]Decision saved and approved[/green] — ID: {saved.id}")
@@ -2017,15 +2023,19 @@ def quickstart(
     repo_path: str = typer.Option(".", "--repo", "-r", help="Where to scaffold .env + docker-compose.yml"),
     no_docker: bool = typer.Option(False, "--no-docker", help="Skip starting Postgres + dashboard"),
     no_mcp: bool = typer.Option(False, "--no-mcp", help="Skip registering the MCP server with Claude Code"),
+    force: bool = typer.Option(
+        False, "--force", "-f",
+        help="Update mode: overwrite docker-compose.yml, pull the latest image, "
+             "reinstall slash commands, and re-register MCP. Run this after upgrading precept.",
+    ),
 ):
     """
     Zero to a working Precept setup in one command.
 
     Scaffolds .env + docker-compose.yml, starts Postgres + the dashboard,
     registers the MCP server with Claude Code, and installs the /precept slash
-    commands. Safe to re-run — existing files are left untouched.
+    commands. Safe to re-run. Use --force to re-apply everything (update mode).
     """
-    import shutil
     import subprocess
 
     target = Path(repo_path).resolve()
@@ -2034,25 +2044,48 @@ def quickstart(
     # instead of an optimistic "ready".
     status: dict[str, str] = {}
 
-    # 1. Scaffold config files (never overwrite — quickstart is re-runnable).
+    # 0. Preflight — locate prerequisites cross-platform. Finds tools that are
+    #    installed but missing from PATH and uses their full path anyway, so a
+    #    half-configured machine still works instead of silently skipping steps.
+    docker_path, docker_on_path = _find_program("docker")
+    claude_path, claude_on_path = _find_program("claude")
+    console.print("[bold]Prerequisites[/bold]")
+    _report_tool("Docker", docker_path, docker_on_path, _install_hint("docker"), required=not no_docker)
+    _report_tool("Claude Code", claude_path, claude_on_path, _install_hint("claude"), required=False)
+
+    # 1. Scaffold config files. .env holds secrets/ports — never clobber it, even
+    #    on --force. docker-compose.yml is refreshed on --force to pick up changes.
+    console.print(f"[bold]Stack files[/bold] → [cyan]{target}[/cyan]  [dim](cd here to manage with docker compose)[/dim]")
     for name, content in ((".env", _QUICKSTART_ENV), ("docker-compose.yml", _QUICKSTART_COMPOSE)):
         path = target / name
-        if path.exists():
+        refresh = force and name == "docker-compose.yml"
+        if path.exists() and not refresh:
             console.print(f"  [dim]skip[/dim]  {name} (exists)")
         else:
             path.write_text(content, encoding="utf-8")
-            console.print(f"  [green]wrote[/green] {name}")
+            console.print(f"  [green]{'updated' if path.exists() and refresh else 'wrote'}[/green] {name}")
 
     # 2. Bring up the whole stack (Postgres + dashboard) via docker compose.
     if no_docker:
         console.print("[dim]Skipping container startup (--no-docker).[/dim]")
         status["stack"] = "[dim]skipped (--no-docker)[/dim]"
-    elif shutil.which("docker") is None:
-        console.print("[yellow]docker not found — skipping container startup.[/yellow] Install Docker, then re-run.")
-        status["stack"] = "[yellow]docker not installed[/yellow]"
+    elif docker_path is None:
+        console.print("[yellow]Docker not found — skipping container startup.[/yellow]")
+        status["stack"] = "[yellow]Docker not installed[/yellow]"
+    elif subprocess.run([docker_path, "info"], capture_output=True).returncode != 0:
+        # docker binary exists but the daemon is down (Docker Desktop not started).
+        # Without this check `compose up` fails with a cryptic daemon-socket error.
+        console.print(
+            "[yellow]Docker is installed but not running.[/yellow] "
+            "Start Docker Desktop, then re-run [cyan]precept quickstart[/cyan]."
+        )
+        status["stack"] = "[yellow]Docker not running — start Docker Desktop[/yellow]"
     else:
+        if force:
+            with console.status("[cyan]Pulling latest image…"):
+                subprocess.run([docker_path, "compose", "pull"], cwd=str(target), capture_output=True)
         with console.status("[cyan]Starting Postgres + dashboard…"):
-            rc = subprocess.run(["docker", "compose", "up", "-d"], cwd=str(target)).returncode
+            rc = subprocess.run([docker_path, "compose", "up", "-d"], cwd=str(target)).returncode
         if rc == 0:
             console.print("  [green]up[/green]    Postgres + dashboard")
             # Verify the dashboard actually answers before claiming success —
@@ -2075,37 +2108,35 @@ def quickstart(
     if no_mcp:
         console.print("[dim]Skipping MCP registration (--no-mcp).[/dim]")
         status["mcp"] = "[dim]skipped (--no-mcp)[/dim]"
-    else:
-        # On Windows, `claude` is installed as `claude.cmd` (npm shim). Python's
-        # subprocess.run doesn't resolve PATHEXT — pass the full path from
-        # shutil.which so the .cmd extension is found.
-        claude_exe = shutil.which("claude")
-        if claude_exe is None:
-            # No CLI to register through — write a project-level .mcp.json so the
-            # connection still happens, and print it in case they use another client.
-            mcp_path = target / ".mcp.json"
-            if mcp_path.exists():
-                console.print("  [dim]skip[/dim]  .mcp.json (exists)")
-            else:
-                mcp_path.write_text(_MCP_JSON, encoding="utf-8")
-                console.print("  [green]wrote[/green] .mcp.json (Claude Code CLI not found — registered via project config)")
-            console.print("  [dim]Other clients: run [cyan]precept mcp-config[/cyan] for the snippet.[/dim]")
-            status["mcp"] = "[green]✓[/green] via .mcp.json"
+    elif claude_path is None:
+        # No CLI to register through — write a project-level .mcp.json so the
+        # connection still happens, and point at mcp-config for other clients.
+        mcp_path = target / ".mcp.json"
+        if mcp_path.exists() and not force:
+            console.print("  [dim]skip[/dim]  .mcp.json (exists)")
         else:
-            rc = subprocess.run(
-                [claude_exe, "mcp", "add", "precept", "--", "precept", "mcp", "--repo", "."],
-                cwd=str(target),
-            ).returncode
-            if rc == 0:
-                console.print("  [green]ok[/green]    registered MCP server 'precept'")
-                status["mcp"] = "[green]✓[/green] registered with Claude Code"
-            else:
-                console.print("  [yellow]claude mcp add failed — see output above.[/yellow]")
-                status["mcp"] = "[yellow]registration failed[/yellow]"
+            mcp_path.write_text(_MCP_JSON, encoding="utf-8")
+            console.print("  [green]wrote[/green] .mcp.json (Claude Code CLI not found — registered via project config)")
+        console.print("  [dim]Other clients: run [cyan]precept mcp-config[/cyan] for the snippet.[/dim]")
+        status["mcp"] = "[green]✓[/green] via .mcp.json"
+    else:
+        if force:
+            # `claude mcp add` refuses to overwrite an existing server; drop it first.
+            subprocess.run([claude_path, "mcp", "remove", "precept"], cwd=str(target), capture_output=True)
+        rc = subprocess.run(
+            [claude_path, "mcp", "add", "precept", "--", "precept", "mcp", "--repo", "."],
+            cwd=str(target),
+        ).returncode
+        if rc == 0:
+            console.print("  [green]ok[/green]    registered MCP server 'precept'")
+            status["mcp"] = "[green]✓[/green] registered with Claude Code"
+        else:
+            console.print("  [yellow]claude mcp add failed — see output above.[/yellow]")
+            status["mcp"] = "[yellow]registration failed[/yellow]"
 
-    # 4. Install the /precept slash commands.
+    # 4. Install the /precept slash commands (--force overwrites existing ones).
     try:
-        install_claude_commands(user=True, force=False)
+        install_claude_commands(user=True, force=force)
         status["commands"] = "[green]✓[/green] installed"
     except SystemExit:
         status["commands"] = "[green]✓[/green] installed"
@@ -2117,10 +2148,86 @@ def quickstart(
         f"MCP         {status.get('mcp', '—')}",
         f"Commands    {status.get('commands', '—')}",
         "",
-        "Open Claude Code in this repo and try:",
+        f"Stack files live in [cyan]{target}[/cyan] — cd here for [cyan]docker compose[/cyan].",
+        "MCP + slash commands are global (every repo).",
+        "",
+        "Open Claude Code in any repo and try:",
         "  [cyan]/precept add Google SSO to /login[/cyan]",
     ]
     console.print(Panel("\n".join(lines), title="[bold green]Precept setup[/bold green]"))
+
+
+# Where each tool commonly lands when it isn't on PATH — keyed by program then
+# platform. Lets quickstart use an installed-but-unconfigured tool by full path.
+_OFF_PATH_LOCATIONS: dict[str, dict[str, list[str]]] = {
+    "docker": {
+        "win32": [r"C:\Program Files\Docker\Docker\resources\bin\docker.exe"],
+        "darwin": [
+            "/usr/local/bin/docker",
+            "/opt/homebrew/bin/docker",
+            "/Applications/Docker.app/Contents/Resources/bin/docker",
+        ],
+        "linux": ["/usr/bin/docker", "/usr/local/bin/docker"],
+    },
+    "claude": {
+        "win32": [r"%APPDATA%\npm\claude.cmd", r"%USERPROFILE%\.claude\local\claude.exe"],
+        "darwin": [
+            "~/.npm-global/bin/claude",
+            "/opt/homebrew/bin/claude",
+            "/usr/local/bin/claude",
+            "~/.claude/local/claude",
+        ],
+        "linux": ["~/.npm-global/bin/claude", "/usr/local/bin/claude", "~/.claude/local/claude"],
+    },
+}
+
+
+def _find_program(name: str) -> tuple[str | None, bool]:
+    """Locate an executable cross-platform.
+
+    Returns (path, on_path):
+      - (path, True)  → found on PATH (normal case)
+      - (path, False) → installed but NOT on PATH (found in a common location)
+      - (None, False) → not found anywhere we know to look
+    """
+    import shutil
+
+    found = shutil.which(name)
+    if found:
+        return found, True
+    plat = "win32" if sys.platform == "win32" else "darwin" if sys.platform == "darwin" else "linux"
+    for raw in _OFF_PATH_LOCATIONS.get(name, {}).get(plat, []):
+        expanded = Path(os.path.expandvars(raw)).expanduser()
+        if expanded.exists():
+            return str(expanded), False
+    return None, False
+
+
+def _install_hint(name: str) -> str:
+    """One-line install instruction for a missing tool, per platform."""
+    if name == "docker":
+        if sys.platform == "win32":
+            return "Install Docker Desktop: https://docs.docker.com/desktop/install/windows-install/"
+        if sys.platform == "darwin":
+            return "brew install --cask docker   (or https://docs.docker.com/desktop/install/mac-install/)"
+        return "https://docs.docker.com/engine/install/"
+    if name == "claude":
+        return "npm install -g @anthropic-ai/claude-code"
+    return ""
+
+
+def _report_tool(label: str, path: str | None, on_path: bool, hint: str, required: bool) -> None:
+    """Print one preflight line for a prerequisite tool."""
+    if path and on_path:
+        console.print(f"  [green]✓[/green] {label}")
+    elif path:
+        # Installed but not on PATH — we'll use the full path; warn so the user
+        # can fix their PATH for other tools too.
+        console.print(f"  [yellow]⚠[/yellow] {label} found but not on PATH — using [dim]{path}[/dim]")
+    else:
+        sev = "[red]✗[/red]" if required else "[dim]○[/dim]"
+        opt = "" if required else " [dim](optional)[/dim]"
+        console.print(f"  {sev} {label} not found{opt} — [dim]{hint}[/dim]")
 
 
 def _wait_for_dashboard(port: str, timeout: float = 30.0) -> bool:
