@@ -1,53 +1,58 @@
 /* ─────────────────────────────────────────────────────────
-   precept dashboard — light theme, heavy-blue accent
-   Airbnb token language (white canvas, ink #222, #ddd hairlines,
-   soft radii, single shadow tier) with blue as the brand voltage.
+   precept dashboard — Bugatti monochrome
+   Pure black canvas, white type, no brand accent. Trinity fonts
+   (Saira Condensed display / EB Garamond body / JetBrains Mono).
+   Semantic status colors kept for dashboard legibility.
    ───────────────────────────────────────────────────────── */
 
 :root {
-  /* Accent — heavy blue is the single brand voltage (Airbnb uses one) */
-  --primary:          #1d4ed8;   /* deep blue — CTAs, links, active nav, brand */
-  --primary-active:   #1e40af;   /* darker on press */
-  --primary-disabled: #c7d6f7;   /* pale tint for disabled CTAs */
-  --primary-soft:     rgba(29,78,216,0.10);
+  /* "Color" is white: CTA outlines, active underline, focus ring */
+  --primary:          #ffffff;
+  --primary-active:   #e6e6e6;
+  --primary-disabled: #3a3a3a;
+  --primary-soft:     rgba(255,255,255,0.12);
 
-  /* Surface — white canvas, no dark mode on the public dashboard */
-  --canvas:        #ffffff;
-  --surface:       #ffffff;
-  --surface-soft:  #f7f7f7;
-  --surface-strong:#f2f2f2;
-  --surface-hover: #f7f7f7;
+  /* Surface — pure black, near-black tones only */
+  --canvas:        #000000;
+  --surface:       #0d0d0d;
+  --surface-soft:  #0d0d0d;
+  --surface-strong:#141414;
+  --surface-hover: #141414;
 
   /* Hairlines */
-  --hairline:      #dddddd;
-  --hairline-soft: #ebebeb;
-  --border-strong: #c1c1c1;
+  --hairline:      #262626;
+  --hairline-soft: #1c1c1c;
+  --border-strong: #3a3a3a;
 
-  /* Text */
-  --ink:        #222222;
-  --body:       #3f3f3f;
-  --muted:      #6a6a6a;
-  --muted-soft: #929292;
-  --on-primary: #ffffff;
+  /* Text — monochrome */
+  --ink:        #ffffff;
+  --body:       #cccccc;
+  --muted:      #999999;
+  --muted-soft: #666666;
+  --on-primary: #000000;
 
-  /* Semantic — tuned for contrast on white */
-  --good:       #1a7f37;
-  --good-soft:  rgba(26,127,55,0.12);
-  --warn:       #9a6700;
-  --warn-soft:  rgba(154,103,0,0.12);
-  --bad:        #c13515;
-  --bad-soft:   rgba(193,53,21,0.10);
-  --merge:      #6d28d9;
-  --merge-soft: rgba(109,40,217,0.12);
+  /* Semantic — kept for status legibility (Bugatti's sanctioned semantic tokens) */
+  --good:       #5fa657;
+  --good-soft:  rgba(95,166,87,0.14);
+  --warn:       #d4a017;
+  --warn-soft:  rgba(212,160,23,0.14);
+  --bad:        #c4564a;
+  --bad-soft:   rgba(196,86,74,0.14);
+  --merge:      #c3d9f3;
+  --merge-soft: rgba(195,217,243,0.12);
 
-  /* Shape */
-  --r-sm: 8px;
-  --r-md: 14px;
-  --r-lg: 24px;
+  /* Shape — rectangular everything; pills only on buttons */
+  --r-sm: 0px;
+  --r-md: 0px;
+  --r-lg: 0px;
   --r-full: 9999px;
 
-  /* Elevation — single shadow tier (Airbnb) */
-  --shadow-1: rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px 0, rgba(0,0,0,0.1) 0 4px 8px 0;
+  /* No shadows in Bugatti */
+  --shadow-1: none;
+
+  --f-display: "Saira Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --f-text:    "EB Garamond", Garamond, "Times New Roman", serif;
+  --f-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -55,10 +60,11 @@
 html, body { background: var(--canvas); }
 body {
   margin: 0;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  color: var(--ink);
-  font-size: 15px;
-  line-height: 1.5;
+  font-family: var(--f-text);
+  color: var(--body);
+  background: var(--canvas);
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -77,10 +83,12 @@ body {
   z-index: 10;
 }
 .brand {
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--primary);
-  letter-spacing: -0.2px;
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 5px;
 }
 .brand { text-decoration: none; }
 .topbar nav { display: flex; gap: 4px; align-items: center; height: 100%; }
@@ -119,19 +127,21 @@ main {
   main { padding: 24px 20px 64px; }
 }
 
+h1, h2, h3 {
+  font-family: var(--f-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--ink);
+}
 h1 {
   margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--ink);
+  font-size: 32px;
+  letter-spacing: 2px;
 }
 h2 {
   margin: 32px 0 14px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.2px;
+  font-size: 20px;
+  letter-spacing: 1.5px;
 }
 h2:first-child { margin-top: 0; }
 .subtitle {
@@ -149,7 +159,7 @@ a:hover { text-decoration: underline; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  background: linear-gradient(135deg, rgba(29,78,216,0.10), rgba(29,78,216,0.03));
+  background: var(--surface-card, #141414);
   border: 1px solid var(--hairline);
   border-radius: var(--r-md);
   padding: 20px 24px;
@@ -320,7 +330,7 @@ input, textarea, select {
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 .stack textarea {
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--f-mono);
   font-size: 13px;
   line-height: 1.6;
   resize: vertical;
@@ -329,35 +339,38 @@ input, textarea, select {
 
 /* ─── Buttons ─────────────────────────────────────────── */
 .filters button, .stack button, .btn {
-  background: var(--primary);
-  color: var(--on-primary);
-  border: 0;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
   cursor: pointer;
-  font-weight: 600;
-  font-size: 14.5px;
+  font-family: var(--f-mono);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 12px;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 20px;
-  border-radius: var(--r-sm);
-  height: 42px;
-  transition: background 0.15s ease, transform 0.05s ease;
-  font-family: inherit;
+  padding: 12px 24px;
+  border-radius: var(--r-full);
+  height: 44px;
+  transition: background 0.2s ease, color 0.2s ease;
   white-space: nowrap;
 }
 .filters button { height: 38px; padding: 6px 16px; font-size: 14px; }
 .btn-sm { height: 38px; padding: 6px 18px; font-size: 14px; }
 .filters button:hover, .stack button:hover, .btn:hover {
-  background: var(--primary-active);
+  background: var(--ink);
+  color: var(--canvas);
   text-decoration: none;
   opacity: 1;
 }
 .filters button:active, .stack button:active, .btn:active { transform: translateY(1px); }
 
-.btn-primary { background: var(--primary); color: var(--on-primary); }
-.btn-primary:hover { background: var(--primary-active); }
+.btn-primary { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.btn-primary:hover { background: var(--ink); color: var(--canvas); }
 .btn-secondary {
   background: transparent;
   color: var(--ink);
@@ -416,7 +429,7 @@ input, textarea, select {
 .meta { margin: 0 0 12px 0; color: var(--body); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .id-line {
   color: var(--muted);
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--f-mono);
   font-size: 12px;
   margin: 0 0 18px 0;
 }
@@ -426,12 +439,12 @@ input, textarea, select {
   border-radius: var(--r-sm);
   padding: 16px 18px;
   white-space: pre-wrap;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--f-mono);
   font-size: 13px;
   line-height: 1.65;
   color: var(--body);
 }
-.mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mono { font-family: var(--f-mono); }
 pre.mono {
   background: var(--surface-soft);
   padding: 12px 14px;
@@ -451,7 +464,7 @@ pre.mono.inline {
   font-size: 12px;
 }
 code {
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--f-mono);
   background: var(--surface-strong);
   padding: 1px 6px;
   border-radius: 4px;
@@ -612,7 +625,7 @@ hr {
   background: var(--surface);
   color: var(--ink);
   padding: 16px 18px;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--f-mono);
   font-size: 13.5px;
   line-height: 1.65;
   resize: vertical;
