@@ -3,3 +3,8 @@
 .venv/
 .DS_Store
 node_modules/
+# leftover build / cache (no longer used — kept ignored so they never reappear)
+.pytest_cache/
+.ruff_cache/
+dist/
+__pycache__/
