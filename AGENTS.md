@@ -33,6 +33,8 @@ Do these in order. Do not skip. Do not assume you already know the answer.
    - If this request reveals something new the role owns (a tool, a standard,
      a domain), **update that file**.
    Example: "create a function …" → lens `dev` → load/create `role-dev.md`.
+   Then **answer from that role's `Good at`** (its Ikigai expertise). If the
+   request falls outside it, switch to — or create — the role that owns it.
 2. **Read the knowledge.** Open `agents/sage/<domain>/` and read
    `index.md`, `rules.md`, and any `decisions/*.md` whose title looks relevant.
    **Quote the rules that apply** in your reply so the human sees you checked.
@@ -114,16 +116,20 @@ title: Senior Developer
 covers: [backend, api, billing]     # topics that map to this role
 updated: 2026-06-17
 ---
-## Ikigai
-- Loves — small, working code the next dev can read.
-- Strong at — this repo's stack and its conventions.
-- The team needs — features that don't break money / auth / data.
-- Worth doing — only what's needed and worth maintaining.
+## Ikigai (who this role is)
+- Loves      — what this role cares about most.
+- Good at    — its **expertise**: the stack, patterns, and standards it owns. ← the role's strengths
+- Team needs — what it exists to protect or deliver.
+- Worth it   — what's genuinely valuable here vs. busywork.
 
 ## How I work
 - Reuse before writing; follow the domain's `rules.md`.
 - Name the blast radius; stop on HIGH risk.
 ```
+
+The **Good at** list is the point: it tells the role what it's strong at, so Sage
+answers *from that expertise*. If a request falls outside this role's `Good at`,
+don't fake it — switch to (or create) the role that owns it.
 
 ---
 

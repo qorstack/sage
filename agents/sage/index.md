@@ -12,10 +12,15 @@ you: when you state a rule in chat, it writes one here as `status: proposed`.
 ```text
 agents/sage/
   index.md                  # this file
+  roles/role-<lens>.md      # reusable senior personas (ikigai roles) — see AGENTS.md §2
   <domain>/                 # e.g. billing, search, your own domains
     rules.md                # the domain's standing rules
     decisions/<slug>.md     # one team decision per file
 ```
+
+`roles/` is Sage's library of senior personas — each one an **ikigai role** that
+knows what it's good at. Sage creates them as topics come up and reuses them
+after (`roles/role-dev.md` ships as a starter example).
 
 ## Example entry
 
