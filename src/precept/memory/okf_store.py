@@ -83,8 +83,15 @@ def _serialize(entry: MemoryEntry) -> str:
         f"source: {_fm_scalar(entry.source.value)}",
         f"approved: {'true' if entry.approved else 'false'}",
         f"approved_by: {_fm_scalar(entry.approved_by)}",
+        f"enforcement: {_fm_scalar(entry.enforcement)}",
         f"timestamp: {_fm_scalar(entry.created_at.isoformat())}",
     ]
+    if entry.applies_to:
+        fm.append("applies_to: [" + ", ".join(_fm_scalar(a) for a in entry.applies_to) + "]")
+    if entry.supersedes:
+        fm.append(f"supersedes: {_fm_scalar(entry.supersedes)}")
+    if entry.related:
+        fm.append("related: [" + ", ".join(_fm_scalar(r) for r in entry.related) + "]")
     if superseded_by:
         fm.append(f"superseded_by: {_fm_scalar(str(superseded_by))}")
         fm.append(f"superseded_at: {_fm_scalar(str(superseded_at))}")
@@ -176,6 +183,10 @@ def _deserialize(text: str) -> MemoryEntry | None:
             source=MemorySource(fm.get("source", "human")),
             workspace=str(fm.get("workspace", "")),
             repo_name=str(fm.get("repo_name", "")),
+            enforcement=str(fm.get("enforcement", "advise")),
+            applies_to=list(fm.get("applies_to", []) or []),
+            supersedes=str(fm.get("supersedes", "")),
+            related=list(fm.get("related", []) or []),
             created_at=_parse_dt(fm.get("timestamp", "")),
             metadata=meta,
         )

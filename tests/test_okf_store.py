@@ -21,6 +21,9 @@ def _entry(title="Use idempotency keys", domain="payment", **kw):
         source=MemorySource.AI,
         approved=True,
         approved_by="team",
+        enforcement="block",
+        applies_to=["payment", "payments/**"],
+        related=["abc123"],
     )
     base.update(kw)
     return MemoryEntry(**base)
@@ -40,6 +43,9 @@ def test_roundtrip_preserves_all_fields(tmp_path):
     assert got.source == MemorySource.AI
     assert got.approved is True
     assert got.approved_by == "team"
+    assert got.enforcement == "block"
+    assert got.applies_to == ["payment", "payments/**"]
+    assert got.related == ["abc123"]
 
 
 def test_layout_by_domain(tmp_path):
