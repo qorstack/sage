@@ -237,6 +237,15 @@ the dev to approve it.
 
 ---
 
+## 8. Learn from the codebase (`/sage-learning`)
+
+Beyond capturing rules from chat (§3), Sage can learn from the **existing code**:
+scan the repo, find the team's real conventions, reusable assets, and repeated
+patterns, and write them into `agents/sage/` as `rules.md` / `decisions/` (and
+enrich `roles/`). This is how Sage learns to write code *like this team*. Run it
+once per repo and after big refactors — see [`commands/sage-learning.md`](commands/sage-learning.md).
+Everything it learns is stored in `agents/sage/`, the same git-shared knowledge.
+
 ## Governance in one line
 
 `proposed` (AI or human draft) → human reviews/edits → `status: approved`

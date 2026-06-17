@@ -1,401 +1,1097 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#000000" />
-<title>SAGE — Cognitive enforcement for AI software development</title>
-<meta name="description" content="Sage forces AI agents to understand a system — business logic, impact, risk, reusable assets — before they generate or modify code. The cognition layer that grows with your team." />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>SAGE — Cognitive enforcement for AI software development</title>
+    <meta
+      name="description"
+      content="Sage forces AI agents to understand a system — business logic, impact, risk, reusable assets — before they generate or modify code. The cognition layer that grows with your team."
+    />
 
-<link rel="icon" type="image/png" href="logo.png" />
-<link rel="apple-touch-icon" href="logo.png" />
+    <link rel="icon" type="image/png" href="logo.png" />
+    <link rel="apple-touch-icon" href="logo.png" />
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;400;500&family=EB+Garamond:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;400;500&family=EB+Garamond:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
 
-<style>
-  :root {
-    /* Surface — pure black, near-black tones only */
-    --canvas:           #000000;
-    --surface-soft:     #0d0d0d;
-    --surface-card:     #141414;
-    --surface-elevated: #1f1f1f;
-    --hairline:         #262626;
-    --hairline-strong:  #3a3a3a;
+    <style>
+      :root {
+        /* Surface — pure black, near-black tones only */
+        --canvas: #000000;
+        --surface-soft: #0d0d0d;
+        --surface-card: #141414;
+        --surface-elevated: #1f1f1f;
+        --hairline: #262626;
+        --hairline-strong: #3a3a3a;
 
-    /* Text — monochrome */
-    --on-dark:     #ffffff;
-    --body:        #cccccc;
-    --body-strong: #e6e6e6;
-    --muted:       #999999;
-    --muted-soft:  #666666;
+        /* Text — monochrome */
+        --on-dark: #ffffff;
+        --body: #cccccc;
+        --body-strong: #e6e6e6;
+        --muted: #999999;
+        --muted-soft: #666666;
 
-    /* 朱 — vermilion, the one warm accent (a hanko seal on sumi ink) */
-    --seal:      #d0463b;
-    --seal-soft: rgba(208,70,58,0.14);
-    --link:      #d0857a;
+        /* 朱 — vermilion, the one warm accent (a hanko seal on sumi ink) */
+        --seal: #d0463b;
+        --seal-soft: rgba(208, 70, 58, 0.14);
+        --link: #d0857a;
 
-    --maxw: 1280px;
-    --section: 120px;
+        --maxw: 1280px;
+        --section: 120px;
 
-    --f-display: "Saira Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --f-text:    "EB Garamond", Garamond, "Times New Roman", serif;
-    --f-mono:    "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", monospace;
-  }
+        --f-display:
+          "Saira Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+        --f-text: "EB Garamond", Garamond, "Times New Roman", serif;
+        --f-mono:
+          "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+      }
 
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: var(--canvas);
-    color: var(--body);
-    font-family: var(--f-text);
-    font-size: 17px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
-  }
-  a { color: var(--link); text-decoration: none; }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--body);
+        font-family: var(--f-text);
+        font-size: 17px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+      a {
+        color: var(--link);
+        text-decoration: none;
+      }
 
-  /* Display — Saira Condensed, uppercase, wide-tracked, weight 400, never bold */
-  h1, h2, h3 {
-    font-family: var(--f-display); font-weight: 400; color: var(--on-dark);
-    text-transform: uppercase; margin: 0; line-height: 1.15;
-    text-wrap: balance;
-  }
-  .display-xl { font-size: clamp(40px, 7vw, 64px); letter-spacing: 4px; line-height: 1.08; }
-  .display-lg { font-size: clamp(32px, 5vw, 48px); letter-spacing: 3px; }
-  .display-md { font-size: clamp(26px, 3.4vw, 32px); letter-spacing: 2px; }
-  .display-sm { font-size: 22px; letter-spacing: 1.5px; }
+      /* Display — Saira Condensed, uppercase, wide-tracked, weight 400, never bold */
+      h1,
+      h2,
+      h3 {
+        font-family: var(--f-display);
+        font-weight: 400;
+        color: var(--on-dark);
+        text-transform: uppercase;
+        margin: 0;
+        line-height: 1.15;
+        text-wrap: balance;
+      }
+      .display-xl {
+        font-size: clamp(40px, 7vw, 64px);
+        letter-spacing: 4px;
+        line-height: 1.08;
+      }
+      .display-lg {
+        font-size: clamp(32px, 5vw, 48px);
+        letter-spacing: 3px;
+      }
+      .display-md {
+        font-size: clamp(26px, 3.4vw, 32px);
+        letter-spacing: 2px;
+      }
+      .display-sm {
+        font-size: 22px;
+        letter-spacing: 1.5px;
+      }
 
-  /* Mono — buttons, nav, captions, labels. Always uppercase, tracked. */
-  .mono, .caption, .eyebrow, .nav-link, .btn, .os-tab, .step-h, .tag, .scope, .approved, .install-title, .install-foot, .date {
-    font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px;
-  }
-  .eyebrow { font-size: 11px; letter-spacing: 2.5px; color: var(--seal); margin-bottom: 22px; }
-  .caption { font-size: 11px; color: var(--muted); }
+      /* Mono — buttons, nav, captions, labels. Always uppercase, tracked. */
+      .mono,
+      .caption,
+      .eyebrow,
+      .nav-link,
+      .btn,
+      .os-tab,
+      .step-h,
+      .tag,
+      .scope,
+      .approved,
+      .install-title,
+      .install-foot,
+      .date {
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 2.5px;
+        color: var(--seal);
+        margin-bottom: 22px;
+      }
+      .caption {
+        font-size: 11px;
+        color: var(--muted);
+      }
 
-  code { font-family: var(--f-mono); text-transform: none; letter-spacing: 0; color: var(--body-strong); }
-  pre  { font-family: var(--f-mono); text-transform: none; letter-spacing: 0; }
+      code {
+        font-family: var(--f-mono);
+        text-transform: none;
+        letter-spacing: 0;
+        color: var(--body-strong);
+      }
+      pre {
+        font-family: var(--f-mono);
+        text-transform: none;
+        letter-spacing: 0;
+      }
 
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 32px;
+      }
 
-  /* ─── Buttons — transparent, 1px white outline, pill ─── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
-    font-size: 13px; letter-spacing: 2.5px; line-height: 1;
-    padding: 15px 32px; min-height: 44px; border-radius: 9999px;
-    background: transparent; color: var(--on-dark); border: 1px solid var(--on-dark);
-    cursor: pointer; transition: background .25s ease, color .25s ease;
-  }
-  .btn:hover { background: var(--on-dark); color: var(--canvas); }
-  .btn-quiet { border-color: var(--hairline-strong); color: var(--body); }
-  .btn-quiet:hover { background: transparent; border-color: var(--on-dark); color: var(--on-dark); }
+      /* ─── Buttons — transparent, 1px white outline, pill ─── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+        font-size: 13px;
+        letter-spacing: 2.5px;
+        line-height: 1;
+        padding: 15px 32px;
+        min-height: 44px;
+        border-radius: 9999px;
+        background: transparent;
+        color: var(--on-dark);
+        border: 1px solid var(--on-dark);
+        cursor: pointer;
+        transition:
+          background 0.25s ease,
+          color 0.25s ease;
+      }
+      .btn:hover {
+        background: var(--on-dark);
+        color: var(--canvas);
+      }
+      .btn-quiet {
+        border-color: var(--hairline-strong);
+        color: var(--body);
+      }
+      .btn-quiet:hover {
+        background: transparent;
+        border-color: var(--on-dark);
+        color: var(--on-dark);
+      }
 
-  /* ─── Nav — transparent, wordmark centered ─── */
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(0,0,0,0.72); backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--hairline);
-  }
-  .nav-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 60px; }
-  .nav-left { display: flex; gap: 26px; align-items: center; }
-  .nav-right { display: flex; gap: 22px; align-items: center; justify-content: flex-end; }
-  .nav-link { font-size: 12px; color: var(--muted); }
-  .nav-link:hover { color: var(--on-dark); }
-  .nav-center { display: inline-flex; align-items: center; gap: 12px; justify-self: center; }
-  .brand-logo { width: 30px; height: 30px; display: block; }
-  .wordmark { font-family: var(--f-display); font-weight: 400; text-transform: uppercase; color: var(--on-dark); font-size: 16px; letter-spacing: 6px; }
-  @media (max-width: 760px) { .nav-left { display: none; } .nav-inner { grid-template-columns: 1fr auto; } }
+      /* ─── Nav — transparent, wordmark centered ─── */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(0, 0, 0, 0.72);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--hairline);
+      }
+      .nav-inner {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        height: 60px;
+      }
+      .nav-left {
+        display: flex;
+        gap: 26px;
+        align-items: center;
+      }
+      .nav-right {
+        display: flex;
+        gap: 22px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .nav-link {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .nav-link:hover {
+        color: var(--on-dark);
+      }
+      .nav-center {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        justify-self: center;
+      }
+      .brand-logo {
+        width: 30px;
+        height: 30px;
+        display: block;
+      }
+      .wordmark {
+        font-family: var(--f-display);
+        font-weight: 400;
+        text-transform: uppercase;
+        color: var(--on-dark);
+        font-size: 16px;
+        letter-spacing: 6px;
+      }
+      @media (max-width: 760px) {
+        .nav-left {
+          display: none;
+        }
+        .nav-inner {
+          grid-template-columns: 1fr auto;
+        }
+      }
 
-  /* ─── Hero ─── */
-  header.hero { padding: 120px 0 var(--section); text-align: center; }
-  .hero-inner { max-width: 960px; margin: 0 auto; }
-  .hero h1 { margin: 0 auto; max-width: 24ch; }
-  .hero .lead {
-    font-family: var(--f-text); font-size: clamp(18px, 2.2vw, 22px); color: var(--body-strong);
-    max-width: 60ch; margin: 32px auto 0; line-height: 1.55;
-  }
-  .hero .cta-row { display: flex; gap: 18px; justify-content: center; margin-top: 48px; flex-wrap: wrap; }
+      /* ─── Hero ─── */
+      header.hero {
+        padding: 40px 0 var(--section);
+        text-align: center;
+      }
+      .hero-inner {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .hero h1 {
+        margin: 0 auto;
+        max-width: 24ch;
+      }
+      .hero .lead {
+        font-family: var(--f-text);
+        font-size: clamp(18px, 2.2vw, 22px);
+        color: var(--body-strong);
+        max-width: 60ch;
+        margin: 32px auto 0;
+        line-height: 1.55;
+      }
+      .hero .cta-row {
+        display: flex;
+        gap: 18px;
+        justify-content: center;
+        margin-top: 48px;
+        flex-wrap: wrap;
+      }
 
-  /* ─── Sections ─── */
-  section { padding: var(--section) 0; border-top: 1px solid var(--hairline); }
-  .sec-head { max-width: 64ch; margin: 0 auto 64px; text-align: center; }
-  .sec-head h2 { margin-bottom: 22px; }
-  .sec-head p { color: var(--body); font-size: 18px; }
+      /* ─── Sections ─── */
+      section {
+        padding: var(--section) 0;
+        border-top: 1px solid var(--hairline);
+      }
+      .sec-head {
+        max-width: 64ch;
+        margin: 0 auto 64px;
+        text-align: center;
+      }
+      .sec-head h2 {
+        margin-bottom: 22px;
+      }
+      .sec-head p {
+        color: var(--body);
+        font-size: 18px;
+      }
 
-  .grid { display: grid; gap: 40px; }
-  .grid-2 { grid-template-columns: 1fr 1fr; }
-  .grid-3 { grid-template-columns: repeat(3, 1fr); }
-  @media (max-width: 860px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+      .grid {
+        display: grid;
+        gap: 40px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      @media (max-width: 860px) {
+        .grid-2,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
 
-  /* feature columns (flat, hairline-separated) */
-  .col { padding: 0; }
-  .col h3 { margin-bottom: 16px; }
-  .col p { color: var(--body); font-size: 16px; }
-  .col .ico { width: 40px; height: 40px; margin-bottom: 22px; display: grid; place-items: center; border: 1px solid var(--hairline-strong); border-radius: 0; }
-  .col .ico svg { width: 20px; height: 20px; stroke: var(--on-dark); fill: none; stroke-width: 1.4; }
+      /* feature columns (flat, hairline-separated) */
+      .col {
+        padding: 0;
+      }
+      .col h3 {
+        margin-bottom: 16px;
+      }
+      .col p {
+        color: var(--body);
+        font-size: 16px;
+      }
+      .col .ico {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 22px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--hairline-strong);
+        border-radius: 0;
+      }
+      .col .ico svg {
+        width: 20px;
+        height: 20px;
+        stroke: var(--on-dark);
+        fill: none;
+        stroke-width: 1.4;
+      }
 
-  .feature-row { display: flex; gap: 16px; align-items: flex-start; padding: 22px 0; border-bottom: 1px solid var(--hairline); }
-  .feature-row:last-child { border-bottom: 0; }
-  .feature-row .mk { color: var(--on-dark); flex: none; font-family: var(--f-mono); }
-  .feature-row b { color: var(--on-dark); font-weight: 400; }
-  .feature-row div { font-size: 16px; }
+      .feature-row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        padding: 22px 0;
+        border-bottom: 1px solid var(--hairline);
+      }
+      .feature-row:last-child {
+        border-bottom: 0;
+      }
+      .feature-row .mk {
+        color: var(--on-dark);
+        flex: none;
+        font-family: var(--f-mono);
+      }
+      .feature-row b {
+        color: var(--on-dark);
+        font-weight: 400;
+      }
+      .feature-row div {
+        font-size: 16px;
+      }
 
-  /* ─── Install block (transparent, hairline, mono) ─── */
-  .install { max-width: 720px; margin: 0 auto; border: 1px solid var(--hairline); }
-  .install-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--hairline); }
-  .install-title { font-size: 11px; color: var(--muted); }
-  .os-tabs { display: inline-flex; gap: 24px; }
-  .os-tab { font-size: 11px; color: var(--muted); background: none; border: 0; padding: 4px 0; cursor: pointer; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
-  .os-tab.on { color: var(--on-dark); border-bottom-color: var(--on-dark); }
-  .mode-tab { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--muted); background: none; border: 0; padding: 4px 0; cursor: pointer; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
-  .mode-tab.on { color: var(--on-dark); border-bottom-color: var(--on-dark); }
-  .install-body { padding: 8px 22px 22px; }
-  .step { padding: 24px 0; border-bottom: 1px solid var(--hairline); }
-  .step:last-child { border-bottom: 0; }
-  .step-h { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; font-size: 12px; color: var(--on-dark); }
-  .step-h .n { color: var(--muted-soft); }
-  .step-h .copy { margin-left: auto; }
-  .copy { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 10px; background: transparent; color: var(--muted); border: 1px solid var(--hairline-strong); padding: 6px 12px; border-radius: 9999px; cursor: pointer; transition: color .2s, border-color .2s; }
-  .copy:hover { color: var(--on-dark); border-color: var(--on-dark); }
-  .step-cmd { margin: 0; font-size: 13px; line-height: 1.85; color: var(--body-strong); background: var(--surface-soft); border: 1px solid var(--hairline); padding: 14px 16px; overflow-x: auto; white-space: pre; }
-  .step-cmd .m { color: var(--muted-soft); }
-  .install-foot { padding: 16px 22px; border-top: 1px solid var(--hairline); font-size: 11px; color: var(--muted); }
-  .install-foot a { color: var(--link); }
-  @media (max-width: 560px) { .install-bar { flex-direction: column; gap: 14px; align-items: flex-start; } }
+      /* ─── Install block (transparent, hairline, mono) ─── */
+      .install {
+        max-width: 720px;
+        margin: 0 auto;
+        border: 1px solid var(--hairline);
+      }
+      .install-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--hairline);
+      }
+      .install-title {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .os-tabs {
+        display: inline-flex;
+        gap: 24px;
+      }
+      .os-tab {
+        font-size: 11px;
+        color: var(--muted);
+        background: none;
+        border: 0;
+        padding: 4px 0;
+        cursor: pointer;
+        border-bottom: 1px solid transparent;
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+      }
+      .os-tab.on {
+        color: var(--on-dark);
+        border-bottom-color: var(--on-dark);
+      }
+      .mode-tab {
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 11px;
+        color: var(--muted);
+        background: none;
+        border: 0;
+        padding: 4px 0;
+        cursor: pointer;
+        border-bottom: 1px solid transparent;
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+      }
+      .mode-tab.on {
+        color: var(--on-dark);
+        border-bottom-color: var(--on-dark);
+      }
+      .install-body {
+        padding: 8px 22px 22px;
+      }
+      .step {
+        padding: 24px 0;
+        border-bottom: 1px solid var(--hairline);
+      }
+      .step:last-child {
+        border-bottom: 0;
+      }
+      .step-h {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: var(--on-dark);
+      }
+      .step-h .n {
+        color: var(--muted-soft);
+      }
+      .step-h .copy {
+        margin-left: auto;
+      }
+      .copy {
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 10px;
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--hairline-strong);
+        padding: 6px 12px;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+      }
+      .copy:hover {
+        color: var(--on-dark);
+        border-color: var(--on-dark);
+      }
+      .step-cmd {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.85;
+        color: var(--body-strong);
+        background: var(--surface-soft);
+        border: 1px solid var(--hairline);
+        padding: 14px 16px;
+        overflow-x: auto;
+        white-space: pre;
+      }
+      .step-cmd .m {
+        color: var(--muted-soft);
+      }
+      .install-foot {
+        padding: 16px 22px;
+        border-top: 1px solid var(--hairline);
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .install-foot a {
+        color: var(--link);
+      }
+      @media (max-width: 560px) {
+        .install-bar {
+          flex-direction: column;
+          gap: 14px;
+          align-items: flex-start;
+        }
+      }
 
-  /* ─── Usage: command + cognition report (spec-cell style) ─── */
-  .codeblock { border: 1px solid var(--hairline); }
-  .codeblock .head { padding: 14px 18px; border-bottom: 1px solid var(--hairline); font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--muted); display:flex; justify-content:space-between; align-items:center; }
-  .codeblock pre { margin: 0; padding: 18px; font-size: 13.5px; line-height: 1.85; color: var(--body-strong); overflow-x: auto; white-space: pre; }
-  .codeblock pre .m { color: var(--muted-soft); }
+      /* ─── Usage: command + cognition report (spec-cell style) ─── */
+      .codeblock {
+        border: 1px solid var(--hairline);
+      }
+      .codeblock .head {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--hairline);
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 11px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .codeblock pre {
+        margin: 0;
+        padding: 18px;
+        font-size: 13.5px;
+        line-height: 1.85;
+        color: var(--body-strong);
+        overflow-x: auto;
+        white-space: pre;
+      }
+      .codeblock pre .m {
+        color: var(--muted-soft);
+      }
 
-  .report { border: 1px solid var(--hairline); }
-  .report .row { display: flex; gap: 20px; padding: 18px 20px; border-bottom: 1px solid var(--hairline); align-items: flex-start; }
-  .report .row:last-child { border-bottom: 0; }
-  .report .k { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 10px; color: var(--muted); width: 92px; flex: none; padding-top: 4px; }
-  .report .v { font-size: 16px; color: var(--body); }
-  .report .v b { color: var(--on-dark); font-weight: 400; }
-  .tag { display: inline-block; font-size: 10px; color: var(--muted); margin: 2px 18px 2px 0; }
-  .badge-ask { display: inline-block; font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2.5px; font-size: 11px; color: var(--on-dark); border: 1px solid var(--on-dark); border-radius: 9999px; padding: 5px 14px; }
+      .report {
+        border: 1px solid var(--hairline);
+      }
+      .report .row {
+        display: flex;
+        gap: 20px;
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--hairline);
+        align-items: flex-start;
+      }
+      .report .row:last-child {
+        border-bottom: 0;
+      }
+      .report .k {
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 10px;
+        color: var(--muted);
+        width: 92px;
+        flex: none;
+        padding-top: 4px;
+      }
+      .report .v {
+        font-size: 16px;
+        color: var(--body);
+      }
+      .report .v b {
+        color: var(--on-dark);
+        font-weight: 400;
+      }
+      .tag {
+        display: inline-block;
+        font-size: 10px;
+        color: var(--muted);
+        margin: 2px 18px 2px 0;
+      }
+      .badge-ask {
+        display: inline-block;
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2.5px;
+        font-size: 11px;
+        color: var(--on-dark);
+        border: 1px solid var(--on-dark);
+        border-radius: 9999px;
+        padding: 5px 14px;
+      }
 
-  /* ─── Team knowledge memo ─── */
-  .memo { background: var(--surface-card); padding: 28px; }
-  .memo .top { display: flex; gap: 18px; margin-bottom: 18px; flex-wrap: wrap; }
-  .scope, .approved { font-size: 10px; color: var(--muted); }
-  .memo h3 { margin-bottom: 12px; }
-  .memo p { font-size: 16px; color: var(--body); margin: 0; }
-  .memo .date { font-size: 10px; color: var(--muted-soft); margin-top: 18px; display: block; }
+      /* ─── Team knowledge memo ─── */
+      .memo {
+        background: var(--surface-card);
+        padding: 28px;
+      }
+      .memo .top {
+        display: flex;
+        gap: 18px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      .scope,
+      .approved {
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .memo h3 {
+        margin-bottom: 12px;
+      }
+      .memo p {
+        font-size: 16px;
+        color: var(--body);
+        margin: 0;
+      }
+      .memo .date {
+        font-size: 10px;
+        color: var(--muted-soft);
+        margin-top: 18px;
+        display: block;
+      }
 
-  /* ─── Final CTA ─── */
-  /* ─── Japan / zen accents ─── */
-  .hero-logo { display: block; width: clamp(220px, 38vw, 360px); margin: 0 auto 28px; }
-  .kanji { font-size: 13px; letter-spacing: 10px; color: var(--seal); opacity: 0.85; margin-bottom: 18px; padding-left: 10px; }
-  .seal-rule { width: 40px; height: 2px; background: var(--seal); margin: 0 auto; border: 0; }
+      /* ─── Final CTA ─── */
+      /* ─── Japan / zen accents ─── */
+      .hero-logo {
+        display: block;
+        width: clamp(400px, 80vw, 900px);
+        margin: 0 auto 20px;
+      }
+      .kanji {
+        font-size: 13px;
+        letter-spacing: 10px;
+        color: var(--seal);
+        opacity: 0.85;
+        margin-bottom: 18px;
+        padding-left: 10px;
+      }
+      .seal-rule {
+        width: 40px;
+        height: 2px;
+        background: var(--seal);
+        margin: 0 auto;
+        border: 0;
+      }
 
-  /* ikigai — the four questions Sage balances before code */
-  .ikigai { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); }
-  .ikigai div { background: var(--canvas); padding: 30px 28px; }
-  .ikigai .q { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--seal); margin-bottom: 10px; }
-  .ikigai .a { font-size: 16px; color: var(--body-strong); }
-  @media (max-width: 620px) { .ikigai { grid-template-columns: 1fr; } }
+      /* ikigai — the four questions Sage balances before code */
+      .ikigai {
+        max-width: 760px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--hairline);
+        border: 1px solid var(--hairline);
+      }
+      .ikigai div {
+        background: var(--canvas);
+        padding: 30px 28px;
+      }
+      .ikigai .q {
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 11px;
+        color: var(--seal);
+        margin-bottom: 10px;
+      }
+      .ikigai .a {
+        font-size: 16px;
+        color: var(--body-strong);
+      }
+      @media (max-width: 620px) {
+        .ikigai {
+          grid-template-columns: 1fr;
+        }
+      }
 
-  .final { text-align: center; padding: 160px 0; }
-  .final h2 { max-width: 20ch; margin: 0 auto 26px; }
-  .final p { color: var(--muted); font-size: 18px; max-width: 52ch; margin: 0 auto 44px; font-family: var(--f-text); }
+      .final {
+        text-align: center;
+        padding: 160px 0;
+      }
+      .final h2 {
+        max-width: 20ch;
+        margin: 0 auto 26px;
+      }
+      .final p {
+        color: var(--muted);
+        font-size: 18px;
+        max-width: 52ch;
+        margin: 0 auto 44px;
+        font-family: var(--f-text);
+      }
 
-  footer { border-top: 1px solid var(--hairline); padding: 80px 0 56px; text-align: center; }
-  .foot-links { display: flex; gap: 34px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
-  .foot-links a { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: var(--muted); }
-  .foot-links a:hover { color: var(--on-dark); }
-  .foot-wordmark { font-family: var(--f-display); text-transform: uppercase; letter-spacing: 8px; font-size: 22px; color: var(--on-dark); }
-  .foot-legal { margin-top: 22px; font-size: 13px; color: var(--muted-soft); font-family: var(--f-text); }
-</style>
-</head>
-<body>
-
-<!-- ─── Nav ─── -->
-<nav>
-  <div class="wrap nav-inner">
-    <div class="nav-left">
-      <a href="#why" class="nav-link">Why</a>
-      <a href="#install" class="nav-link">Install</a>
-      <a href="#usage" class="nav-link">How it works</a>
-    </div>
-    <div class="nav-center">
-      <img class="brand-logo" src="logo.png" alt="">
-      <span class="wordmark">Sage</span>
-    </div>
-    <div class="nav-right">
-      <a href="https://github.com/qorstack/sage" target="_blank" rel="noopener" class="nav-link">GitHub ↗</a>
-    </div>
-  </div>
-</nav>
-
-<!-- ─── Hero ─── -->
-<header class="hero">
-  <div class="wrap hero-inner">
-    <img class="hero-logo" src="logo-full.png" alt="Sage AI" />
-    <div class="kanji">賢者</div>
-    <div class="eyebrow">Open Source · MIT License</div>
-    <h1 class="display-xl">The cognition layer that grows with your team.</h1>
-    <p class="lead">
-      Your AI understands before it codes — and your team's knowledge compounds every commit.
-      Sage makes the agents you already use grasp what your team has decided, what a change
-      will break, and what to reuse, then remembers it for next time.
-    </p>
-
-    <!-- Install -->
-    <div class="install" id="install" style="margin-top:64px; text-align:left;">
-      <div class="install-bar">
-        <span class="install-title">Get started — one file, no install</span>
-      </div>
-      <div class="install-body">
-        <div class="step">
-          <div class="step-h"><span class="n">01</span> Drop the protocol in your repo <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md">Copy</button></div>
-          <pre class="step-cmd">curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md</pre>
+      footer {
+        border-top: 1px solid var(--hairline);
+        padding: 80px 0 56px;
+        text-align: center;
+      }
+      .foot-links {
+        display: flex;
+        gap: 34px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 48px;
+      }
+      .foot-links a {
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .foot-links a:hover {
+        color: var(--on-dark);
+      }
+      .foot-wordmark {
+        font-family: var(--f-display);
+        text-transform: uppercase;
+        letter-spacing: 8px;
+        font-size: 22px;
+        color: var(--on-dark);
+      }
+      .foot-legal {
+        margin-top: 22px;
+        font-size: 13px;
+        color: var(--muted-soft);
+        font-family: var(--f-text);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ─── Nav ─── -->
+    <nav>
+      <div class="wrap nav-inner">
+        <div class="nav-left">
+          <a href="#why" class="nav-link">Why</a>
+          <a href="#install" class="nav-link">Install</a>
+          <a href="#usage" class="nav-link">How it works</a>
         </div>
-        <div class="step">
-          <div class="step-h"><span class="n">02</span> (optional) Seed starter knowledge <button class="copy" data-copy="git clone --depth 1 https://github.com/qorstack/sage t && cp -r t/agents . && rm -rf t">Copy</button></div>
-          <pre class="step-cmd"><span class="m"># or just let it fill in as the agent captures rules</span>
+        <div class="nav-center">
+          <img class="brand-logo" src="logo.png" alt="" />
+          <span class="wordmark">Sage</span>
+        </div>
+        <div class="nav-right">
+          <a
+            href="https://github.com/qorstack/sage"
+            target="_blank"
+            rel="noopener"
+            class="nav-link"
+            >GitHub ↗</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <!-- ─── Hero ─── -->
+    <header class="hero">
+      <div class="wrap hero-inner">
+        <img class="hero-logo" src="logo-full.png" alt="Sage AI" />
+        <div class="kanji">賢者</div>
+        <div class="eyebrow">Open Source · MIT License</div>
+        <h1 class="display-xl">
+          The cognition layer that grows with your team.
+        </h1>
+        <p class="lead">
+          Your AI understands before it codes — and your team's knowledge
+          compounds every commit. Sage makes the agents you already use grasp
+          what your team has decided, what a change will break, and what to
+          reuse, then remembers it for next time.
+        </p>
+
+        <!-- Install -->
+        <div
+          class="install"
+          id="install"
+          style="margin-top: 64px; text-align: left"
+        >
+          <div class="install-bar">
+            <span class="install-title"
+              >Get started — one file, no install</span
+            >
+          </div>
+          <div class="install-body">
+            <div class="step">
+              <div class="step-h">
+                <span class="n">01</span> Drop the protocol in your repo
+                <button
+                  class="copy"
+                  data-copy="curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md"
+                >
+                  Copy
+                </button>
+              </div>
+              <pre class="step-cmd">
+curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md</pre
+              >
+            </div>
+            <div class="step">
+              <div class="step-h">
+                <span class="n">02</span> (optional) Seed starter knowledge
+                <button
+                  class="copy"
+                  data-copy="git clone --depth 1 https://github.com/qorstack/sage t && cp -r t/agents . && rm -rf t"
+                >
+                  Copy
+                </button>
+              </div>
+              <pre
+                class="step-cmd"
+              ><span class="m"># or just let it fill in as the agent captures rules</span>
 git clone --depth 1 https://github.com/qorstack/sage t && cp -r t/agents . && rm -rf t</pre>
+            </div>
+          </div>
+          <div class="install-foot">
+            Commit both. Any agent that reads <span class="c">AGENTS.md</span> —
+            Claude Code, Cursor, Codex, Copilot — now follows the protocol. No
+            server, no Python.
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <a href="#install" class="btn">Install Sage</a>
+          <a
+            href="https://github.com/qorstack/sage"
+            target="_blank"
+            rel="noopener"
+            class="btn btn-quiet"
+            >Star on GitHub</a
+          >
         </div>
       </div>
-      <div class="install-foot">Commit both. Any agent that reads <span class="c">AGENTS.md</span> — Claude Code, Cursor, Codex, Copilot — now follows the protocol. No server, no Python.</div>
-    </div>
+    </header>
 
-    <div class="cta-row">
-      <a href="#install" class="btn">Install Sage</a>
-      <a href="https://github.com/qorstack/sage" target="_blank" rel="noopener" class="btn btn-quiet">Star on GitHub</a>
-    </div>
-  </div>
-</header>
-
-<!-- ─── Ikigai (told first) ─── -->
-<section id="ikigai" style="border-top:0;">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow">生き甲斐 · Ikigai</div>
-      <h2 class="display-lg">Code with intention.</h2>
-      <p>Sage gives every AI agent the ikigai of your most senior dev — the balance of four questions it asks before writing a line, so it grows with your team instead of charging ahead.</p>
-    </div>
-    <div class="ikigai">
-      <div><div class="q">Is it needed?</div><div class="a">Does the team or product actually need this — or does something already cover it?</div></div>
-      <div><div class="q">Will it last?</div><div class="a">Is it worth maintaining, in the shape the codebase already follows?</div></div>
-      <div><div class="q">Is it safe?</div><div class="a">What's the blast radius — settlement, auth, data, money?</div></div>
-      <div><div class="q">Did we agree?</div><div class="a">Does it respect the rules the team already decided in <code>agents/sage/</code>?</div></div>
-    </div>
-    <hr class="seal-rule" style="margin-top:48px;">
-  </div>
-</section>
-
-<!-- ─── Why ─── -->
-<section id="why">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow">The problem</div>
-      <h2 class="display-lg">AI agents generate confidently. They rarely understand.</h2>
-      <p>They reinvent helpers that already exist, miss the payment flow three files over, and ship changes your team explicitly decided against last quarter. Markdown docs don't fix this — agents skip them. Sage makes understanding a required tool call, not a suggestion.</p>
-    </div>
-    <div class="grid grid-3">
-      <div class="col">
-        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-        <h3 class="display-sm">Intent → Impact → Risk</h3>
-        <p>A required pipeline that names the domain, the blast radius, and a binding decision before any code — written as plain rules the agent must follow.</p>
+    <!-- ─── Ikigai (told first) ─── -->
+    <section id="ikigai" style="border-top: 0">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="eyebrow">生き甲斐 · Ikigai</div>
+          <h2 class="display-lg">Code with intention.</h2>
+          <p>
+            Sage gives every AI agent the ikigai of your most senior dev — the
+            balance of four questions it asks before writing a line, so it grows
+            with your team instead of charging ahead.
+          </p>
+        </div>
+        <div class="ikigai">
+          <div>
+            <div class="q">Is it needed?</div>
+            <div class="a">
+              Does the team or product actually need this — or does something
+              already cover it?
+            </div>
+          </div>
+          <div>
+            <div class="q">Will it last?</div>
+            <div class="a">
+              Is it worth maintaining, in the shape the codebase already
+              follows?
+            </div>
+          </div>
+          <div>
+            <div class="q">Is it safe?</div>
+            <div class="a">
+              What's the blast radius — settlement, auth, data, money?
+            </div>
+          </div>
+          <div>
+            <div class="q">Did we agree?</div>
+            <div class="a">
+              Does it respect the rules the team already decided in
+              <code>agents/sage/</code>?
+            </div>
+          </div>
+        </div>
+        <hr class="seal-rule" style="margin-top: 48px" />
       </div>
-      <div class="col">
-        <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <h3 class="display-sm">Reuse before you create</h3>
-        <p>Surfaces the exact existing assets and conventions to follow, so agents import instead of reinventing.</p>
-      </div>
-      <div class="col">
-        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <h3 class="display-sm">Binding risk gates</h3>
-        <p>ASK pauses for a human. REJECT stops cold. Code is validated before it's written.</p>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- ─── Not another agent ─── -->
-<section id="different">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow">Where it fits</div>
-      <h2 class="display-lg">Not another agent. The layer your agents are missing.</h2>
-      <p>Coding agents are great at producing code. None of them make sure it's the right code for your system, or that it respects what your team already decided. Sage is the AGENTS.md they read first — it makes understanding mandatory.</p>
-    </div>
-    <div class="grid grid-2">
-      <div class="col">
-        <div class="eyebrow" style="margin-bottom:24px;">Today's AI coding agents</div>
-        <div class="feature-row"><span class="mk">—</span><div>Generate &amp; edit code, fast</div></div>
-        <div class="feature-row"><span class="mk">—</span><div>Personal, per-session memory</div></div>
-        <div class="feature-row"><span class="mk">—</span><div>One developer, one machine</div></div>
-        <div class="feature-row"><span class="mk">—</span><div>Optimize for speed of output</div></div>
+    <!-- ─── Why ─── -->
+    <section id="why">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="eyebrow">The problem</div>
+          <h2 class="display-lg">
+            AI agents generate confidently. They rarely understand.
+          </h2>
+          <p>
+            They reinvent helpers that already exist, miss the payment flow
+            three files over, and ship changes your team explicitly decided
+            against last quarter. Markdown docs don't fix this — agents skip
+            them. Sage makes understanding a required tool call, not a
+            suggestion.
+          </p>
+        </div>
+        <div class="grid grid-3">
+          <div class="col">
+            <div class="ico">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2 2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <h3 class="display-sm">Intent → Impact → Risk</h3>
+            <p>
+              A required pipeline that names the domain, the blast radius, and a
+              binding decision before any code — written as plain rules the
+              agent must follow.
+            </p>
+          </div>
+          <div class="col">
+            <div class="ico">
+              <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+            </div>
+            <h3 class="display-sm">Reuse before you create</h3>
+            <p>
+              Surfaces the exact existing assets and conventions to follow, so
+              agents import instead of reinventing.
+            </p>
+          </div>
+          <div class="col">
+            <div class="ico">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h3 class="display-sm">Binding risk gates</h3>
+            <p>
+              ASK pauses for a human. REJECT stops cold. Code is validated
+              before it's written.
+            </p>
+          </div>
+        </div>
       </div>
-      <div class="col">
-        <div class="eyebrow" style="margin-bottom:24px; color:var(--on-dark);">Sage · the cognition layer</div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Enforces understanding</b> before any code is written</div></div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Team-shared, human-approved</b> memory — git-synced</div></div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Every repo, any agent</b> — one shared protocol file</div></div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Optimizes for correctness</b> &amp; team alignment</div></div>
+    </section>
+
+    <!-- ─── Not another agent ─── -->
+    <section id="different">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="eyebrow">Where it fits</div>
+          <h2 class="display-lg">
+            Not another agent. The layer your agents are missing.
+          </h2>
+          <p>
+            Coding agents are great at producing code. None of them make sure
+            it's the right code for your system, or that it respects what your
+            team already decided. Sage is the AGENTS.md they read first — it
+            makes understanding mandatory.
+          </p>
+        </div>
+        <div class="grid grid-2">
+          <div class="col">
+            <div class="eyebrow" style="margin-bottom: 24px">
+              Today's AI coding agents
+            </div>
+            <div class="feature-row">
+              <span class="mk">—</span>
+              <div>Generate &amp; edit code, fast</div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">—</span>
+              <div>Personal, per-session memory</div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">—</span>
+              <div>One developer, one machine</div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">—</span>
+              <div>Optimize for speed of output</div>
+            </div>
+          </div>
+          <div class="col">
+            <div
+              class="eyebrow"
+              style="margin-bottom: 24px; color: var(--on-dark)"
+            >
+              Sage · the cognition layer
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div>
+                <b>Enforces understanding</b> before any code is written
+              </div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div><b>Team-shared, human-approved</b> memory — git-synced</div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div><b>Every repo, any agent</b> — one shared protocol file</div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div><b>Optimizes for correctness</b> &amp; team alignment</div>
+            </div>
+          </div>
+        </div>
+        <p
+          style="
+            text-align: center;
+            color: var(--muted);
+            margin-top: 48px;
+            font-size: 16px;
+          "
+        >
+          Point it at the agents you already use — Claude Code · Cursor · Codex
+          · Copilot · Antigravity. It doesn't replace them. It makes them think
+          first.
+        </p>
       </div>
-    </div>
-    <p style="text-align:center; color:var(--muted); margin-top:48px; font-size:16px;">
-      Point it at the agents you already use — Claude Code · Cursor · Codex · Copilot · Antigravity. It doesn't replace them. It makes them think first.
-    </p>
-  </div>
-</section>
+    </section>
 
+    <!-- ─── Usage ─── -->
+    <section id="usage">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="eyebrow">How it works</div>
+          <h2 class="display-lg">
+            Your agent asks. Sage answers with cognition.
+          </h2>
+          <p>
+            Before touching code, the agent follows the pipeline in AGENTS.md
+            and reads the team's Markdown rules. Here's the verdict it must
+            produce for a real request.
+          </p>
+        </div>
 
-<!-- ─── Usage ─── -->
-<section id="usage">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow">How it works</div>
-      <h2 class="display-lg">Your agent asks. Sage answers with cognition.</h2>
-      <p>Before touching code, the agent follows the pipeline in AGENTS.md and reads the team's Markdown rules. Here's the verdict it must produce for a real request.</p>
-    </div>
-
-    <div class="grid grid-2" style="align-items:start; max-width:980px; margin:0 auto;">
-      <div class="codeblock">
-        <div class="head"><span>Your request</span></div>
-        <pre>add a refund endpoint to /payments</pre>
-        <div class="head" style="border-top:1px solid var(--hairline)"><span>What the agent does (per AGENTS.md)</span></div>
-        <pre><span class="m">1.</span> read agents/sage/payment/   <span class="m"># rules + decisions</span>
+        <div
+          class="grid grid-2"
+          style="align-items: start; max-width: 980px; margin: 0 auto"
+        >
+          <div class="codeblock">
+            <div class="head"><span>Your request</span></div>
+            <pre>add a refund endpoint to /payments</pre>
+            <div class="head" style="border-top: 1px solid var(--hairline)">
+              <span>What the agent does (per AGENTS.md)</span>
+            </div>
+            <pre><span class="m">1.</span> read agents/sage/payment/   <span class="m"># rules + decisions</span>
 <span class="m">2.</span> reuse before creating
 <span class="m">3.</span> emit Risk: / Decision: header
 <span class="m">4.</span> stop on ask | reject</pre>
+          </div>
+
+          <div class="report">
+            <div class="row">
+              <div class="k">Domain</div>
+              <div class="v"><b>payment</b> · action: <b>create</b></div>
+            </div>
+            <div class="row">
+              <div class="k">Requires</div>
+              <div class="v">
+                <span class="tag">Idempotency key</span
+                ><span class="tag">Audit log</span
+                ><span class="tag">Amount validation</span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="k">Impact</div>
+              <div class="v">
+                <b>3 services</b>, 7 files — touches the settlement worker &amp;
+                webhook retry path.
+              </div>
+            </div>
+            <div class="row">
+              <div class="k">Reuse</div>
+              <div class="v">
+                <code>payments/refund_service.py</code> already exists — extend
+                it, don't recreate.
+              </div>
+            </div>
+            <div class="row">
+              <div class="k">Decision</div>
+              <div class="v">
+                <span class="badge-ask">Ask — human confirmation</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="report">
-        <div class="row"><div class="k">Domain</div><div class="v"><b>payment</b> · action: <b>create</b></div></div>
-        <div class="row"><div class="k">Requires</div><div class="v"><span class="tag">Idempotency key</span><span class="tag">Audit log</span><span class="tag">Amount validation</span></div></div>
-        <div class="row"><div class="k">Impact</div><div class="v"><b>3 services</b>, 7 files — touches the settlement worker &amp; webhook retry path.</div></div>
-        <div class="row"><div class="k">Reuse</div><div class="v"><code>payments/refund_service.py</code> already exists — extend it, don't recreate.</div></div>
-        <div class="row"><div class="k">Decision</div><div class="v"><span class="badge-ask">Ask — human confirmation</span></div></div>
-      </div>
-    </div>
-  </div>
-</section>
+    <!-- ─── Team knowledge ─── -->
+    <section id="team">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="eyebrow">Team knowledge</div>
+          <h2 class="display-lg">
+            One brain your whole team — and every agent — shares.
+          </h2>
+          <p>
+            When someone states a team decision, the agent writes it as a
+            Markdown file; a human approves it by flipping
+            <code>status: proposed</code> to <code>approved</code>;
+            <code>git push</code> shares it. Next time any agent in any repo
+            touches that domain, the rule is right there. Personal agent memory
+            can't do this — it isn't governed, approved, or shared.
+          </p>
+        </div>
 
-<!-- ─── Team knowledge ─── -->
-<section id="team">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow">Team knowledge</div>
-      <h2 class="display-lg">One brain your whole team — and every agent — shares.</h2>
-      <p>When someone states a team decision, the agent writes it as a Markdown file; a human approves it by flipping <code>status: proposed</code> to <code>approved</code>; <code>git push</code> shares it. Next time any agent in any repo touches that domain, the rule is right there. Personal agent memory can't do this — it isn't governed, approved, or shared.</p>
-    </div>
-
-    <div class="grid grid-2" style="align-items:start; max-width:980px; margin:0 auto;">
-      <div>
-        <div class="codeblock" style="margin-bottom:24px;">
-          <div class="head"><span>agents/sage/payment/decisions/use-idempotency-keys.md</span></div>
-          <pre><span class="m">---</span>
+        <div
+          class="grid grid-2"
+          style="align-items: start; max-width: 980px; margin: 0 auto"
+        >
+          <div>
+            <div class="codeblock" style="margin-bottom: 24px">
+              <div class="head">
+                <span
+                  >agents/sage/payment/decisions/use-idempotency-keys.md</span
+                >
+              </div>
+              <pre><span class="m">---</span>
 title: Use idempotency keys
 domain: payment
 status: approved
@@ -403,98 +1099,172 @@ enforcement: block
 ---
 All payment calls MUST pass an
 idempotency key. No exceptions.</pre>
-        </div>
-        <div class="memo">
-          <div class="top">
-            <span class="scope">payment · block</span>
-            <span class="approved">✓ approved · in git</span>
+            </div>
+            <div class="memo">
+              <div class="top">
+                <span class="scope">payment · block</span>
+                <span class="approved">✓ approved · in git</span>
+              </div>
+              <h3 class="display-sm">Use idempotency keys</h3>
+              <p>
+                Plain Markdown in your repo. Edit it, diff it, review it in a
+                PR. The agent follows it on every payment change.
+              </p>
+              <span class="date">source: human · committed</span>
+            </div>
           </div>
-          <h3 class="display-sm">Use idempotency keys</h3>
-          <p>Plain Markdown in your repo. Edit it, diff it, review it in a PR. The agent follows it on every payment change.</p>
-          <span class="date">source: human · committed</span>
+
+          <div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div>
+                <b>Human-approved memory.</b> AI proposes, a person ratifies.
+                Nothing trusted lands unreviewed.
+              </div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div>
+                <b>Workspace-scoped &amp; multi-repo.</b> One knowledge home,
+                auto-linked across every repo in the product.
+              </div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div>
+                <b>Audit log.</b> Every recall, save, and decision is recorded —
+                who, what, when.
+              </div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div>
+                <b>Approval gates.</b> High-risk changes wait in a queue until a
+                human approves or rejects.
+              </div>
+            </div>
+            <div class="feature-row">
+              <span class="mk">✓</span>
+              <div>
+                <b>Tool-agnostic.</b> Any agent — Claude Code, Cursor, Codex,
+                Copilot — reads the same Markdown.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Human-approved memory.</b> AI proposes, a person ratifies. Nothing trusted lands unreviewed.</div></div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Workspace-scoped &amp; multi-repo.</b> One knowledge home, auto-linked across every repo in the product.</div></div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Audit log.</b> Every recall, save, and decision is recorded — who, what, when.</div></div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Approval gates.</b> High-risk changes wait in a queue until a human approves or rejects.</div></div>
-        <div class="feature-row"><span class="mk">✓</span><div><b>Tool-agnostic.</b> Any agent — Claude Code, Cursor, Codex, Copilot — reads the same Markdown.</div></div>
+    <!-- ─── Final CTA ─── -->
+    <section class="final">
+      <div class="wrap">
+        <div class="eyebrow">Ship code your team actually agreed on</div>
+        <h2 class="display-lg">Make your agents understand before they act.</h2>
+        <p>
+          Open source. One file. A governed, shared cognition protocol — no
+          server, no Python.
+        </p>
+        <div
+          class="cta-row"
+          style="
+            justify-content: center;
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+          "
+        >
+          <a href="#install" class="btn">Install Sage</a>
+          <a
+            href="https://github.com/qorstack/sage"
+            target="_blank"
+            rel="noopener"
+            class="btn btn-quiet"
+            >Star on GitHub</a
+          >
+        </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- ─── Final CTA ─── -->
-<section class="final">
-  <div class="wrap">
-    <div class="eyebrow">Ship code your team actually agreed on</div>
-    <h2 class="display-lg">Make your agents understand before they act.</h2>
-    <p>Open source. One file. A governed, shared cognition protocol — no server, no Python.</p>
-    <div class="cta-row" style="justify-content:center; display:flex; gap:18px; flex-wrap:wrap;">
-      <a href="#install" class="btn">Install Sage</a>
-      <a href="https://github.com/qorstack/sage" target="_blank" rel="noopener" class="btn btn-quiet">Star on GitHub</a>
-    </div>
-  </div>
-</section>
+    <footer>
+      <div class="wrap">
+        <div class="foot-links">
+          <a href="#why">Why</a>
+          <a href="#install">Install</a>
+          <a href="#usage">How it works</a>
+          <a href="#team">Team knowledge</a>
+          <a
+            href="https://github.com/qorstack/sage"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+        </div>
+        <div class="foot-wordmark">Sage</div>
+        <div class="foot-legal">
+          Cognitive enforcement for AI software development · MIT License
+        </div>
+      </div>
+    </footer>
 
-<footer>
-  <div class="wrap">
-    <div class="foot-links">
-      <a href="#why">Why</a>
-      <a href="#install">Install</a>
-      <a href="#usage">How it works</a>
-      <a href="#team">Team knowledge</a>
-      <a href="https://github.com/qorstack/sage" target="_blank" rel="noopener">GitHub</a>
-    </div>
-    <div class="foot-wordmark">Sage</div>
-    <div class="foot-legal">Cognitive enforcement for AI software development · MIT License</div>
-  </div>
-</footer>
-
-<script>
-  function doCopy(btn, text) {
-    navigator.clipboard.writeText(text).then(function () {
-      var t = btn.textContent; btn.textContent = 'Copied'; btn.style.color = '#fff';
-      setTimeout(function () { btn.textContent = t; btn.style.color = ''; }, 1400);
-    });
-  }
-  document.querySelectorAll('.copy[data-copy]').forEach(function (b) {
-    b.addEventListener('click', function () { doCopy(b, b.getAttribute('data-copy')); });
-  });
-
-  // install mode toggle (let your AI do it / run it yourself)
-  document.querySelectorAll('.mode-tab').forEach(function (t) {
-    t.addEventListener('click', function () {
-      var mode = t.getAttribute('data-mode');
-      document.querySelectorAll('.mode-tab').forEach(function (x) { x.classList.toggle('on', x === t); });
-      document.querySelectorAll('[data-mode-panel]').forEach(function (p) {
-        p.style.display = p.getAttribute('data-mode-panel') === mode ? '' : 'none';
+    <script>
+      function doCopy(btn, text) {
+        navigator.clipboard.writeText(text).then(function () {
+          var t = btn.textContent;
+          btn.textContent = "Copied";
+          btn.style.color = "#fff";
+          setTimeout(function () {
+            btn.textContent = t;
+            btn.style.color = "";
+          }, 1400);
+        });
+      }
+      document.querySelectorAll(".copy[data-copy]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          doCopy(b, b.getAttribute("data-copy"));
+        });
       });
-    });
-  });
 
-  // OS tabs (auto-detect Windows)
-  var currentOS = /Win/i.test(navigator.userAgent) ? 'win' : 'unix';
-  function applyOS() {
-    document.querySelectorAll('.os-tab').forEach(function (t) {
-      t.classList.toggle('on', t.getAttribute('data-os') === currentOS);
-    });
-    document.querySelectorAll('[data-os-panel]').forEach(function (p) {
-      p.style.display = p.getAttribute('data-os-panel') === currentOS ? '' : 'none';
-    });
-  }
-  document.querySelectorAll('.os-tab').forEach(function (t) {
-    t.addEventListener('click', function () { currentOS = t.getAttribute('data-os'); applyOS(); });
-  });
-  applyOS();
+      // install mode toggle (let your AI do it / run it yourself)
+      document.querySelectorAll(".mode-tab").forEach(function (t) {
+        t.addEventListener("click", function () {
+          var mode = t.getAttribute("data-mode");
+          document.querySelectorAll(".mode-tab").forEach(function (x) {
+            x.classList.toggle("on", x === t);
+          });
+          document.querySelectorAll("[data-mode-panel]").forEach(function (p) {
+            p.style.display =
+              p.getAttribute("data-mode-panel") === mode ? "" : "none";
+          });
+        });
+      });
 
-  var copyOs = document.querySelector('.copy-os');
-  if (copyOs) copyOs.addEventListener('click', function () {
-    var panel = document.querySelector('[data-os-panel="' + currentOS + '"]');
-    doCopy(copyOs, panel ? panel.textContent.trim() : '');
-  });
-</script>
-</body>
+      // OS tabs (auto-detect Windows)
+      var currentOS = /Win/i.test(navigator.userAgent) ? "win" : "unix";
+      function applyOS() {
+        document.querySelectorAll(".os-tab").forEach(function (t) {
+          t.classList.toggle("on", t.getAttribute("data-os") === currentOS);
+        });
+        document.querySelectorAll("[data-os-panel]").forEach(function (p) {
+          p.style.display =
+            p.getAttribute("data-os-panel") === currentOS ? "" : "none";
+        });
+      }
+      document.querySelectorAll(".os-tab").forEach(function (t) {
+        t.addEventListener("click", function () {
+          currentOS = t.getAttribute("data-os");
+          applyOS();
+        });
+      });
+      applyOS();
+
+      var copyOs = document.querySelector(".copy-os");
+      if (copyOs)
+        copyOs.addEventListener("click", function () {
+          var panel = document.querySelector(
+            '[data-os-panel="' + currentOS + '"]',
+          );
+          doCopy(copyOs, panel ? panel.textContent.trim() : "");
+        });
+    </script>
+  </body>
 </html>

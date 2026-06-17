@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/logo-full.png" alt="Sage" width="320"></p>
+<p align="center"><img src="assets/logo-full.png" alt="Sage" width="640"></p>
 
 <h1 align="center">Sage</h1>
 
@@ -7,20 +7,20 @@
 ## The Sage
 
 Every team has a senior who has seen it all — the one who, before touching
-anything, quietly asks: *Is this even needed? Will it last? Is it safe? Did we
-already agree on this?* That balance of purpose and care has a name in Japan:
+anything, quietly asks: _Is this even needed? Will it last? Is it safe? Did we
+already agree on this?_ That balance of purpose and care has a name in Japan:
 **生き甲斐 — ikigai**, your reason for doing.
 
 Sage gives that senior's ikigai to **every AI agent you use**. Before it writes
 a line, the agent becomes the right kind of senior for the task, weighs those
-four questions against your team's rules, and *then* codes — or stops and asks.
+four questions against your team's rules, and _then_ codes — or stops and asks.
 
-|  | the question | |
-| --- | --- | --- |
-| 🎯 | **Is it needed?** | …or does something already cover it? |
-| ⏳ | **Will it last?** | worth maintaining, in the shape the code already follows? |
-| 🛡️ | **Is it safe?** | what's the blast radius — money, auth, data? |
-| 🤝 | **Did we agree?** | does it respect the rules in `agents/sage/`? |
+|     | the question      |                                                           |
+| --- | ----------------- | --------------------------------------------------------- |
+| 🎯  | **Is it needed?** | …or does something already cover it?                      |
+| ⏳  | **Will it last?** | worth maintaining, in the shape the code already follows? |
+| 🛡️  | **Is it safe?**   | what's the blast radius — money, auth, data?              |
+| 🤝  | **Did we agree?** | does it respect the rules in `agents/sage/`?              |
 
 No install, no server, no Python. Sage is a cognition protocol in a single
 **`AGENTS.md`** — Markdown you read, edit, and `git push`. Any agent that reads
@@ -63,14 +63,19 @@ Knowledge lives in `agents/sage/<domain>/` — plain Markdown with a little YAML
 title: Use idempotency keys
 domain: billing
 status: approved
-enforcement: block        # block | warn | advise
+enforcement: block # block | warn | advise
 ---
+
 All payment calls MUST pass an idempotency key. No exceptions.
 ```
 
 Edit a rule, commit, done — the agent follows your version. When you tell it a
 new rule in chat, it writes one as `status: proposed`; you approve by flipping it
 to `approved`. It even keeps a library of senior personas in `agents/sage/roles/`.
+
+Run **[`/sage-learning`](commands/sage-learning.md)** once to seed `agents/sage/`
+straight from your existing code — Sage studies the team's real patterns and
+writes them up so future code matches.
 
 ## Works with every agent
 
