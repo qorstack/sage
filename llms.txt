@@ -1,23 +1,23 @@
-# Precept
+# Sage
 
-> A cognition protocol for AI coding agents: a single AGENTS.md plus a folder of Markdown knowledge (agents/preceptai/). No install, no server, no Python, no MCP. Any agent that reads AGENTS.md (Claude Code, Cursor, Codex, Copilot) is forced to understand the system — team rules, blast radius, what to reuse — BEFORE writing code, and to return a proceed/warn/ask/reject verdict.
+> A cognition protocol for AI coding agents: a single AGENTS.md plus a folder of Markdown knowledge (agents/sage/). No install, no server, no Python, no MCP. Any agent that reads AGENTS.md (Claude Code, Cursor, Codex, Copilot) is forced to understand the system — team rules, blast radius, what to reuse — BEFORE writing code, and to return a proceed/warn/ask/reject verdict.
 
-Knowledge is passive; cognition must be enforced. Instead of a service to deploy, Precept is one declarative file you copy into your repo and edit as Markdown. Share it with `git push`.
+Knowledge is passive; cognition must be enforced. Instead of a service to deploy, Sage is one declarative file you copy into your repo and edit as Markdown. Share it with `git push`.
 
 ## Install
 
-- Copy the protocol to your repo root: `curl -fsSL https://raw.githubusercontent.com/qorstack/preceptai/main/AGENTS.md -o AGENTS.md`
+- Copy the protocol to your repo root: `curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md`
 - Optional starter knowledge: copy the `agents/` folder from the repo (or let it fill in as the agent captures rules).
 - Commit both. Every agent that reads AGENTS.md now follows the protocol.
 
 ## How it works
 
-- Pipeline before any code change: name the intent, read `agents/preceptai/<domain>/`, reuse before creating, assess impact/risk, emit a `Risk:` / `Decision:` header, stop on `ask`/`reject`.
-- Knowledge = Markdown with YAML frontmatter under `agents/preceptai/<domain>/` (`rules.md`, `decisions/<slug>.md`): id, type, title, domain, tags, status, enforcement, applies_to, source.
+- Pipeline before any code change: name the intent, read `agents/sage/<domain>/`, reuse before creating, assess impact/risk, emit a `Risk:` / `Decision:` header, stop on `ask`/`reject`.
+- Knowledge = Markdown with YAML frontmatter under `agents/sage/<domain>/` (`rules.md`, `decisions/<slug>.md`): id, type, title, domain, tags, status, enforcement, applies_to, source.
 - Learns from conversation: the agent captures rules/corrections you state as `status: proposed`; you approve by editing to `status: approved`.
 - Enforcement: `block` (refuse violations) | `warn` (flag) | `advise` (strong default).
 
 ## Docs
 
 - AGENTS.md — the full protocol; this file IS the product.
-- agents/preceptai/ — starter cognition rules by domain (auth, payment, webhook, order, otp, notification, worker).
+- agents/sage/ — starter cognition rules by domain (auth, payment, webhook, order, otp, notification, worker).

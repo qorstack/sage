@@ -1,14 +1,14 @@
-# Precept — a cognition protocol for AI coding agents
+# Sage — a cognition protocol for AI coding agents
 
 > **Knowledge is passive. Cognition must be enforced.**
-> This file IS Precept. No install, no server, no Python — just this file plus a
+> This file IS Sage. No install, no server, no Python — just this file plus a
 > folder of Markdown knowledge. Any agent that reads `AGENTS.md` (Claude Code,
 > Cursor, Codex, Copilot, …) follows the protocol below. Share it by committing
 > it. Improve it by editing it.
 
-You are working in a repo that uses Precept. **Before you write or modify any
+You are working in a repo that uses Sage. **Before you write or modify any
 code, run the pipeline in §1.** It is mandatory, not optional. Treat the rules
-in `agents/preceptai/` as decisions your team already made — follow them, and
+in `agents/sage/` as decisions your team already made — follow them, and
 make verdicts *stricter* when in doubt, never looser.
 
 ---
@@ -20,7 +20,7 @@ Do these in order. Do not skip. Do not assume you already know the answer.
 1. **Name the intent.** In one line: what domain (`auth`, `payment`, `webhook`,
    `order`, `otp`, `notification`, `worker`, or a repo-specific one) and what
    action (add / change / delete / fix).
-2. **Read the knowledge.** Open `agents/preceptai/<domain>/` and read
+2. **Read the knowledge.** Open `agents/sage/<domain>/` and read
    `index.md`, `rules.md`, and any `decisions/*.md` whose title looks relevant.
    **Quote the rules that apply** in your reply so the human sees you checked.
    If the domain folder doesn't exist, note that and proceed with built-in
@@ -43,10 +43,10 @@ If verdict is `ask` or `reject`, **do not write code** until the human responds.
 
 ## 2. The knowledge — where it lives & its format
 
-All team knowledge is Markdown under **`agents/preceptai/`**, organized by domain:
+All team knowledge is Markdown under **`agents/sage/`**, organized by domain:
 
 ```text
-agents/preceptai/
+agents/sage/
   index.md                              # what this tree is (auto-readable)
   <domain>/
     index.md                            # table of contents for the domain
@@ -86,19 +86,19 @@ the always-on baseline for the domain.
 ## 3. Learn from the conversation — capture what the dev tells you
 
 When the developer states a rule, correction, preference, or "always/never do
-X" — **capture it as knowledge, without being asked.** This is how Precept gets
+X" — **capture it as knowledge, without being asked.** This is how Sage gets
 smarter from real use.
 
-1. **Diff first.** Check `agents/preceptai/<domain>/` for an existing entry on
+1. **Diff first.** Check `agents/sage/<domain>/` for an existing entry on
    the same point. If it exists and still matches → do nothing. If it's stale →
    edit that file in place (don't create a near-duplicate).
-2. **Write a new entry** at `agents/preceptai/<domain>/decisions/<slug>.md`
+2. **Write a new entry** at `agents/sage/<domain>/decisions/<slug>.md`
    using the format in §2, with:
    - `status: proposed` and `source: ai` (the human ratifies later)
    - a sensible `enforcement` (`block` for "must/never", `warn` for "prefer",
      `advise` for "consider") and `applies_to`
 3. **Tell the dev** in one line: *"Captured as a proposed rule in
-   `agents/preceptai/payment/decisions/use-ledger-service.md` — set
+   `agents/sage/payment/decisions/use-ledger-service.md` — set
    `status: approved` to make it binding."*
 4. The dev approves by editing `status: proposed` → `approved` (or deletes it).
    Commit = shared with the whole team.
@@ -139,7 +139,7 @@ A `block` rule outranks your own preference and any generic best practice.
 
 When you add or change entries in a domain, update that domain's `index.md` so
 it lists each entry (title · status · enforcement) — it's the fast map for the
-next agent. Keep the root `agents/preceptai/index.md` pointing at the domains
+next agent. Keep the root `agents/sage/index.md` pointing at the domains
 that exist.
 
 ---
@@ -155,13 +155,13 @@ Risk: HIGH — payment mutation; touches settlement + webhook retry.
 Decision: ask — payment/rules.md requires idempotency + an approved refund path.
 ```
 
-…then quotes the matched rules from `agents/preceptai/payment/rules.md`, points
+…then quotes the matched rules from `agents/sage/payment/rules.md`, points
 at the existing `payments/refund_service.py` to reuse, and waits for the human
 because the verdict is `ask`.
 
 > **Dev:** "always use our internal Ledger service for money movement, never call Stripe directly"
 
-You capture it (§3): write `agents/preceptai/payment/decisions/use-ledger-service.md`
+You capture it (§3): write `agents/sage/payment/decisions/use-ledger-service.md`
 with `status: proposed`, `enforcement: block`, `applies_to: [payment]`, and tell
 the dev to approve it.
 

@@ -1,4 +1,4 @@
-# Precept integrations — one protocol, every agent
+# Sage integrations — one protocol, every agent
 
 The protocol lives in **[`../AGENTS.md`](../AGENTS.md)** (single source of truth).
 Many agents read `AGENTS.md` directly. For the ones that look elsewhere, drop the
@@ -11,9 +11,9 @@ matching thin adapter below into your repo — it just routes that tool to
 | **OpenAI Codex** | yes | — |
 | **OpenCode** | yes | — |
 | **Google Antigravity** | yes | — |
-| **Cursor** | no | [`cursor.mdc`](cursor.mdc) → `.cursor/rules/precept.mdc` |
-| **Windsurf** | no | [`windsurf.md`](windsurf.md) → `.windsurf/rules/precept.md` |
-| **Cline** | no | [`cline.md`](cline.md) → `.clinerules/precept.md` |
+| **Cursor** | no | [`cursor.mdc`](cursor.mdc) → `.cursor/rules/sage.mdc` |
+| **Windsurf** | no | [`windsurf.md`](windsurf.md) → `.windsurf/rules/sage.md` |
+| **Cline** | no | [`cline.md`](cline.md) → `.clinerules/sage.md` |
 | **GitHub Copilot** | no | [`copilot.md`](copilot.md) → `.github/copilot-instructions.md` |
 | **Gemini CLI** | no | [`gemini.md`](gemini.md) → `GEMINI.md` |
 

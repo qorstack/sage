@@ -1,4 +1,4 @@
-# Precept knowledge (OKF)
+# Sage knowledge (OKF)
 
 Open Knowledge Format: each file is Markdown with a small YAML frontmatter
 header, organized by domain. Humans and AI agents read and edit these directly;

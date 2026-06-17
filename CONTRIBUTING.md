@@ -1,15 +1,15 @@
-# Contributing to Precept
+# Contributing to Sage
 
-Thank you for considering contributing! Precept is open source under MIT.
+Thank you for considering contributing! Sage is open source under MIT.
 
-Precept is a **single-file cognition protocol** — it's all Markdown, no code,
+Sage is a **single-file cognition protocol** — it's all Markdown, no code,
 no build, no tests to run. Contributing means improving text.
 
 ## What you can improve
 
 - **The protocol** — [`AGENTS.md`](AGENTS.md). The source of truth for how agents
   behave. Keep it clear, ordered, and tool-agnostic.
-- **Starter knowledge** — [`agents/preceptai/`](agents/preceptai/). Add or refine
+- **Starter knowledge** — [`agents/sage/`](agents/sage/). Add or refine
   domain `rules.md` / `decisions/*.md`. Keep entries small (one idea per file) and
   in the frontmatter shape documented in `AGENTS.md` §2.
 - **Agent adapters** — [`integrations/`](integrations/). Add a thin adapter for a
@@ -28,7 +28,7 @@ no build, no tests to run. Contributing means improving text.
 
 ## Submitting
 
-Open a [GitHub issue](https://github.com/qorstack/preceptai/issues) to discuss, or
+Open a [GitHub issue](https://github.com/qorstack/sage/issues) to discuss, or
 a PR directly. Since everything is Markdown, review is just reading the diff.
 
 By contributing, you agree your contributions will be licensed under MIT.

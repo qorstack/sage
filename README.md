@@ -1,84 +1,66 @@
-# Precept
+<p align="center"><img src="assets/logo-full.png" alt="Sage" width="320"></p>
 
-![Precept](assets/logo-full.png)
+<h1 align="center">Sage</h1>
 
-**Knowledge is passive. Cognition must be enforced.**
+<p align="center"><b>Make your AI code like your most senior dev.</b></p>
 
-Precept is a **cognition protocol** for AI coding agents — a single
-[`AGENTS.md`](AGENTS.md) plus a folder of Markdown knowledge. No install, no
-server, no Python, no MCP. Any agent that reads `AGENTS.md` (Claude Code,
-Cursor, Codex, Copilot, …) is forced to *understand* your system — your team's
-rules, the blast radius, what to reuse — **before** it writes code.
+Sage is a cognition protocol in a single **`AGENTS.md`**. Drop it in your repo and
+any agent — Claude Code, Cursor, Codex, Copilot — reads your team's rules, weighs
+the risk, and reuses what already exists **before** it writes a line. No install,
+no server, no Python. Just Markdown you can read, edit, and `git push`.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
----
-
-## The problem
-
-AI agents write code fast and break prod fast. They reinvent a service the team
-already wrote, ignore a rule agreed on six months ago, and ship it. Docs and RAG
-are passive — the agent reads them only if it remembers to. Precept makes
-consulting the team's knowledge a **required step in the agent's workflow**,
-written as plain rules the agent must follow.
-
-## Install — copy one file into your repo
+## Install — one file
 
 ```bash
-# 1. drop the protocol at your repo root
-curl -fsSL https://raw.githubusercontent.com/qorstack/preceptai/main/AGENTS.md -o AGENTS.md
-
-# 2. (optional) grab the starter knowledge to build on
-git clone --depth 1 https://github.com/qorstack/preceptai tmp-precept \
-  && cp -r tmp-precept/agents . && rm -rf tmp-precept
+curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md
 ```
 
-Commit both and you're done. That's the entire setup — every agent on the team
-that reads `AGENTS.md` now follows the protocol. Improve it by editing the file;
-share it by pushing.
+Commit it. That's the whole setup — every agent that reads `AGENTS.md` now follows
+the protocol.
 
-> No starter knowledge needed to begin: the protocol tells the agent to capture
-> rules as you work, so `agents/preceptai/` fills in over time.
+```bash
+# optional: start from the example knowledge instead of a blank slate
+git clone --depth 1 https://github.com/qorstack/sage t && cp -r t/agents . && rm -rf t
+```
 
-## How it works (full protocol in [`AGENTS.md`](AGENTS.md))
+## What your agent does now
 
-- **Pipeline before code** — name the intent, read `agents/preceptai/<domain>/`,
-  reuse before creating, assess impact/risk, emit a `Risk:` / `Decision:` header
-  (`proceed | warn | ask | reject`), and stop on `ask` / `reject`.
-- **Knowledge as Markdown** — `agents/preceptai/<domain>/rules.md` +
-  `decisions/<slug>.md`, each with YAML frontmatter (`status`, `enforcement`,
-  `applies_to`, …). Human + AI editable, diffable, shared via git.
-- **Learns from you** — when you state a rule or correction in chat, the agent
-  writes it as a `status: proposed` entry; you approve by flipping it to
-  `approved`. Governed, not silent.
-- **Enforcement levels** — `block` (refuse violations), `warn` (flag), `advise`
-  (strong default).
+Before touching code, it follows the pipeline in `AGENTS.md` and opens its reply
+with a verdict you can trust:
 
-## Why a single file
+```text
+Risk: HIGH — payment mutation; touches settlement + webhook retry.
+Decision: ask — payment rules require idempotency + an approved refund path.
+```
 
-| | Docs / RAG / MCP server | Precept (`AGENTS.md`) |
-| --- | --- | --- |
-| Setup | install + run a service | copy one file |
-| Consulted before code | optional / if sampled | required step in the protocol |
-| Returns a verdict | facts only | `proceed / warn / ask / reject` |
-| Edit a rule | code / DB / UI | edit Markdown, commit |
-| Share with the team | deploy / sync | `git push` |
-| Works across agents | per-tool integration | every agent reads `AGENTS.md` |
+…then it reuses your existing services, follows your team's rules, and stops on
+`ask` / `reject` instead of charging ahead.
+
+## Your rules, as Markdown
+
+Knowledge lives in `agents/sage/<domain>/` — plain Markdown with a little YAML:
+
+```markdown
+---
+title: Use idempotency keys
+domain: payment
+status: approved
+enforcement: block        # block | warn | advise
+---
+All payment calls MUST pass an idempotency key. No exceptions.
+```
+
+Edit a rule, commit, done — the agent follows your version. When you tell the agent
+a new rule in chat, it writes one of these as `status: proposed`; you approve by
+flipping it to `approved`.
 
 ## Works with every agent
 
-`AGENTS.md` is read natively by Claude Code, OpenAI Codex, OpenCode, and Google
-Antigravity. For agents that look elsewhere (Cursor, Windsurf, Cline, GitHub
-Copilot, Gemini CLI), drop in a thin adapter from [`integrations/`](integrations/)
-— each just routes the tool to `AGENTS.md`, so there's one source of truth and
-nothing to keep in sync.
-
-## Edit the rules
-
-They're yours. Open `agents/preceptai/payment/rules.md` (or any domain), change
-the rules, commit. The agent follows your team's version. Add a new decision as
-a small Markdown file under `agents/preceptai/<domain>/decisions/`.
+`AGENTS.md` is read natively by **Claude Code, Codex, OpenCode, Antigravity**. For
+**Cursor, Windsurf, Cline, Copilot, Gemini**, drop in a one-line adapter from
+[`integrations/`](integrations/) — each just points the tool at `AGENTS.md`, so
+there's one source of truth.
 
 ---
 
-MIT — see [LICENSE](LICENSE). Promo site: [preceptai.qorstack.com](https://preceptai.qorstack.com).
+MIT — see [LICENSE](LICENSE). · [sage.qorstack.com](https://sage.qorstack.com)

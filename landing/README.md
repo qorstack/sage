@@ -1,4 +1,4 @@
-# Precept — landing page
+# Sage — landing page
 
 A single self-contained `index.html` (dark monochrome, Bugatti-style typography,
 Google Fonts via CDN). No build step, no dependencies.
@@ -25,9 +25,9 @@ One-time setup (repo owner):
 2. Merge to `main` (or run the workflow manually from the **Actions** tab → *Deploy
    landing page to GitHub Pages* → **Run workflow**).
 
-The site then lives at `https://qorstack.github.io/preceptai/`. The page is fully
+The site then lives at `https://qorstack.github.io/sage/`. The page is fully
 self-contained (inline CSS/JS, CDN fonts, only anchor + absolute links), so it works
-unchanged under the `/preceptai/` sub-path.
+unchanged under the `/sage/` sub-path.
 
 ## Editing
 
