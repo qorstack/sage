@@ -1,7 +1,0 @@
-{
-  "request": "Restyle the precept web management dashboard to the Bugatti dark monochrome theme, replace the text wordmark with the logo.png image and use it as favicon, and delete the /playground page",
-  "decision": "ask",
-  "risk_level": "high",
-  "domain": "audit",
-  "timestamp": "2026-06-05T11:11:52.494314"
-}
