@@ -36,6 +36,18 @@ Decision: ask — payment rules require idempotency + an approved refund path.
 …then it reuses your existing services, follows your team's rules, and stops on
 `ask` / `reject` instead of charging ahead.
 
+## 生き甲斐 — code with intention
+
+Ikigai is the balance of four questions a senior asks before writing a line —
+so Sage makes every agent ask them too, and answer them up front:
+
+| | |
+| --- | --- |
+| **Is it needed?** | …or does something already cover it? |
+| **Will it last?** | worth maintaining, in the shape the codebase already follows? |
+| **Is it safe?** | what's the blast radius — money, auth, data? |
+| **Did we agree?** | does it respect the rules in `agents/sage/`? |
+
 ## Your rules, as Markdown
 
 Knowledge lives in `agents/sage/<domain>/` — plain Markdown with a little YAML:
