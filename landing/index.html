@@ -46,11 +46,14 @@
 
       html {
         scroll-behavior: smooth;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: clip;
       }
 
       body {
         margin: 0;
-        min-width: 320px;
+        min-width: 0;
         background:
           radial-gradient(
             circle at 16% 12%,
@@ -68,6 +71,15 @@
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
+      }
+
+      nav,
+      header,
+      main,
+      section,
+      footer {
+        max-width: 100vw;
+        overflow-x: clip;
       }
 
       body::before {
@@ -125,6 +137,7 @@
       .eyebrow {
         display: inline-flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 10px;
         color: var(--amber);
         font-size: 12px;
@@ -154,7 +167,8 @@
           transform 0.2s ease,
           border-color 0.2s ease,
           background 0.2s ease;
-        white-space: nowrap;
+        white-space: normal;
+        text-align: center;
       }
 
       .btn:hover {
@@ -199,9 +213,13 @@
 
       .nav-right {
         justify-content: flex-end;
+        justify-self: end;
       }
 
       .nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         color: var(--muted);
         font-size: 11px;
         font-weight: 700;
@@ -209,6 +227,17 @@
 
       .nav-link:hover {
         color: var(--ink);
+      }
+
+      .github-link svg {
+        width: 17px;
+        height: 17px;
+        fill: currentColor;
+        flex: none;
+      }
+
+      .mobile-github {
+        display: none;
       }
 
       .brand {
@@ -230,7 +259,7 @@
       .hero {
         position: relative;
         min-height: calc(100vh - 66px);
-        padding: 76px 0 54px;
+        padding: 56px 0 48px;
         display: flex;
         align-items: center;
       }
@@ -253,19 +282,30 @@
       .hero-shell {
         position: relative;
         isolation: isolate;
+        overflow: clip;
       }
 
-      .hero-mark {
+      .hero-shell::before {
+        content: "";
         position: absolute;
-        inset: auto 0 2% auto;
-        width: min(48vw, 520px);
-        opacity: 0.13;
-        filter: saturate(0.8);
+        inset: clamp(10px, 4vw, 54px) -9vw auto auto;
+        width: min(82vw, 980px);
+        aspect-ratio: 2.36 / 1;
+        background: url("../assets/logo-full.png") center / contain no-repeat;
+        opacity: 0.18;
+        filter: saturate(0.85) drop-shadow(0 38px 80px rgba(0, 0, 0, 0.48));
+        mask-image: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(0, 0, 0, 0.55) 22%,
+          black 58%,
+          transparent 100%
+        );
         z-index: -1;
       }
 
       .hero-copy {
-        max-width: 980px;
+        max-width: 900px;
         min-width: 0;
       }
 
@@ -277,17 +317,26 @@
       }
 
       h1 {
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         color: var(--ink);
-        font-size: clamp(52px, 9vw, 116px);
-        line-height: 0.91;
+        font-size: clamp(48px, 7.7vw, 98px);
+        line-height: 0.94;
         letter-spacing: 0;
         font-weight: 900;
         text-wrap: balance;
+        overflow-wrap: anywhere;
       }
 
-      .hero h1 span {
+      .hero h1 .accent {
         color: var(--red);
+      }
+
+      .mobile-line {
+        display: none;
+      }
+
+      .mobile-tail {
+        display: none;
       }
 
       .lead {
@@ -296,6 +345,35 @@
         font-size: clamp(18px, 2.3vw, 25px);
         line-height: 1.45;
         font-weight: 600;
+      }
+
+      .ikigai-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .ikigai-strip span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 12px;
+        border: 1px solid rgba(247, 244, 237, 0.16);
+        border-radius: 8px;
+        background: rgba(247, 244, 237, 0.05);
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .ikigai-strip span:first-child {
+        border-color: rgba(255, 90, 73, 0.42);
+        background: rgba(255, 90, 73, 0.12);
+        color: #ffb0a7;
       }
 
       .hero-actions {
@@ -331,12 +409,18 @@
         align-items: center;
         justify-content: space-between;
         gap: 14px;
+        min-width: 0;
         min-height: 48px;
         padding: 0 16px;
         border-bottom: 1px solid var(--line);
         color: var(--muted);
         font-family: var(--mono);
         font-size: 12px;
+      }
+
+      .panel-head span {
+        min-width: 0;
+        overflow-wrap: anywhere;
       }
 
       .dots {
@@ -415,6 +499,32 @@
 
       .decision {
         color: var(--amber);
+      }
+
+      .agent-answer {
+        margin-top: 18px;
+        border-top: 1px solid var(--line);
+        padding-top: 18px;
+      }
+
+      .agent-answer pre {
+        border-color: rgba(247, 244, 237, 0.08);
+        background: rgba(5, 5, 5, 0.42);
+        white-space: pre-wrap;
+      }
+
+      .knowledge-files {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .knowledge-files span {
+        display: block;
+        color: var(--cyan);
+        font-family: var(--mono);
+        font-size: 11px;
+        overflow-wrap: anywhere;
       }
 
       .flow {
@@ -698,7 +808,9 @@
         font-family: var(--mono);
         font-size: 13px;
         line-height: 1.7;
-        white-space: pre;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
 
       code {
@@ -797,9 +909,10 @@
           padding-top: 64px;
         }
 
-        .hero-mark {
-          width: min(70vw, 460px);
-          opacity: 0.09;
+        .hero-shell::before {
+          inset: 18px -12vw auto auto;
+          width: min(100vw, 720px);
+          opacity: 0.1;
         }
 
         .grid-3 {
@@ -809,7 +922,12 @@
 
       @media (max-width: 720px) {
         .wrap {
-          width: min(100% - 28px, var(--max));
+          width: calc(100vw - 28px);
+          max-width: calc(100vw - 28px);
+        }
+
+        .nav-inner {
+          position: relative;
         }
 
         .nav-inner {
@@ -820,12 +938,55 @@
           display: none;
         }
 
+        .nav-right {
+          gap: 0;
+        }
+
+        .nav-right .github-link {
+          display: none;
+        }
+
+        .mobile-github {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          position: fixed;
+          top: 10px;
+          right: 14px;
+          width: 40px;
+          height: 40px;
+          color: var(--ink);
+          z-index: 60;
+        }
+
+        .mobile-github svg {
+          width: 18px;
+          height: 18px;
+          fill: currentColor;
+        }
+
         .brand span {
           display: none;
         }
 
+        .desktop-line {
+          display: none;
+        }
+
+        .mobile-line {
+          display: inline;
+        }
+
+        .desktop-tail {
+          display: none;
+        }
+
+        .mobile-tail {
+          display: inline;
+        }
+
         .hero {
-          padding: 48px 0 38px;
+          padding: 42px 0 34px;
         }
 
         .lead {
@@ -836,6 +997,16 @@
 
         .hero-actions .btn {
           width: 100%;
+          padding-left: 12px;
+          padding-right: 12px;
+          font-size: 10px;
+          letter-spacing: 0.05em;
+        }
+
+        .request {
+          display: block;
+          width: 100%;
+          word-break: break-word;
         }
 
         .proof-strip {
@@ -876,14 +1047,34 @@
       }
 
       @media (max-width: 420px) {
+        .hero-shell::before {
+          inset: 60px -34vw auto auto;
+          width: 138vw;
+          opacity: 0.08;
+        }
+
         h1 {
-          max-width: 10ch;
-          font-size: 38px;
-          line-height: 0.96;
+          max-width: none;
+          font-size: 32px;
+          line-height: 1;
         }
 
         h2 {
           font-size: 35px;
+        }
+
+        .lead {
+          font-size: 15.5px;
+        }
+
+        .ikigai-strip {
+          gap: 8px;
+        }
+
+        .ikigai-strip span {
+          padding: 0 9px;
+          font-size: 10px;
+          letter-spacing: 0.05em;
         }
 
         .panel-head {
@@ -894,16 +1085,97 @@
 
         .request,
         pre {
-          font-size: 12px;
+          font-size: 10.5px;
         }
 
         .request {
           width: 100%;
           white-space: normal;
+          word-break: break-word;
         }
 
         .sage-header {
           gap: 14px;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .wrap {
+          width: calc(100% - 20px);
+          max-width: calc(100vw - 20px);
+        }
+
+        .hero {
+          padding-top: 34px;
+        }
+
+        .eyebrow {
+          gap: 7px;
+          font-size: 9px;
+          letter-spacing: 0.06em;
+        }
+
+        .eyebrow::before {
+          width: 24px;
+        }
+
+        h1 {
+          font-size: 25px;
+        }
+
+        .lead {
+          max-width: none;
+          font-size: 14.5px;
+        }
+
+        .ikigai-strip {
+          gap: 7px;
+        }
+
+        .ikigai-strip span {
+          min-height: 30px;
+          padding: 0 8px;
+          font-size: 9px;
+          letter-spacing: 0.05em;
+        }
+
+        .btn {
+          min-height: 44px;
+          padding: 0 12px;
+          font-size: 10px;
+          letter-spacing: 0.05em;
+        }
+
+        .verdict-body,
+        .install-body {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+
+        .request,
+        pre {
+          font-size: 10.5px;
+        }
+
+        .flow {
+          padding: 12px;
+        }
+
+        .flow-step {
+          padding: 0 8px;
+          font-size: 12px;
+        }
+
+        .stat {
+          min-height: 88px;
+          padding: 14px;
+        }
+
+        .row,
+        .card,
+        .file {
+          padding-left: 14px;
+          padding-right: 14px;
         }
       }
     </style>
@@ -926,28 +1198,64 @@
             href="https://github.com/qorstack/sage"
             target="_blank"
             rel="noopener"
-            class="nav-link"
-            >GitHub</a
+            class="nav-link github-link"
+            aria-label="Sage on GitHub"
           >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 6c1.02 0 2.05.14 3.01.38 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"
+              />
+            </svg>
+            <span>GitHub</span>
+          </a>
         </div>
       </div>
     </nav>
 
+    <a
+      class="mobile-github"
+      href="https://github.com/qorstack/sage"
+      target="_blank"
+      rel="noopener"
+      aria-label="Sage on GitHub"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 6c1.02 0 2.05.14 3.01.38 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"
+        />
+      </svg>
+    </a>
+
     <header class="hero">
       <div class="wrap hero-shell">
-        <img class="hero-mark" src="logo-full.png" alt="" />
         <div class="hero-copy">
-          <div class="eyebrow">Open source cognition for coding agents</div>
-          <h1>Stop letting AI code on <span>vibes.</span></h1>
+          <div class="eyebrow">IKIGAI for AI coding agents</div>
+          <h1>
+            <span class="desktop-line">Your AI needs</span>
+            <span class="mobile-line">Your AI<br />needs</span>
+            <br />
+            <span class="accent">IKIGAI</span>
+            <br />
+            and grows
+            <br />
+            <span class="desktop-tail">with your team.</span>
+            <span class="mobile-tail">with your<br />team.</span>
+          </h1>
           <p class="lead">
-            Sage turns your repo into a shared brain for Claude Code, Cursor,
-            Codex, Copilot, and any agent that reads AGENTS.md. Before code is
-            written, the agent must read team rules, reuse what exists, name the
-            risk, and stop when the change is unsafe.
+            Sage gives every coding agent four questions before it touches your
+            repo: is this needed, will it last, is it safe, and did the team
+            agree? Then it reads your rules, reuses what exists, names the risk,
+            and stops when the change is unsafe.
           </p>
+          <div class="ikigai-strip" aria-label="Sage IKIGAI questions">
+            <span>Needed</span>
+            <span>Lasting</span>
+            <span>Safe</span>
+            <span>Agreed</span>
+          </div>
           <div class="hero-actions">
             <a href="#install" class="btn primary">Install in one file</a>
-            <a href="#proof" class="btn">See the risk gate</a>
+            <a href="#proof" class="btn">See AGENTS.md</a>
           </div>
         </div>
 
@@ -986,6 +1294,24 @@
                   >
                 </li>
               </ul>
+              <div class="agent-answer">
+                <pre>Sage - backend - payment
+Ikigai - needed: yes / lasts: extend RefundService / safe: settlement + webhooks / agreed: idempotency required
+Risk: HIGH - payment mutation touches money movement and retry paths.
+Decision: ask
+
+Matched rules:
+"All payment calls MUST pass an idempotency key."
+"Reuse payments/refund_service.py; never recreate refund logic."
+
+I found payments/refund_service.py and payments/idempotency.py.
+Because this is high risk, I will wait for confirmation before editing code.</pre>
+                <div class="knowledge-files" aria-label="Sage knowledge files">
+                  <span>reads: agents/sage/payment/rules.md</span>
+                  <span>creates if missing: agents/sage/roles/role-backend.md</span>
+                  <span>captures new rules in: agents/sage/payment/decisions/*.md</span>
+                </div>
+              </div>
             </div>
           </div>
 
