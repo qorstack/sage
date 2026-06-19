@@ -1508,6 +1508,45 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
               <div class="install-body">
                 <div class="step">
                   <div class="step-head">
+                    <span class="step-num">00</span>
+                    <span>Or let your AI set it up</span>
+                    <button
+                      class="copy"
+                      data-copy="Set up Sage in this repo.
+
+1. Fetch https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md
+   and save it as AGENTS.md at the repo root.
+2. Detect which AI tools this repo uses by checking for .claude/, .cursor/,
+   .windsurf/, .clinerules/, .github/instructions/, or GEMINI.md.
+   For each one found, fetch the matching adapter from
+   https://raw.githubusercontent.com/qorstack/sage/main/integrations/<tool-path>
+   and place it in the repo. If none are found, ask me which tool I use.
+3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
+   and save it as agents/sage/index.md.
+4. Tell me what was installed. Then list these three commands that are now
+   available (explain each in one sentence):
+   - /sage — run the cognition pipeline before any code change
+   - /sage-learning — scan this codebase and write team knowledge to agents/sage/
+   - /sage-search-skill — research best practices for this stack and add them as skills
+   Finally, ask me: &quot;Would you like me to run /sage-learning now to capture
+   this codebase&#39;s patterns?&quot;"
+                    >
+                      Copy prompt
+                    </button>
+                  </div>
+                  <p style="margin:0 0 12px;font-size:14px;color:var(--muted)">Paste into Claude Code, Cursor, Copilot, or any AI agent:</p>
+                  <pre>Set up Sage in this repo.
+
+1. Fetch AGENTS.md and save it at the repo root.
+2. Detect which AI tools this repo uses (.claude/, .cursor/, etc.)
+   and install the matching adapter from integrations/.
+3. Fetch agents/sage/index.md.
+4. Tell me what was installed, list the 3 commands,
+   then ask if I want to run /sage-learning.</pre>
+                </div>
+
+                <div class="step">
+                  <div class="step-head">
                     <span class="step-num">01</span>
                     <span>Drop the protocol into your repo</span>
                     <button
