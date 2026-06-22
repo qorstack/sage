@@ -11,6 +11,13 @@ code, run the pipeline in §1.** It is mandatory, not optional. Treat the rules
 in `agents/sage/` as decisions your team already made — follow them, and
 make verdicts *stricter* when in doubt, never looser.
 
+**Multi-repo / workspace:** When multiple repos are open at once, anchor every
+path in this protocol (`AGENTS.md`, `agents/sage/`, role files) to the **repo
+root that owns the file you are editing** — the closest ancestor directory that
+contains `AGENTS.md`. Never read knowledge from another repo, and never write
+knowledge outside the active repo's `agents/sage/`. State the active root once
+in the §4 reply header as `Repo: <repo-root>` (omit when only one repo is open).
+
 ---
 
 ## 1. The pipeline — steps 1–4 before code, steps 1–2 after
@@ -211,6 +218,7 @@ the senior you became in §1, and the `Ikigai` line is that role answering its
 four questions for THIS task in a few words each:
 
 ```text
+Repo: <repo-root>  ← include only when multiple repos are open
 Sage · <lens> · <domain>
 Ikigai — needed: <…> · lasts: <…> · safe: <…> · agreed: <…>
 Risk: <LOW | MEDIUM | HIGH> — <one-sentence why>
