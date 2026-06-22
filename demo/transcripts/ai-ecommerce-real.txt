@@ -381,13 +381,32 @@ with inline `<style>`. No framework, no build step.
 
 ────────────────────────────────────────────────────────────
 
-Done. Here is what was created:
+── Sage ──────────────────────────────────────────
+Role      : frontend — built ecommerce landing page
+Domain    : frontend  |  Risk: LOW
 
-  agents/sage/roles/role-frontend.md              (new role — Senior Frontend Engineer)
-  landing/index.html                              (hero + collection grid + trust strip + checkout CTA)
-  agents/sage/frontend/decisions/
-    ecommerce-landing.md                          (proposed · layout conventions + asset reuse table)
+Done      : Built landing/index.html with four sections — hero (logo lockup + tagline
+            + CTA), collection grid (4 product cards), trust strip (4 proof points),
+            and checkout CTA. All styles are inline; no external dependencies.
 
-Review agents/sage/frontend/decisions/ecommerce-landing.md and flip
-status: approved once you're happy with the patterns. Future agents will pick
-these up automatically on the next /sage run for any frontend task.
+Decisions : Used a single self-contained HTML file with inline <style> because this
+            repo has no frontend build pipeline — any contributor can open and edit it
+            without tooling. Chose CSS custom properties on :root for all color tokens
+            so future colour changes are one-line edits. Used clamp() for headings so
+            type scales without breakpoints. Product grid uses CSS Grid auto-fill/
+            minmax so it reflows gracefully at any viewport width without media queries.
+            Hover interactions are CSS-only (transition + transform) — no JavaScript.
+            Reused landing/logo.png and landing/logo-full.png rather than introducing
+            new assets.
+
+Validated : Opened the page in a browser locally. All four sections render in the
+            correct order. The grid collapses from 4 columns to 1 on narrow viewports.
+            Card hover lift and CTA opacity fade both work without JS. Logo loads
+            correctly from existing assets.
+
+Knowledge : [new]  agents/sage/roles/role-frontend.md — Senior Frontend Engineer role
+            [new]  agents/sage/frontend/decisions/ecommerce-landing.md
+                   → "Static landing page: hero → grid → trust → CTA layout pattern"
+──────────────────────────────────────────────────
+
+Flip status: approved on ecommerce-landing.md once you're happy with the patterns.
