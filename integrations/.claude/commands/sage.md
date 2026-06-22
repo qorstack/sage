@@ -67,9 +67,9 @@ Never start a phase without having output the role line for that phase.
 
 ---
 
-## Step 3 — State intent before writing
+## Step 3 — State intent + parallel plan before writing
 
-Output this block, then wait for `ask`/`reject` before continuing:
+Output this block, then wait for `ask`/`reject` before continuing.
 
 ```text
 Role    : <role> — <one-line task summary>
@@ -77,11 +77,34 @@ Intent  : <what this change does>
 Touches : <files, systems, domains affected>
 Risk    : LOW | MEDIUM | HIGH — <why in one phrase>
 Decision: proceed | warn | ask | reject
-
-Plan
-1. …
-2. …
 ```
+
+Then declare the **parallel plan**. Before listing tasks, identify which can run
+at the same time (no dependency on each other) and which must be sequential.
+For each task, assign an effort tier — **never exceed the model tier active in
+this session**; reduce to `low` for mechanical work to save tokens:
+
+| Effort | When to use |
+| ------ | ----------- |
+| `low` | Reading files, simple edits, boilerplate, no reasoning needed |
+| `medium` | Standard implementation, moderate complexity |
+| `high` | Complex logic, architecture, root-cause analysis, critical decisions |
+
+```text
+Plan
+── Phase 1 [parallel] ─────────────────────────
+  A. <task>                              effort: low
+  B. <task>                              effort: low
+── Phase 2 [sequential] ───────────────────────
+  C. <task — depends on A+B>             effort: high
+── Phase 3 [parallel] ─────────────────────────
+  D. <task>                              effort: medium
+  E. <task>                              effort: medium
+```
+
+Execute parallel phases in a single response (all their tool calls together).
+State at the start of each phase: `[parallel: A, B running]` or
+`[sequential: C running — depends on A, B]`.
 
 ---
 

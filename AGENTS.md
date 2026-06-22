@@ -57,12 +57,19 @@ Do these in order. Do not skip. Do not assume you already know the answer.
    it. Never infer an API from a name or decision description alone — the source
    file is always authoritative. A missing export in a decision file is a
    documentation gap, not proof the export doesn't exist.
-4. **Assess impact & risk.** What does this change touch (other domains, shared
-   services, data, auth, money)? Decide a verdict:
-   - `proceed` — low risk, no conflicting rule → do it.
-   - `warn` — do it, but flag a caveat the human should know.
-   - `ask` — medium/high risk OR a rule says "confirm first" → **stop and ask.**
-   - `reject` — violates a `block` rule → **refuse and explain.**
+4. **Assess impact & risk, then declare a parallel plan.** What does this change
+   touch? Decide a verdict (`proceed / warn / ask / reject`), then break the
+   work into phases:
+   - Identify which tasks have no dependency on each other → mark `[parallel]`
+   - Identify which must wait for a prior result → mark `[sequential]`
+   - Assign an effort tier to each task: `low` (mechanical — reading, simple
+     edits) · `medium` (standard implementation) · `high` (complex logic,
+     critical decisions). **Ceiling = the model active in this session.** Reduce
+     to `low` wherever reasoning is not needed to save tokens.
+   - Execute parallel phases in a single response (all tool calls together).
+     State at each phase start: `[parallel: A, B running]` or
+     `[sequential: C — depends on A, B]`.
+
    Open your reply with the header (§4), then act on the verdict. Apply
    enforcement from the matched rules (§5) — a `block` rule overrides your plan.
 

@@ -13,12 +13,16 @@ Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
    **Open `agents/sage/roles/role-<lens>.md` immediately.**
    - Found → read it, adopt as-is, output: `Role: <lens> [loaded]`. Do not re-derive.
    - Missing → write the file to disk now (before step 2), output: `Role: <lens> [created]`.
-   On phase handoff output: `Role: <new-lens> [loaded] — handoff from <prev-lens>`.
-   Never start a phase without outputting the role line.
+     On phase handoff output: `Role: <new-lens> [loaded] — handoff from <prev-lens>`.
+     Never start a phase without outputting the role line.
 2. Read `agents/sage/<domain>/rules.md` and relevant `decisions/` files.
    Quote the rules that apply. Find reusable assets — **open the source file
    and read its exports** before using them. Never infer an API from a name.
-3. Output the intent block: Role · Intent · Touches · Risk · Decision · Plan.
+3. Output the intent block (Role · Intent · Touches · Risk · Decision), then
+   declare a **parallel plan** — group tasks by phase, mark each `[parallel]` or
+   `[sequential]`, assign effort `low / medium / high` (ceiling = current model;
+   reduce to `low` for mechanical tasks to save tokens). Execute parallel phases
+   in a single response. State `[parallel: A, B running]` at phase start.
    Stop and ask on `ask` / `reject`.
 
 **After code:**
@@ -33,7 +37,7 @@ Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
    (no code fence) the block that matches your role. Full sentences; bullet
    points for Mechanism, Fix, and Decisions.
 
-   *Debugger / bug fix:*
+   _Debugger / bug fix:_
 
    ```markdown
    ── Sage ──────────────────────────────────────────
@@ -44,11 +48,13 @@ Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
    <why it broke — name the exact function/variable/condition responsible>
 
    **Mechanism**
+
    - <trigger>
    - <propagation>
    - <symptom>
 
    **Fix**
+
    - <what changed and why it addresses the root cause>
    - <trade-offs, if any>
 
@@ -62,7 +68,7 @@ Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
    ──────────────────────────────────────────────────
    ```
 
-   *Dev / build task:*
+   _Dev / build task:_
 
    ```markdown
    ── Sage ──────────────────────────────────────────
@@ -73,6 +79,7 @@ Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
    <what was built or changed — sections, files, and their purpose>
 
    **Decisions**
+
    - <key choice and why>
    - <alternatives considered and ruled out>
 

@@ -21,7 +21,11 @@ Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
 2. Read `agents/sage/<domain>/rules.md` and relevant `decisions/` files.
    Quote the rules that apply. Find reusable assets — **open the source file
    and read its exports** before using them. Never infer an API from a name.
-3. Output the intent block: Role · Intent · Touches · Risk · Decision · Plan.
+3. Output the intent block (Role · Intent · Touches · Risk · Decision), then
+   declare a **parallel plan** — group tasks by phase, mark each `[parallel]` or
+   `[sequential]`, assign effort `low / medium / high` (ceiling = current model;
+   reduce to `low` for mechanical tasks to save tokens). Execute parallel phases
+   in a single response. State `[parallel: A, B running]` at phase start.
    Stop and ask on `ask` / `reject`.
 
 **After code:**
