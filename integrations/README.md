@@ -49,6 +49,7 @@ protocol in one place and every agent stays in step.
 | `/sage` | Run the cognition pipeline before any code change |
 | `/sage-learning` | Scan the codebase and capture team knowledge to `agents/sage/` |
 | `/sage-search-skill` | Research current best practices for this stack and write them as skills |
+| `/sage-docs` | Turn any document into a styled HTML file (`docs/`) with a Mermaid diagram |
 
 > Don't see your agent? Most modern agents support either `AGENTS.md` or a
 > rules/instructions file — point it at `AGENTS.md` the same way.

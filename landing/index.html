@@ -1186,6 +1186,7 @@
           <a href="#why" class="nav-link">Why</a>
           <a href="#proof" class="nav-link">Proof</a>
           <a href="#install" class="nav-link">Install</a>
+          <a href="#order" class="nav-link">Start</a>
         </div>
         <a class="brand" href="#">
           <img src="logo.png" alt="" />
@@ -1561,11 +1562,12 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
    and place it in the repo. If none are found, ask me which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md.
-4. Tell me what was installed. Then list these three commands that are now
+4. Tell me what was installed. Then list these four commands that are now
    available (explain each in one sentence):
-   - /sage — full cognition pipeline: read team knowledge + assess risk before code, then capture what you learned + write a summary after
-   - /sage-learning — scan this codebase and write team knowledge to agents/sage/
-   - /sage-search-skill — research best practices for this stack and add them as skills
+   - /sage-learning — run this FIRST: scan this codebase and write team knowledge to agents/sage/
+   - /sage-search-skill — run this SECOND: research best practices for this stack and add them as skills
+   - /sage — runs automatically before every change: full cognition pipeline, read team knowledge, assess risk, then capture what you learned
+   - /sage-docs — on demand: turn any document into a styled, self-contained HTML file with an interactive SVG diagram in docs/
    Finally, ask me: "Would you like me to run /sage-learning now to capture
    this codebase&#39;s patterns?"'
                     >
@@ -1593,11 +1595,12 @@ Set up Sage in this repo.
    and place it in the repo. If none are found, ask me which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md.
-4. Tell me what was installed. Then list these three commands that are now
+4. Tell me what was installed. Then list these four commands that are now
    available (explain each in one sentence):
-   - /sage — full cognition pipeline: read team knowledge + assess risk before code, then capture what you learned + write a summary after
-   - /sage-learning — scan this codebase and write team knowledge to agents/sage/
-   - /sage-search-skill — research best practices for this stack and add them as skills
+   - /sage-learning — run this FIRST: scan this codebase and write team knowledge to agents/sage/
+   - /sage-search-skill — run this SECOND: research best practices for this stack and add them as skills
+   - /sage — runs automatically before every change: full cognition pipeline, read team knowledge, assess risk, then capture what you learned
+   - /sage-docs — on demand: turn any document into a styled, self-contained HTML file with an interactive SVG diagram in docs/
    Finally, ask me: "Would you like me to run /sage-learning now to capture
    this codebase's patterns?"</pre
                   >
@@ -1670,16 +1673,122 @@ git clone --depth 1 https://github.com/qorstack/sage t &amp;&amp; cp -r t/agents
         </div>
       </section>
 
+      <section id="order">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Getting started</div>
+              <h2>Run in this order.</h2>
+            </div>
+            <p>
+              Each command builds on the last — learn first, then code with full
+              context, then document for your team.
+            </p>
+          </div>
+
+          <div class="file-stack" style="max-width: 700px; margin: 0 auto">
+            <div
+              class="file"
+              style="
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 16px;
+                align-items: start;
+              "
+            >
+              <span class="step-num" style="margin-top: 2px">01</span>
+              <div>
+                <span class="file-label" style="color: var(--amber)"
+                  >/sage-learning &nbsp;·&nbsp; once after install</span
+                >
+                <p>
+                  Scans your codebase and writes your team's real patterns into
+                  <code>agents/sage/</code>. Gives Sage a knowledge baseline
+                  before it touches anything.
+                </p>
+              </div>
+            </div>
+            <div
+              class="file"
+              style="
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 16px;
+                align-items: start;
+              "
+            >
+              <span class="step-num" style="margin-top: 2px">02</span>
+              <div>
+                <span class="file-label" style="color: var(--violet)"
+                  >/sage-search-skill &nbsp;·&nbsp; once, then after stack
+                  changes</span
+                >
+                <p>
+                  Researches current best practices for your stack and writes
+                  them as skills. Re-run when you adopt a new framework or
+                  library.
+                </p>
+              </div>
+            </div>
+            <div
+              class="file"
+              style="
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 16px;
+                align-items: start;
+              "
+            >
+              <span class="step-num" style="margin-top: 2px">03</span>
+              <div>
+                <span class="file-label" style="color: var(--mint)"
+                  >/sage &nbsp;·&nbsp; every change (enforced by
+                  AGENTS.md)</span
+                >
+                <p>
+                  Full pipeline before and after every code change — pick role,
+                  read team knowledge, assess risk, code, capture, summarize.
+                  AGENTS.md enforces this automatically; you don't call it
+                  manually.
+                </p>
+              </div>
+            </div>
+            <div
+              class="file"
+              style="
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 16px;
+                align-items: start;
+              "
+            >
+              <span class="step-num" style="margin-top: 2px">04</span>
+              <div>
+                <span class="file-label" style="color: var(--cyan)"
+                  >/sage-docs &nbsp;·&nbsp; on demand</span
+                >
+                <p>
+                  Turn any spec, README, or meeting note into a styled,
+                  self-contained HTML file with an interactive SVG diagram
+                  (scroll to zoom, drag to pan). Use when a teammate needs to
+                  <em>read</em> — not when an AI needs to follow.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="commands">
         <div class="wrap">
           <div class="section-head">
             <div>
               <div class="eyebrow">Commands</div>
-              <h2>Three commands, full lifecycle.</h2>
+              <h2>Four commands, full lifecycle.</h2>
             </div>
             <p>
-              Run the pipeline before every change, teach Sage your codebase
-              once, and keep knowledge fresh with researched best practices.
+              Learn your codebase first, refresh knowledge, run the pipeline
+              before every change, and generate human-readable docs on demand.
             </p>
           </div>
 
@@ -1771,6 +1880,35 @@ Written:
   skills/server-component-boundaries.md
 6 skills added
 → review and approve</pre
+                >
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="panel-head">
+                <span>/sage-docs</span>
+                <span style="color: var(--cyan); font-size: 11px"
+                  >on demand · human-readable</span
+                >
+              </div>
+              <div class="install-body">
+                <pre>
+/sage-docs [paste spec or describe doc]
+
+Doc type · api-flow
+Diagram  · inline SVG (zoom/pan)
+           POST /api/v1/orders
+           GET  /api/v1/products
+Output   · docs/checkout-flow.html
+CSS      · inlined from template.md
+
+Sections written
+- Overview Diagram — interactive SVG:
+  frontend → API → DB, exact
+  endpoints + all error cases
+- Quick Reference — endpoint table
+- Request / Response schema
+- Notes — retry, idempotency</pre
                 >
               </div>
             </div>

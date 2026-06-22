@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sage Architecture — Sage Docs</title>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --bg:           #050505;
+  --ink:          #f7f4ed;
+  --text:         #d7d0c2;
+  --muted:        #8f897d;
+  --line:         rgba(247, 244, 237, 0.14);
+  --panel:        rgba(20, 20, 18, 0.82);
+  --panel-strong: #171714;
+  --red:          #ff5a49;
+  --amber:        #f0c45c;
+  --mint:         #68d99b;
+  --cyan:         #71d7ff;
+  --violet:       #a98cff;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --max-width:  900px;
+  --radius:     8px;
+  --radius-sm:  4px;
+  --radius-lg:  12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; width: 100%; overflow-x: clip; }
+img, svg { display: block; max-width: 100%; }
+a { color: var(--mint); text-decoration: none; }
+a:hover { color: var(--ink); text-decoration: underline; }
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 16% 12%, rgba(255, 90, 73, 0.12), transparent 28rem),
+    radial-gradient(circle at 86% 20%, rgba(113, 215, 255, 0.08), transparent 30rem),
+    linear-gradient(180deg, #080807 0%, #050505 42%, #0b0a08 100%);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(247, 244, 237, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 244, 237, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(180deg, black 0%, transparent 80%);
+}
+
+h1, h2, h3, h4, h5 { color: var(--ink); font-weight: 700; line-height: 1.25; }
+h1 { font-size: 1.9rem;  margin-bottom: 12px; }
+h2 { font-size: 1.15rem; margin-bottom: 12px; margin-top: 32px; }
+h3 { font-size: 0.95rem; margin-bottom: 8px;  margin-top: 24px; font-weight: 600; }
+h4 { font-size: 0.875rem; margin-bottom: 6px; margin-top: 18px; font-weight: 500; color: var(--text); }
+
+p { margin-bottom: 14px; }
+ul, ol { padding-left: 22px; margin-bottom: 14px; }
+li { margin-bottom: 4px; }
+li > ul, li > ol { margin-top: 4px; margin-bottom: 0; }
+hr { border: none; border-top: 1px solid var(--line); margin: 32px 0; }
+
+.doc-wrapper { max-width: var(--max-width); margin: 0 auto; padding: 48px 24px 80px; }
+
+.doc-header {
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.breadcrumb a { color: var(--muted); }
+.breadcrumb a:hover { color: var(--ink); text-decoration: none; }
+.breadcrumb-sep { color: rgba(247, 244, 237, 0.25); }
+
+.doc-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+
+.doc-header h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+.doc-subtitle { font-size: 0.975rem; color: var(--text); font-weight: 400; margin: 0; line-height: 1.6; max-width: 70ch; }
+.doc-date { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 16px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge-api-flow      { background: rgba(113, 215, 255, 0.14); color: var(--cyan);   border: 1px solid rgba(113, 215, 255, 0.25); }
+.badge-backend-logic { background: rgba(169, 140, 255, 0.14); color: var(--violet); border: 1px solid rgba(169, 140, 255, 0.25); }
+.badge-architecture  { background: rgba(104, 217, 155, 0.14); color: var(--mint);   border: 1px solid rgba(104, 217, 155, 0.25); }
+.badge-user-journey  { background: rgba(240, 196, 92, 0.14);  color: var(--amber);  border: 1px solid rgba(240, 196, 92, 0.25); }
+.badge-runbook       { background: rgba(255, 90, 73, 0.14);   color: var(--red);    border: 1px solid rgba(255, 90, 73, 0.25); }
+.badge-data-schema   { background: rgba(104, 217, 155, 0.14); color: var(--mint);   border: 1px solid rgba(104, 217, 155, 0.25); }
+.badge-general       { background: rgba(247, 244, 237, 0.08); color: var(--muted);  border: 1px solid var(--line); }
+.badge-domain        { background: rgba(247, 244, 237, 0.06); color: var(--muted);  border: 1px solid var(--line); }
+
+.badge-method { font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+.badge-get    { background: rgba(104, 217, 155, 0.15); color: var(--mint); }
+.badge-post   { background: rgba(113, 215, 255, 0.15); color: var(--cyan); }
+.badge-put    { background: rgba(240, 196, 92, 0.15);  color: var(--amber); }
+.badge-patch  { background: rgba(240, 196, 92, 0.15);  color: var(--amber); }
+.badge-delete { background: rgba(255, 90, 73, 0.15);   color: var(--red); }
+
+.doc-section {
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.doc-section > h2:first-child {
+  margin-top: 0;
+  padding: 14px 24px;
+  background: rgba(247, 244, 237, 0.04);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.doc-section > *:not(h2:first-child) { padding-left: 24px; padding-right: 24px; }
+.doc-section > *:last-child { padding-bottom: 24px; }
+.doc-section > h2:first-child + * { margin-top: 20px; }
+.doc-section > h3 { margin-top: 20px; }
+
+.diagram-section {
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--mint);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.diagram-section > h2 {
+  margin-top: 0;
+  padding: 14px 24px;
+  background: rgba(104, 217, 155, 0.06);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mint);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.diagram-label {
+  padding: 0 24px;
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.diagram-container {
+  margin: 12px 24px 0;
+  background: rgba(5, 5, 5, 0.6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow: hidden;
+}
+.diagram-container svg { max-width: 100%; margin: 0 auto; }
+.diagram-caption {
+  padding: 10px 24px 20px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.svg-diagram {
+  background: rgba(5, 5, 5, 0.5);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+  height: 480px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.svg-diagram.is-dragging { cursor: grabbing; }
+
+.diagram-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  background: rgba(20, 20, 18, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 6px;
+  backdrop-filter: blur(8px);
+}
+.diagram-controls button {
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  transition: background 0.12s;
+}
+.diagram-controls button:hover { background: var(--line); color: var(--ink); }
+.diagram-controls .sep { width: 1px; height: 16px; background: var(--line); margin: 0 2px; }
+.zoom-level { color: var(--muted); font-size: 10px; font-family: var(--font-mono); min-width: 34px; text-align: center; padding: 0 4px; }
+
+.diagram-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(143, 137, 125, 0.5);
+  font-family: var(--font-mono);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+pre.mermaid { background: none; border: none; padding: 0; margin: 0; color: inherit; font-size: inherit; overflow: visible; white-space: pre; }
+
+.quick-ref {
+  background: rgba(247, 244, 237, 0.03);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.quick-ref > h2 { margin-top: 0; font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 16px; }
+.quick-ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.quick-ref-item { background: var(--panel-strong); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.quick-ref-label { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+.quick-ref-value { font-size: 0.875rem; color: var(--ink); font-weight: 500; }
+
+.table-wrap { overflow-x: auto; margin-bottom: 16px; border-radius: var(--radius); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: 0.855rem; }
+thead th { background: rgba(247, 244, 237, 0.05); color: var(--muted); font-family: var(--font-mono); font-weight: 700; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tbody tr { border-bottom: 1px solid rgba(247, 244, 237, 0.06); }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(247, 244, 237, 0.03); }
+tbody td { padding: 10px 14px; vertical-align: top; line-height: 1.5; color: var(--text); }
+tbody td:first-child { color: var(--ink); font-weight: 500; }
+
+code { font-family: var(--font-mono); font-size: 0.82em; background: rgba(247, 244, 237, 0.08); color: var(--cyan); padding: 2px 6px; border-radius: var(--radius-sm); border: 1px solid rgba(247, 244, 237, 0.1); }
+pre:not(.mermaid) { background: #060605; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; overflow-x: auto; margin-bottom: 14px; font-size: 0.82rem; line-height: 1.65; color: var(--ink); }
+pre:not(.mermaid) code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+.callout { display: flex; gap: 12px; padding: 14px 16px; border-radius: var(--radius); margin-bottom: 14px; font-size: 0.875rem; border-left: 2px solid; }
+.callout-icon { flex-shrink: 0; font-size: 0.95rem; line-height: 1.65; }
+.callout-info    { background: rgba(113, 215, 255, 0.08); border-color: var(--cyan);   color: var(--text); }
+.callout-warning { background: rgba(240, 196, 92, 0.08);  border-color: var(--amber);  color: var(--text); }
+.callout-danger  { background: rgba(255, 90, 73, 0.08);   border-color: var(--red);    color: var(--text); }
+.callout-success { background: rgba(104, 217, 155, 0.08); border-color: var(--mint);   color: var(--text); }
+.callout-note    { background: rgba(247, 244, 237, 0.05); border-color: var(--muted);  color: var(--text); }
+
+.conditions-list { list-style: none; padding: 0; }
+.condition-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.condition-item:last-child { border-bottom: none; }
+.condition-when { flex-shrink: 0; background: rgba(247, 244, 237, 0.05); color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 1px 8px; font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.condition-then { font-size: 0.875rem; color: var(--text); }
+
+.endpoint-block { background: #060605; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.endpoint-path { font-family: var(--font-mono); font-size: 0.875rem; color: var(--ink); font-weight: 500; }
+.endpoint-desc { font-size: 0.82rem; color: var(--muted); margin-left: auto; }
+
+.steps-list { list-style: none; padding: 0; }
+.step-item { display: flex; gap: 14px; margin-bottom: 20px; }
+.step-number { flex-shrink: 0; width: 26px; height: 26px; background: var(--mint); color: #050505; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; margin-top: 2px; }
+.step-content { flex: 1; }
+.step-title { font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.step-detail { font-size: 0.875rem; color: var(--text); }
+
+.doc-footer { border-top: 1px solid var(--line); padding-top: 24px; margin-top: 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.doc-footer a { color: var(--muted); }
+.doc-footer a:hover { color: var(--ink); text-decoration: none; }
+.sage-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink); }
+
+@media (max-width: 640px) {
+  .doc-wrapper { padding: 24px 16px 60px; }
+  .doc-header  { padding: 20px; }
+  .doc-header h1 { font-size: 1.45rem; }
+  .quick-ref-grid { grid-template-columns: 1fr 1fr; }
+  .diagram-container { padding: 12px; }
+  .doc-footer { flex-direction: column; text-align: center; }
+}
+
+@media print {
+  body { background: #fff; color: #1a1a1a; }
+  body::before { display: none; }
+  .doc-header, .doc-section, .diagram-section, .quick-ref { border: 1px solid #ccc; background: #fff; }
+  h1, h2, h3, h4 { color: #111; }
+  code { background: #f5f5f5; color: #333; border-color: #ddd; }
+  .badge { border: 1px solid #ccc; color: #333; background: #eee; }
+}
+    </style>
+  </head>
+  <body>
+    <div class="doc-wrapper">
+      <header class="doc-header">
+        <nav class="breadcrumb">
+          <a href="./index.html">Docs</a>
+          <span class="breadcrumb-sep">›</span>
+          <span>sage</span>
+          <span class="breadcrumb-sep">›</span>
+          <span>Architecture</span>
+        </nav>
+        <div class="doc-meta">
+          <span class="badge badge-architecture">Architecture</span>
+          <span class="badge badge-domain">sage</span>
+        </div>
+        <h1>Sage — System Architecture</h1>
+        <p class="doc-subtitle">
+          ภาพรวมของ Sage — cognition protocol สำหรับ AI coding agents:
+          ประกอบด้วยอะไร, อยู่ที่ไหน, และแต่ละชิ้นส่วนทำงานร่วมกันอย่างไร
+        </p>
+        <p class="doc-date">Generated 2026-06-23 · sage-docs</p>
+      </header>
+
+      <section class="diagram-section">
+        <h2>Overview Diagram</h2>
+        <div class="diagram-label">Top-to-bottom · Source → AI Agent → Output</div>
+        <div class="diagram-container">
+          <div class="svg-diagram" id="svg-zoom-container">
+            <div class="diagram-controls">
+              <button onclick="diagramZoomIn()" title="Zoom in">+</button>
+              <div class="sep"></div>
+              <button onclick="diagramZoomOut()" title="Zoom out">−</button>
+              <div class="sep"></div>
+              <button onclick="diagramZoomFit()" title="Reset" style="font-size:11px">fit</button>
+              <div class="sep"></div>
+              <span class="zoom-level" id="zoom-label">100%</span>
+            </div>
+
+            <svg id="svg-canvas" width="100%" height="100%"
+                 xmlns="http://www.w3.org/2000/svg"
+                 style="font-family:'Inter',system-ui,sans-serif; display:block;">
+              <defs>
+                <marker id="ar-mint" viewBox="0 0 10 8" refX="9" refY="4"
+                        markerWidth="6" markerHeight="5" orient="auto">
+                  <polygon points="0,0 10,4 0,8" fill="#68d99b" opacity="0.8"/>
+                </marker>
+                <marker id="ar-amber" viewBox="0 0 10 8" refX="9" refY="4"
+                        markerWidth="6" markerHeight="5" orient="auto">
+                  <polygon points="0,0 10,4 0,8" fill="#f0c45c" opacity="0.7"/>
+                </marker>
+                <marker id="ar-violet" viewBox="0 0 10 8" refX="9" refY="4"
+                        markerWidth="6" markerHeight="5" orient="auto">
+                  <polygon points="0,0 10,4 0,8" fill="#a98cff" opacity="0.7"/>
+                </marker>
+              </defs>
+
+              <g id="svg-content">
+                <rect x="10" y="16" width="760" height="162" rx="10"
+                      fill="rgba(20,20,18,0.35)" stroke="rgba(247,244,237,0.12)" stroke-width="1"/>
+                <rect x="26" y="9" width="150" height="15" rx="3" fill="#171714"/>
+                <text x="32" y="20" fill="#8f897d" font-size="9"
+                      font-family="'JetBrains Mono',monospace" font-weight="700">SAGE REPOSITORY</text>
+
+                <rect x="22" y="26" width="222" height="142" rx="7"
+                      fill="#1a3d32" stroke="#68d99b" stroke-width="1.5"/>
+                <text x="133" y="52" text-anchor="middle" fill="#68d99b"
+                      font-size="11" font-weight="700"
+                      font-family="'JetBrains Mono',monospace">AGENTS.MD</text>
+                <text x="133" y="67" text-anchor="middle" fill="#f7f4ed" font-size="8.5">Protocol &amp; pipeline</text>
+                <line x1="36" y1="75" x2="230" y2="75" stroke="rgba(104,217,155,0.2)" stroke-width="1"/>
+                <text x="133" y="90" text-anchor="middle" fill="#8f897d" font-size="7.5">§1–4  pipeline steps</text>
+                <text x="133" y="105" text-anchor="middle" fill="#8f897d" font-size="7.5">§2  knowledge format</text>
+                <text x="133" y="120" text-anchor="middle" fill="#8f897d" font-size="7.5">§5  enforcement rules</text>
+                <text x="133" y="135" text-anchor="middle" fill="#8f897d" font-size="7.5">§4  output blocks</text>
+                <text x="133" y="157" text-anchor="middle"
+                      fill="rgba(104,217,155,0.45)" font-size="7">source of truth</text>
+
+                <rect x="260" y="26" width="240" height="142" rx="7"
+                      fill="rgba(10,15,13,0.9)" stroke="rgba(247,244,237,0.18)" stroke-width="1"/>
+                <text x="380" y="52" text-anchor="middle" fill="#f7f4ed"
+                      font-size="11" font-weight="700"
+                      font-family="'JetBrains Mono',monospace">AGENTS/SAGE/</text>
+                <text x="380" y="67" text-anchor="middle" fill="#d7d0c2" font-size="8.5">Knowledge store</text>
+                <line x1="274" y1="75" x2="486" y2="75" stroke="rgba(247,244,237,0.1)" stroke-width="1"/>
+                <text x="380" y="90" text-anchor="middle" fill="#8f897d" font-size="7.5">roles/role-*.md</text>
+                <text x="380" y="105" text-anchor="middle" fill="#8f897d" font-size="7.5">&lt;domain&gt;/rules.md</text>
+                <text x="380" y="120" text-anchor="middle" fill="#8f897d" font-size="7.5">&lt;domain&gt;/decisions/*.md</text>
+                <text x="380" y="135" text-anchor="middle" fill="#8f897d" font-size="7.5">&lt;domain&gt;/skills/*.md</text>
+                <text x="380" y="157" text-anchor="middle"
+                      fill="rgba(247,244,237,0.28)" font-size="7">read + written by AI and humans</text>
+
+                <rect x="516" y="26" width="254" height="142" rx="7"
+                      fill="rgba(10,15,13,0.9)" stroke="rgba(247,244,237,0.18)" stroke-width="1"/>
+                <text x="643" y="52" text-anchor="middle" fill="#f7f4ed"
+                      font-size="11" font-weight="700"
+                      font-family="'JetBrains Mono',monospace">INTEGRATIONS/</text>
+                <text x="643" y="67" text-anchor="middle" fill="#d7d0c2" font-size="8.5">Per-tool adapters</text>
+                <line x1="530" y1="75" x2="756" y2="75" stroke="rgba(247,244,237,0.1)" stroke-width="1"/>
+                <text x="643" y="90" text-anchor="middle" fill="#8f897d" font-size="7.5">.claude/commands/</text>
+                <text x="643" y="105" text-anchor="middle" fill="#8f897d" font-size="7.5">.cursor/ .windsurf/</text>
+                <text x="643" y="120" text-anchor="middle" fill="#8f897d" font-size="7.5">.clinerules/ .github/</text>
+                <text x="643" y="135" text-anchor="middle" fill="#8f897d" font-size="7.5">sage · sage-learning · sage-docs</text>
+                <text x="643" y="157" text-anchor="middle"
+                      fill="rgba(247,244,237,0.28)" font-size="7">thin wrappers pointing at AGENTS.md</text>
+
+                <line x1="133" y1="168" x2="133" y2="208" stroke="rgba(104,217,155,0.55)" stroke-width="1.5"/>
+                <text x="140" y="193" fill="rgba(104,217,155,0.65)" font-size="7" font-family="'JetBrains Mono',monospace">reads protocol</text>
+                <line x1="380" y1="168" x2="380" y2="208" stroke="rgba(247,244,237,0.22)" stroke-width="1"/>
+                <text x="387" y="193" fill="rgba(247,244,237,0.32)" font-size="7" font-family="'JetBrains Mono',monospace">reads knowledge</text>
+                <line x1="643" y1="168" x2="643" y2="208" stroke="rgba(247,244,237,0.22)" stroke-width="1"/>
+                <text x="650" y="193" fill="rgba(247,244,237,0.32)" font-size="7" font-family="'JetBrains Mono',monospace">cp -r (one-time)</text>
+                <line x1="133" y1="208" x2="643" y2="208" stroke="rgba(104,217,155,0.22)" stroke-width="1"/>
+                <line x1="388" y1="208" x2="388" y2="242" stroke="#68d99b" stroke-width="1.5" opacity="0.65" marker-end="url(#ar-mint)"/>
+
+                <rect x="158" y="248" width="460" height="90" rx="7"
+                      fill="rgba(4,10,20,0.95)" stroke="#71d7ff" stroke-width="1.5"/>
+                <text x="388" y="271" text-anchor="middle" fill="#71d7ff"
+                      font-size="10.5" font-weight="700" letter-spacing="1.5"
+                      font-family="'JetBrains Mono',monospace">AI AGENT</text>
+                <line x1="174" y1="279" x2="602" y2="279" stroke="rgba(113,215,255,0.2)" stroke-width="1"/>
+                <text x="388" y="295" text-anchor="middle" fill="rgba(113,215,255,0.85)" font-size="8.5">Claude · Cursor · Copilot · Windsurf · Cline · Codex</text>
+                <text x="388" y="311" text-anchor="middle" fill="rgba(113,215,255,0.5)" font-size="8">reads AGENTS.md → pipeline §1–4 before every task</text>
+                <text x="388" y="327" text-anchor="middle" fill="rgba(113,215,255,0.32)" font-size="7.5">pick role → read knowledge → assess risk → plan → code → capture → summarize</text>
+
+                <line x1="388" y1="338" x2="388" y2="364" stroke="rgba(104,217,155,0.4)" stroke-width="1.5"/>
+                <line x1="198" y1="364" x2="578" y2="364" stroke="rgba(104,217,155,0.22)" stroke-width="1"/>
+                <line x1="198" y1="364" x2="198" y2="396" stroke="rgba(240,196,92,0.55)" stroke-width="1.5" marker-end="url(#ar-amber)"/>
+                <text x="136" y="384" fill="rgba(240,196,92,0.6)" font-size="7" font-family="'JetBrains Mono',monospace">captures learning</text>
+                <line x1="578" y1="364" x2="578" y2="396" stroke="rgba(169,140,255,0.55)" stroke-width="1.5" marker-end="url(#ar-violet)"/>
+                <text x="530" y="384" fill="rgba(169,140,255,0.6)" font-size="7" font-family="'JetBrains Mono',monospace">/sage-docs</text>
+
+                <rect x="10" y="400" width="372" height="108" rx="7"
+                      fill="rgba(14,11,4,0.85)" stroke="rgba(240,196,92,0.38)" stroke-width="1.5"/>
+                <text x="196" y="423" text-anchor="middle" fill="#f0c45c"
+                      font-size="9.5" font-weight="700" font-family="'JetBrains Mono',monospace">AGENTS/SAGE/ (YOUR REPO)</text>
+                <text x="196" y="438" text-anchor="middle" fill="#d7d0c2" font-size="8">Team knowledge · grows over time</text>
+                <line x1="24" y1="445" x2="368" y2="445" stroke="rgba(240,196,92,0.14)" stroke-width="1"/>
+                <text x="196" y="460" text-anchor="middle" fill="#8f897d" font-size="7.5">rules · decisions · skills written per domain</text>
+                <text x="196" y="474" text-anchor="middle" fill="#8f897d" font-size="7.5">reviewed by humans · shared via git</text>
+                <text x="196" y="488" text-anchor="middle" fill="#8f897d" font-size="7.5">read by every future AI session</text>
+                <text x="196" y="500" text-anchor="middle" fill="rgba(240,196,92,0.38)" font-size="7">status: approved → enforced by AI</text>
+
+                <rect x="398" y="400" width="372" height="108" rx="7"
+                      fill="rgba(8,6,18,0.85)" stroke="rgba(169,140,255,0.38)" stroke-width="1.5"/>
+                <text x="584" y="423" text-anchor="middle" fill="#a98cff"
+                      font-size="9.5" font-weight="700" font-family="'JetBrains Mono',monospace">DOCS/*.HTML</text>
+                <text x="584" y="438" text-anchor="middle" fill="#d7d0c2" font-size="8">Human-readable documentation</text>
+                <line x1="412" y1="445" x2="756" y2="445" stroke="rgba(169,140,255,0.14)" stroke-width="1"/>
+                <text x="584" y="460" text-anchor="middle" fill="#8f897d" font-size="7.5">flow diagrams · API specs · architecture docs</text>
+                <text x="584" y="474" text-anchor="middle" fill="#8f897d" font-size="7.5">styled with inlined CSS (dark theme)</text>
+                <text x="584" y="488" text-anchor="middle" fill="#8f897d" font-size="7.5">inline SVG diagrams — no external renderer</text>
+                <text x="584" y="500" text-anchor="middle" fill="rgba(169,140,255,0.38)" font-size="7">generated by /sage-docs on demand</text>
+              </g>
+            </svg>
+
+            <div class="diagram-hint">scroll to zoom · drag to pan</div>
+          </div>
+        </div>
+        <p class="diagram-caption">
+          AGENTS.md เป็น source of truth — integrations เป็นแค่ pointer ที่บอก AI ให้อ่าน AGENTS.md;
+          knowledge เติบโตใน agents/sage/ ของ repo ที่ใช้งาน
+        </p>
+      </section>
+
+      <section class="quick-ref">
+        <h2>Quick Reference</h2>
+        <div class="quick-ref-grid">
+          <div class="quick-ref-item">
+            <div class="quick-ref-label">Core artifact</div>
+            <div class="quick-ref-value">AGENTS.md (single file)</div>
+          </div>
+          <div class="quick-ref-item">
+            <div class="quick-ref-label">No. of commands</div>
+            <div class="quick-ref-value">4 skills</div>
+          </div>
+          <div class="quick-ref-item">
+            <div class="quick-ref-label">Knowledge format</div>
+            <div class="quick-ref-value">Markdown + YAML frontmatter</div>
+          </div>
+          <div class="quick-ref-item">
+            <div class="quick-ref-label">Supported agents</div>
+            <div class="quick-ref-value">Claude, Cursor, Copilot, Windsurf, Cline, Codex</div>
+          </div>
+          <div class="quick-ref-item">
+            <div class="quick-ref-label">Install method</div>
+            <div class="quick-ref-value">cp -r integrations/&lt;tool&gt; .</div>
+          </div>
+          <div class="quick-ref-item">
+            <div class="quick-ref-label">No. of components</div>
+            <div class="quick-ref-value">4 layers</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <h2>Components</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Component</th><th>Type</th><th>Location</th><th>Responsibility</th><th>Editable by</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>AGENTS.md</code></td><td>Protocol</td><td>repo root</td>
+                <td>The full cognition pipeline — steps §1–4, knowledge format §2, enforcement §5, output blocks §4</td>
+                <td>Human (team leads)</td>
+              </tr>
+              <tr>
+                <td><code>agents/sage/</code></td><td>Knowledge store</td><td>repo root</td>
+                <td>Team rules, decisions, skills, and role personas — the living knowledge the AI reads before acting</td>
+                <td>Human + AI</td>
+              </tr>
+              <tr>
+                <td><code>integrations/</code></td><td>Adapters</td><td>sage repo</td>
+                <td>Thin per-tool wrappers (Claude Code, Cursor, Windsurf, …) that point each agent at AGENTS.md — no logic of its own</td>
+                <td>Sage maintainers</td>
+              </tr>
+              <tr>
+                <td><code>landing/</code></td><td>Promo site</td><td>sage repo</td>
+                <td>Static HTML site deployed to GitHub Pages / sage.qorstack.com — describes Sage for new users</td>
+                <td>Human</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <h2>AGENTS.md — The Protocol</h2>
+        <p>
+          <code>AGENTS.md</code> คือ Sage ทั้งหมด — ไม่มี server, ไม่มี Python, ไม่มี build step.
+          AI agent ใดก็ตามที่อ่านไฟล์นี้ก่อนทำงานจะ follow the protocol อัตโนมัติ
+        </p>
+        <h3>Pipeline §1–4 (Before code)</h3>
+        <ol>
+          <li><strong>Become the role</strong> — เลือก senior lens ที่เหมาะสม (dev, architect, qa, designer, …) แล้วเปิด <code>agents/sage/roles/role-&lt;lens&gt;.md</code></li>
+          <li><strong>Read the knowledge</strong> — เปิด <code>agents/sage/&lt;domain&gt;/rules.md</code> และ <code>decisions/*.md</code> ที่เกี่ยวข้อง</li>
+          <li><strong>Find reusable assets</strong> — อ่าน source file ของ service/util/component ที่ rules ชี้ไว้ก่อนเขียนโค้ดที่ใช้มัน</li>
+          <li><strong>Assess &amp; plan</strong> — ประเมิน verdict (proceed / warn / ask / reject), แบ่งงานเป็น [parallel] / [sequential], assign effort tier</li>
+        </ol>
+        <h3>After code (mandatory)</h3>
+        <ol>
+          <li>Capture knowledge → <code>agents/sage/&lt;domain&gt;/decisions/&lt;slug&gt;.md</code></li>
+          <li>Output the mandatory summary block (role · domain · risk · done · decisions · validated · knowledge)</li>
+        </ol>
+        <div class="callout callout-note">
+          <span class="callout-icon">📌</span>
+          <div><strong>Single source of truth.</strong> ห้าม fork wording ของ protocol เข้าไปใน integration files — integration files แค่ pointer มาที่ AGENTS.md</div>
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <h2>agents/sage/ — Knowledge Store</h2>
+        <p>
+          Knowledge store เติบโตได้สองทาง: human เขียนเอง หรือ AI เขียนให้หลังทำงาน.
+          ทุก entry เป็น YAML frontmatter + Markdown body — 1 idea ต่อ 1 ไฟล์
+        </p>
+        <h3>Directory layout</h3>
+        <pre><code>agents/sage/
+  index.md                        # table of contents
+  roles/
+    role-dev.md                   # Senior Developer persona
+    role-architect.md             # created on first use
+    role-writer.md                # created by sage-docs
+  &lt;domain&gt;/                       # e.g. billing, auth, frontend
+    rules.md                      # standing rules for this domain
+    decisions/
+      &lt;slug&gt;.md                   # one team decision per file
+    skills/
+      &lt;slug&gt;.md                   # best practice / how-to playbook
+  docs/
+    docs-style.css                # CSS template — inlined by sage-docs</code></pre>
+        <h3>Entry frontmatter fields</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Field</th><th>Values</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>type</code></td><td>team_decision · convention · skill · business_context</td><td>ประเภทของ entry</td></tr>
+              <tr><td><code>status</code></td><td>proposed · approved · deprecated</td><td>AI อ่านทุก entry แต่ให้น้ำหนัก approved มากกว่า</td></tr>
+              <tr><td><code>enforcement</code></td><td>block · warn · advise</td><td>block = ห้ามเขียนโค้ด, warn = เตือน, advise = แนะนำ</td></tr>
+              <tr><td><code>source</code></td><td>human · ai</td><td>บันทึกว่าใครเขียน entry นี้</td></tr>
+              <tr><td><code>applies_to</code></td><td>domain name หรือ file glob</td><td>บอก AI ว่า rule นี้ใช้กับไฟล์ไหน</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <h2>integrations/ — Per-tool Adapters</h2>
+        <p>แต่ละ adapter บอก AI tool นั้นๆ ว่า "อ่านและทำตาม AGENTS.md" ไม่มี logic ของตัวเอง — เป็นแค่ routing layer</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tool</th><th>Integration path</th><th>Install command</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Code</td><td><code>integrations/.claude/</code></td><td><code>cp -r integrations/.claude .</code></td></tr>
+              <tr><td>Cursor</td><td><code>integrations/.cursor/</code></td><td><code>cp -r integrations/.cursor .</code></td></tr>
+              <tr><td>Windsurf</td><td><code>integrations/.windsurf/</code></td><td><code>cp -r integrations/.windsurf .</code></td></tr>
+              <tr><td>Cline</td><td><code>integrations/.clinerules/</code></td><td><code>cp -r integrations/.clinerules .</code></td></tr>
+              <tr><td>GitHub Copilot</td><td><code>integrations/.github/</code></td><td><code>cp -r integrations/.github .</code></td></tr>
+              <tr><td>Gemini CLI / Codex</td><td><code>AGENTS.md</code> (native)</td><td>ไม่ต้อง copy — อ่าน AGENTS.md ได้เลย</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Skills included</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>When to use</th><th>Output</th></tr></thead>
+            <tbody>
+              <tr><td><code>/sage</code></td><td>ทุกครั้งก่อนเขียนโค้ด (auto via AGENTS.md)</td><td>Sage summary block</td></tr>
+              <tr><td><code>/sage-learning</code></td><td>ครั้งแรกที่ setup repo · หลัง refactor ใหญ่</td><td><code>agents/sage/</code> files</td></tr>
+              <tr><td><code>/sage-search-skill</code></td><td>ต้องการ best practices ปัจจุบันสำหรับ stack</td><td><code>agents/sage/&lt;domain&gt;/skills/</code> files</td></tr>
+              <tr><td><code>/sage-docs</code></td><td>ต้องการ document ที่คนอ่าน — flow, API, architecture</td><td><code>docs/&lt;slug&gt;.html</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="doc-section">
+        <h2>Data Flow — How It All Connects</h2>
+        <ul class="steps-list">
+          <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <div class="step-title">Install integration (one-time)</div>
+              <div class="step-detail"><code>cp -r integrations/.claude .</code> — copy adapter files เข้า repo ของทีม. Codex และ Gemini CLI ไม่ต้อง copy เพราะอ่าน <code>AGENTS.md</code> ได้เลย</div>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <div class="step-title">Bootstrap knowledge (one-time)</div>
+              <div class="step-detail">รัน <code>/sage-learning</code> ครั้งแรก — AI scan codebase แล้วเขียน rules, decisions, skills เข้า <code>agents/sage/</code> ใน repo ของทีม</div>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <div class="step-title">AI อ่าน AGENTS.md ก่อนทุก task</div>
+              <div class="step-detail">Adapter บอก AI ให้อ่าน <code>AGENTS.md</code> → AI run pipeline §1–4: pick role → read domain knowledge → find reusable assets → assess &amp; plan</div>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <div class="step-title">AI เขียนโค้ด + capture knowledge</div>
+              <div class="step-detail">หลังเขียนโค้ด AI เขียน pattern ที่เรียนรู้ได้กลับเข้า <code>agents/sage/&lt;domain&gt;/decisions/</code> ทุก run — ความรู้ของทีมเพิ่มขึ้นโดยอัตโนมัติ</div>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">5</div>
+            <div class="step-content">
+              <div class="step-title">Generate human-readable docs (on demand)</div>
+              <div class="step-detail">รัน <code>/sage-docs</code> → AI วิเคราะห์ source material → classify doc type → generate inline SVG diagram → write <code>docs/&lt;slug&gt;.html</code> with CSS inlined</div>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <footer class="doc-footer">
+        <span class="sage-brand">Sage Docs</span>
+        <span>Generated by /sage-docs · 2026-06-23</span>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        var container = document.getElementById('svg-zoom-container');
+        var group     = document.getElementById('svg-content');
+        var label     = document.getElementById('zoom-label');
+        var SVG_W = 780, SVG_H = 518;
+        var scale = 1, tx = 0, ty = 0;
+        var dragging = false, startX, startY, startTx, startTy;
+
+        function fitScale() {
+          var cw = container.clientWidth  - 40;
+          var ch = container.clientHeight - 40;
+          return Math.min(cw / SVG_W, ch / SVG_H, 1.6);
+        }
+
+        function apply() {
+          group.setAttribute('transform',
+            'translate(' + tx + ',' + ty + ') scale(' + scale + ')');
+          label.textContent = Math.round(scale * 100) + '%';
+        }
+
+        function initFit() {
+          scale = fitScale();
+          tx = (container.clientWidth  - SVG_W * scale) / 2;
+          ty = (container.clientHeight - SVG_H * scale) / 2;
+          apply();
+        }
+
+        globalThis.diagramZoomIn  = function () { scale = Math.min(scale * 1.3, 8); apply(); };
+        globalThis.diagramZoomOut = function () { scale = Math.max(scale / 1.3, 0.1); apply(); };
+        globalThis.diagramZoomFit = function () { initFit(); };
+
+        container.addEventListener('wheel', function (e) {
+          e.preventDefault();
+          var rect  = container.getBoundingClientRect();
+          var mx    = e.clientX - rect.left;
+          var my    = e.clientY - rect.top;
+          var prev  = scale;
+          var delta = e.deltaY > 0 ? 0.88 : 1.14;
+          scale = Math.min(Math.max(scale * delta, 0.1), 8);
+          tx = mx - (mx - tx) * (scale / prev);
+          ty = my - (my - ty) * (scale / prev);
+          apply();
+        }, { passive: false });
+
+        container.addEventListener('mousedown', function (e) {
+          dragging = true;
+          startX = e.clientX; startY = e.clientY;
+          startTx = tx;       startTy = ty;
+          container.classList.add('is-dragging');
+        });
+        globalThis.addEventListener('mousemove', function (e) {
+          if (!dragging) return;
+          tx = startTx + (e.clientX - startX);
+          ty = startTy + (e.clientY - startY);
+          apply();
+        });
+        globalThis.addEventListener('mouseup', function () {
+          dragging = false;
+          container.classList.remove('is-dragging');
+        });
+
+        var lastDist = null;
+        container.addEventListener('touchstart', function (e) {
+          if (e.touches.length === 2) {
+            var t1 = e.touches[0], t2 = e.touches[1];
+            lastDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+          } else if (e.touches.length === 1) {
+            dragging = true;
+            startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+            startTx = tx; startTy = ty;
+          }
+        }, { passive: true });
+
+        container.addEventListener('touchmove', function (e) {
+          if (e.touches.length === 2) {
+            e.preventDefault();
+            var t1 = e.touches[0], t2 = e.touches[1];
+            var dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+            var rect = container.getBoundingClientRect();
+            var mx   = (t1.clientX + t2.clientX) / 2 - rect.left;
+            var my   = (t1.clientY + t2.clientY) / 2 - rect.top;
+            if (lastDist) {
+              var ratio = dist / lastDist;
+              var prev  = scale;
+              scale = Math.min(Math.max(scale * ratio, 0.1), 8);
+              tx = mx - (mx - tx) * (scale / prev);
+              ty = my - (my - ty) * (scale / prev);
+              apply();
+            }
+            lastDist = dist;
+          } else if (e.touches.length === 1 && dragging) {
+            tx = startTx + (e.touches[0].clientX - startX);
+            ty = startTy + (e.touches[0].clientY - startY);
+            apply();
+          }
+        }, { passive: false });
+
+        container.addEventListener('touchend', function () {
+          dragging = false;
+          lastDist = null;
+        });
+
+        initFit();
+      })();
+    </script>
+  </body>
+</html>

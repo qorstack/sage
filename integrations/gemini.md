@@ -99,6 +99,48 @@ Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
 
 ---
 
+## Sage Docs
+
+When asked to run sage-docs or "document this" or "generate docs for":
+
+Role: `writer` — open `agents/sage/roles/role-writer.md` (create if missing).
+
+**Step 1 — Analyze & classify.** Extract actors, steps, conditions, data stores,
+side effects, API endpoints. Pick a doc type: `api-flow` · `backend-logic` ·
+`architecture` · `user-journey` · `runbook` · `data-schema` · `general`.
+
+**Step 2 — Diagram.** If 3+ ordered steps or meaningful branches exist, use
+**inline SVG** — place all drawing inside `<g id="svg-content">`. Apply pan/zoom
+via `group.setAttribute('transform', ...)`. **Never** CSS `transform` on a wrapper
+div — it rasterizes SVG pixels causing blurring at zoom. Read
+`agents/sage/docs/docs-style-template.md` §"Zoom/Pan JavaScript" and §"HTML
+scaffold for zoomable diagram section" for exact markup and JS.
+
+**Step 3 — Write `docs/<slug>.html`.** Generate a self-contained file — no
+external stylesheet. Read `agents/sage/docs/docs-style-template.md`, extract
+CSS from the first ` ```css ` block, paste inside `<style>` in `<head>`. HTML
+structure: `<header>` → diagram section (inline SVG, if applicable) → quick-ref
+section → N detail sections — structure per doc type exactly as in the Claude
+adapter at `integrations/.claude/commands/sage-docs.md` §Step 4.
+
+**Summary (mandatory):**
+
+```markdown
+── Sage Docs ─────────────────────────────────────
+**Doc type**   · <type>
+**Diagram**    · inline SVG | none — <reason>
+**Output**     · docs/<slug>.html
+**CSS**        · inlined from agents/sage/docs/docs-style-template.md
+
+**Sections written**
+- <section name> — <brief description>
+
+**Next** · open docs/<slug>.html in a browser to review
+──────────────────────────────────────────────────
+```
+
+---
+
 ## Sage Learning
 
 When asked to "learn this codebase" or run sage-learning:

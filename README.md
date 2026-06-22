@@ -94,9 +94,25 @@ git clone --depth 1 https://github.com/qorstack/sage t && cp -r t/agents . && rm
 
 Commit everything. That's the whole setup.
 
+## Getting started — run in this order
+
+After installing, run these commands in sequence. Each builds on the last.
+
+| # | Command | When | What it does |
+| --- | --- | --- | --- |
+| 1 | `/sage-learning` | **Once after install** | Scans your codebase, writes rules + decisions to `agents/sage/`. Gives Sage a baseline of your real patterns before it touches anything. |
+| 2 | `/sage-search-skill` | **Once, then after stack changes** | Searches for current best practices for your stack and writes them as skills. Run again when you adopt a new framework or library. |
+| 3 | `/sage` | **Every code change (automatic via AGENTS.md)** | Runs the full pipeline: pick role → read knowledge → assess risk → code → capture → summarize. Happens automatically — you don't call it manually, AGENTS.md enforces it. |
+| 4 | `/sage-docs` | **On demand** | Turns any spec, README, or meeting note into a styled, self-contained HTML file with an interactive SVG diagram (zoom/pan). Use when a teammate needs to read — not when an AI needs to follow. |
+
+> **Skip step 1?** Sage still works — it just starts with no team context.
+> Run `/sage-learning` later whenever you want to seed knowledge from real code.
+
+---
+
 ## Commands
 
-Three commands cover the full lifecycle:
+Four commands cover the full lifecycle:
 
 **`/sage`** — run the full cognition pipeline before any code change
 
@@ -176,6 +192,29 @@ Written: agents/sage/frontend/skills/server-component-boundaries.md
 6 skills added — review and approve
 ```
 
+**`/sage-docs`** — turn any document into a styled, self-contained HTML file with an interactive SVG diagram
+
+Give it any source material — a spec, README, API contract, PRD, meeting note.
+Sage classifies the doc type, decides if a diagram fits, generates an inline SVG
+diagram with zoom/pan (scroll to zoom, drag to pan) with full technical detail
+(exact endpoints, conditions, storage ops), and writes a single self-contained
+`docs/<slug>.html` with CSS inlined from the shared template.
+
+```text
+/sage-docs  [paste or describe the document]
+
+Doc type   · api-flow
+Diagram    · inline SVG — POST /api/v1/orders, GET /api/v1/products
+Output     · docs/checkout-flow.html
+CSS        · inlined from agents/sage/docs/docs-style-template.md
+
+Sections written
+- Overview Diagram — interactive SVG: frontend → API → DB with exact endpoints + error cases
+- Quick Reference — endpoint summary table (method, path, auth, purpose)
+- Endpoint Detail — request body schema, 201 response, 4xx error table
+- Notes — idempotency, retry behavior
+```
+
 ## Your rules, as Markdown
 
 Knowledge lives in `agents/sage/<domain>/` — plain Markdown with a little YAML:
@@ -197,7 +236,8 @@ to `approved`. It even keeps a library of senior personas in `agents/sage/roles/
 
 Run **`/sage-learning`** once to seed `agents/sage/` straight from your existing
 code — Sage studies the team's real patterns and writes them up so future code
-matches.
+matches. Then run **`/sage-docs`** any time you need a document a human will
+open in a browser, not an AI.
 
 ## Works with every agent
 
