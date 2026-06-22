@@ -45,11 +45,12 @@ Set up Sage in this repo.
    and place it in the repo. If none are found, ask me which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md.
-4. Tell me what was installed. Then list these three commands that are now
+4. Tell me what was installed. Then list these four commands that are now
    available (explain each in one sentence):
-   - /sage — full cognition pipeline: read team knowledge + assess risk before code, then capture what you learned + write a summary after
-   - /sage-learning — scan this codebase and write team knowledge to agents/sage/
-   - /sage-search-skill — research best practices for this stack and add them as skills
+   - /sage-learning — run this FIRST: scan this codebase and write team knowledge to agents/sage/
+   - /sage-search-skill — run this SECOND: research best practices for this stack and add them as skills
+   - /sage — runs automatically before every change: full cognition pipeline, read team knowledge, assess risk, then capture what you learned
+   - /sage-docs — on demand: turn any document into a styled, self-contained HTML file with an interactive SVG diagram in docs/
    Finally, ask me: "Would you like me to run /sage-learning now to capture
    this codebase's patterns?"
 ```
