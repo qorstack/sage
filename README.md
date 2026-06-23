@@ -49,7 +49,10 @@ run it any time to get the latest files.)
    tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md (overwrite if it already exists).
-4. Reply in **markdown** with two sections:
+4. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
+   and save it as agents/sage/docs/docs-style-template.md (overwrite if it already exists).
+   This file is required by /sage-docs to generate styled HTML documentation.
+5. Reply in **markdown** with two sections:
 
 ## Files installed / updated
 

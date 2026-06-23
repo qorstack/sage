@@ -1583,7 +1583,10 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
    and save it (overwrite if it already exists). If none are found, ask me which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md (overwrite if it already exists).
-4. Reply in markdown with two sections:
+4. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
+   and save it as agents/sage/docs/docs-style-template.md (overwrite if it already exists).
+   This file is required by /sage-docs to generate styled HTML documentation.
+5. Reply in markdown with two sections:
 
 ## Files installed / updated
 
@@ -1594,6 +1597,7 @@ List every file that was created or overwritten with its full path relative to t
 | `AGENTS.md` | updated |
 | `.claude/commands/sage.md` | updated |
 | `agents/sage/index.md` | created |
+| `agents/sage/docs/docs-style-template.md` | created |
 
 ## What to do next
 
@@ -1634,28 +1638,28 @@ run any time to get the latest files.)
    which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md (overwrite if it already exists).
-4. Reply in markdown with two sections:
+4. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
+   and save it as agents/sage/docs/docs-style-template.md (overwrite if
+   it already exists). Required by /sage-docs for styled HTML generation.
+5. Reply in markdown with two sections:
 
 ## Files installed / updated
 
-List every file that was created or overwritten with its full path relative
-to the repo root, e.g.:
+List every file created or overwritten with its full path, e.g.:
 
 | File | Status |
 |---|---|
 | `AGENTS.md` | updated |
 | `.claude/commands/sage.md` | updated |
 | `agents/sage/index.md` | created |
+| `agents/sage/docs/docs-style-template.md` | created |
 
 ## What to do next
 
-- `/sage-learning` — **run first:** scans this codebase and writes team
-  knowledge to `agents/sage/`
-- `/sage-search-skill` — **run second:** researches best practices for this
-  stack and adds them as skills
+- `/sage-learning` — **run first:** scans codebase, writes team knowledge
+- `/sage-search-skill` — **run second:** researches best practices as skills
 - `/sage` — **runs before every change:** full cognition pipeline
-- `/sage-docs` — **on demand:** turns any document into a styled HTML file
-  with an interactive SVG diagram in `docs/`
+- `/sage-docs` — **on demand:** styled HTML file with SVG diagram in docs/
 
 Then ask: "Would you like me to run /sage-learning now?"</pre
                   >
