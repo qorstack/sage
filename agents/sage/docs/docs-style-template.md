@@ -15,6 +15,7 @@ the CSS from the fenced code block below, and paste it verbatim inside a
 doc must be a self-contained single file.
 
 **What it gives you:**
+
 - Dark theme matching `sage.qorstack.com` exactly (same CSS variables, same gradients)
 - Inter + JetBrains Mono fonts (Google Fonts via `@import`)
 - Components: header, badges, sections, diagram zoom/pan, quick-ref grid, tables,
@@ -32,7 +33,7 @@ in `docs/sage-architecture.html` for the canonical implementation.
 ## Design tokens
 
 | Token | Value | Use |
-|---|---|---|
+| --- | --- | --- |
 | `--bg` | `#050505` | page background |
 | `--ink` | `#f7f4ed` | headings, high-emphasis text |
 | `--text` | `#d7d0c2` | body text |
@@ -263,7 +264,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 32px 0; }
   border-radius: var(--radius);
   position: relative;
   overflow: hidden;
-  height: 480px;
+  min-height: 320px;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;

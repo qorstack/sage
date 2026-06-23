@@ -81,6 +81,7 @@ Output this block, then wait for `ask`/`reject` before continuing.
 ```text
 Repo    : <repo-root>  ← include only when multiple repos are open
 Role    : <role> — <one-line task summary>
+Model   : <model> @ effort:<effort>  ← ceiling = session model + session effort
 Intent  : <what this change does>
 Touches : <files, systems, domains affected>
 Risk    : LOW | MEDIUM | HIGH — <why in one phrase>
@@ -89,56 +90,67 @@ Decision: proceed | warn | ask | reject
 
 Then declare the **parallel plan**. Before listing tasks, identify which can run
 at the same time (no dependency on each other) and which must be sequential.
-For each task, assign an effort tier — **never exceed the model tier active in
-this session**; reduce to `low` for mechanical work to save tokens:
 
-| Effort   | When to use                                                          |
-| -------- | -------------------------------------------------------------------- |
-| `low`    | Reading files, simple edits, boilerplate, no reasoning needed        |
-| `medium` | Standard implementation, moderate complexity                         |
-| `high`   | Complex logic, architecture, root-cause analysis, critical decisions |
+**Ceiling: the model and effort active in this session.** Never exceed either.
+Pick the lowest tier that adequately covers each task — downgrade aggressively
+for mechanical work to save tokens:
+
+| Model    | Effort   | When to use                                                        |
+| -------- | -------- | ------------------------------------------------------------------ |
+| `haiku`  | `low`    | File reads, simple edits, boilerplate — no reasoning needed        |
+| `sonnet` | `medium` | Standard implementation, moderate complexity                       |
+| `opus`   | `high`   | Complex logic, architecture, root-cause, critical decisions        |
+| `opus`   | `max`    | Hardest multi-system problems — reserve for when high isn't enough |
+
+State model + effort for every task in the plan:
 
 ```text
 Plan
 ── Phase 1 [parallel] ─────────────────────────
-  A. <task>                              effort: low
-  B. <task>                              effort: low
+  A. <task>                    sonnet  effort: low
+  B. <task>                    haiku   effort: low
 ── Phase 2 [sequential] ───────────────────────
-  C. <task — depends on A+B>             effort: high
+  C. <task — depends on A+B>   opus    effort: high
 ── Phase 3 [parallel] ─────────────────────────
-  D. <task>                              effort: medium
-  E. <task>                              effort: medium
+  D. <task>                    sonnet  effort: medium
+  E. <task>                    sonnet  effort: medium
 ```
 
 Execute parallel phases in a single response (all their tool calls together).
-Each task reports itself when IT finishes — do not wait for all to complete
-before reporting. Use these markers:
+Mark each task with 🟨 when it starts and ✅ when it completes. Each task
+reports itself when IT finishes — do not wait for all to complete:
 
 ```text
 ── [phase 1 · parallel: A, B, C] ────────────────
+  🟨 A [sonnet/low] — <brief what>
   … A tool calls …
-  [✓ A — <one-line result>]
+  ✅ A — <one-line result>
+  🟨 B [haiku/low] — <brief what>
   … B tool calls …
-  [✓ B — <one-line result>]
+  ✅ B — <one-line result>
+  🟨 C [sonnet/medium] — <brief what>
   … C tool calls …
-  [✓ C — <one-line result>]
+  ✅ C — <one-line result>
 ── [phase 1 → all done, proceeding to phase 2] ──
 
 ── [phase 2 · sequential: D — depends on A, B] ──
+  🟨 D [opus/high] — <brief what>
   … D tool calls …
-  [✓ D — <one-line result>]
+  ✅ D — <one-line result>
 ── [phase 2 → done, proceeding to phase 3] ──────
 
 ── [phase 3 · parallel: E, F] ───────────────────
+  🟨 E [sonnet/medium] — <brief what>
   … E tool calls …
-  [✓ E — <one-line result>]
+  ✅ E — <one-line result>
+  🟨 F [sonnet/medium] — <brief what>
   … F tool calls …
-  [✓ F — <one-line result>]
+  ✅ F — <one-line result>
 ── [phase 3 → all done] ─────────────────────────
 ```
 
 If a task fails, report it immediately and pause:
-`[✗ B failed — <reason>. Pausing — waiting for input before continuing.]`
+`❌ B — <reason>. Pausing — waiting for input before continuing.`
 Never silently continue past a failure.
 
 ---
@@ -185,6 +197,7 @@ multi-step content (Mechanism, Fix, Decisions).
 ```markdown
 ── Sage ──────────────────────────────────────────
 **Role** · debugger — <task in one line>
+**Model** · <model> @ effort:<effort>
 **Domain** · <domain> | **Risk** · <LOW | MEDIUM | HIGH>
 
 **Root cause**
@@ -220,6 +233,7 @@ misleading naming, or an assumption that turned out wrong.
 ```markdown
 ── Sage ──────────────────────────────────────────
 **Role** · <role> — <task in one line>
+**Model** · <model> @ effort:<effort>
 **Domain** · <domain> | **Risk** · <LOW | MEDIUM | HIGH>
 
 **Done**

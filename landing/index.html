@@ -1551,25 +1551,41 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
                     <span>Or let your AI set it up</span>
                     <button
                       class="copy"
-                      data-copy='Set up Sage in this repo.
+                      data-copy='Set up or update Sage in this repo.
+
+(Works for both first install and updating an existing setup — run any time to get the latest files.)
 
 1. Fetch https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md
-   and save it as AGENTS.md at the repo root.
+   and save it as AGENTS.md at the repo root (overwrite if it already exists).
 2. Detect which AI tools this repo uses by checking for .claude/, .cursor/,
    .windsurf/, .clinerules/, .github/instructions/, or GEMINI.md.
    For each one found, fetch the matching adapter from
    https://raw.githubusercontent.com/qorstack/sage/main/integrations/<tool-path>
-   and place it in the repo. If none are found, ask me which tool I use.
+   and save it (overwrite if it already exists). If none are found, ask me which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
-   and save it as agents/sage/index.md.
-4. Tell me what was installed. Then list these four commands that are now
-   available (explain each in one sentence):
-   - /sage-learning — run this FIRST: scan this codebase and write team knowledge to agents/sage/
-   - /sage-search-skill — run this SECOND: research best practices for this stack and add them as skills
-   - /sage — runs automatically before every change: full cognition pipeline, read team knowledge, assess risk, then capture what you learned
-   - /sage-docs — on demand: turn any document into a styled, self-contained HTML file with an interactive SVG diagram in docs/
-   Finally, ask me: "Would you like me to run /sage-learning now to capture
-   this codebase&#39;s patterns?"'
+   and save it as agents/sage/index.md (overwrite if it already exists).
+4. Reply in markdown with two sections:
+
+## Files installed / updated
+
+List every file that was created or overwritten with its full path relative to the repo root, e.g.:
+
+| File | Status |
+|---|---|
+| `AGENTS.md` | updated |
+| `.claude/commands/sage.md` | updated |
+| `agents/sage/index.md` | created |
+
+## What to do next
+
+List the four commands now available with a one-sentence description and when to run each:
+
+- `/sage-learning` — **run first:** scans this codebase and writes team knowledge to `agents/sage/`
+- `/sage-search-skill` — **run second:** researches best practices for this stack and adds them as skills
+- `/sage` — **runs before every change:** full cognition pipeline — reads team knowledge, assesses risk, captures what it learned after
+- `/sage-docs` — **on demand:** turns any document into a styled, self-contained HTML file with an interactive SVG diagram in `docs/`
+
+Then ask: "Would you like me to run /sage-learning now to capture this codebase&#39;s patterns?"'
                     >
                       Copy prompt
                     </button>
@@ -1584,25 +1600,45 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
                     Paste into Claude Code, Cursor, Copilot, or any AI agent:
                   </p>
                   <pre style="overflow-x: hidden">
-Set up Sage in this repo.
+Set up or update Sage in this repo.
+
+(Works for both first install and updating an existing setup —
+run any time to get the latest files.)
 
 1. Fetch https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md
-   and save it as AGENTS.md at the repo root.
+   and save it as AGENTS.md at the repo root (overwrite if it already exists).
 2. Detect which AI tools this repo uses by checking for .claude/, .cursor/,
    .windsurf/, .clinerules/, .github/instructions/, or GEMINI.md.
    For each one found, fetch the matching adapter from
    https://raw.githubusercontent.com/qorstack/sage/main/integrations/&lt;tool-path&gt;
-   and place it in the repo. If none are found, ask me which tool I use.
+   and save it (overwrite if it already exists). If none are found, ask me
+   which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
-   and save it as agents/sage/index.md.
-4. Tell me what was installed. Then list these four commands that are now
-   available (explain each in one sentence):
-   - /sage-learning — run this FIRST: scan this codebase and write team knowledge to agents/sage/
-   - /sage-search-skill — run this SECOND: research best practices for this stack and add them as skills
-   - /sage — runs automatically before every change: full cognition pipeline, read team knowledge, assess risk, then capture what you learned
-   - /sage-docs — on demand: turn any document into a styled, self-contained HTML file with an interactive SVG diagram in docs/
-   Finally, ask me: "Would you like me to run /sage-learning now to capture
-   this codebase's patterns?"</pre
+   and save it as agents/sage/index.md (overwrite if it already exists).
+4. Reply in markdown with two sections:
+
+## Files installed / updated
+
+List every file that was created or overwritten with its full path relative
+to the repo root, e.g.:
+
+| File | Status |
+|---|---|
+| `AGENTS.md` | updated |
+| `.claude/commands/sage.md` | updated |
+| `agents/sage/index.md` | created |
+
+## What to do next
+
+- `/sage-learning` — **run first:** scans this codebase and writes team
+  knowledge to `agents/sage/`
+- `/sage-search-skill` — **run second:** researches best practices for this
+  stack and adds them as skills
+- `/sage` — **runs before every change:** full cognition pipeline
+- `/sage-docs` — **on demand:** turns any document into a styled HTML file
+  with an interactive SVG diagram in `docs/`
+
+Then ask: "Would you like me to run /sage-learning now?"</pre
                   >
                 </div>
 
