@@ -70,7 +70,7 @@
         font-family: var(--sans);
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
+        overflow-x: clip;
       }
 
       nav,
@@ -239,6 +239,25 @@
       .mobile-github {
         display: none;
       }
+
+      .bmc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FFDD00;
+        color: #000;
+        font-size: 11px;
+        font-weight: 700;
+        font-family: var(--sans);
+        letter-spacing: 0.04em;
+        padding: 5px 12px;
+        border-radius: 999px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: opacity 0.15s;
+        flex-shrink: 0;
+      }
+      .bmc-btn:hover { opacity: 0.85; color: #000; text-decoration: none; }
 
       .brand {
         display: inline-flex;
@@ -933,35 +952,29 @@
           min-height: 60px;
         }
 
-        .nav-right .nav-link:not(:last-child) {
+        .nav-right .nav-link:not(.github-link) {
           display: none;
         }
 
         .nav-right {
-          gap: 0;
+          gap: 10px;
         }
 
         .nav-right .github-link {
+          display: inline-flex;
+        }
+
+        .nav-right .github-link span {
           display: none;
         }
 
         .mobile-github {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          position: fixed;
-          top: 10px;
-          right: 14px;
-          width: 40px;
-          height: 40px;
-          color: var(--ink);
-          z-index: 60;
+          display: none;
         }
 
-        .mobile-github svg {
-          width: 18px;
-          height: 18px;
-          fill: currentColor;
+        .bmc-btn {
+          font-size: 10px;
+          padding: 5px 10px;
         }
 
         .brand span {
@@ -1193,6 +1206,12 @@
           <span>Sage</span>
         </a>
         <div class="nav-right">
+          <a
+            href="https://www.buymeacoffee.com/satangbuds3"
+            target="_blank"
+            rel="noopener"
+            class="bmc-btn"
+          >☕ Buy me a coffee</a>
           <a href="#install" class="nav-link">Start</a>
           <a
             href="https://github.com/qorstack/sage"
