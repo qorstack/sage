@@ -59,10 +59,11 @@ story — every diagram node maps 1:1 to the text below.
    section below: `<a href="#slug">` for click-to-jump.
 2. **Mini diagrams** — class `svg-diagram--mini` (~40vh), per endpoint/component,
    at the top of the section. For `api-flow`, `backend-logic`, `frontend` only.
-   Each needs its own JS zoom/pan instance (slug-suffixed IDs).
+   No extra JS — the shared `sage-docs.js` auto-wires every `.svg-diagram`; just
+   repeat the block, no slug-suffixed IDs, buttons use `data-zoom="in|out|fit"`.
 
-Inline SVG only (no Mermaid). All drawing inside `<g id="svg-content">`. Pan/zoom
-via `group.setAttribute('transform', ...)` — never CSS transform (blurs at zoom).
+Inline SVG only (no Mermaid). All drawing inside `<g id="svg-content">`. The
+shared JS transforms the `<g>` — never CSS transform on a wrapper (blurs at zoom).
 
 Overview by type: `api-flow`/`backend-logic` → swimlane LR + flowchart TD per
 endpoint · `frontend` → component tree LR + data-flow TD per component ·
@@ -74,13 +75,16 @@ method + path · every return arrow status + shape · storage nodes table + op �
 cache nodes key + TTL · external nodes service + endpoint · every error path a
 leaf node with HTTP status · happy path leaf with response shape. Complex logic:
 retry loop labeled `retry (max N)` · rollback branch in red · guard diamonds ·
-parallel fork/join · conditional side-effect branch.
+parallel fork/join · conditional side-effect branch. Clean edges: connect
+edge-midpoints (not corners) · orthogonal routing over diagonals · nodes on a
+consistent grid · tight bounding box, no stray elements (JS auto-centers via getBBox).
 
 ## Step 4 — HTML structure
 
-`docs/<slug>.html`, self-contained. CSS from the ` ```css ` block →
-`<style>`. Zoom/pan JS → `<script>` at end of `<body>`. Set `<html lang>` to the
-chosen language; write all prose in it.
+`docs/<slug>.html`, **referencing shared assets (do not inline)**:
+`<link rel="stylesheet" href="../agents/sage/docs/sage-docs.css">` in `<head>`
+and `<script src="../agents/sage/docs/sage-docs.js"></script>` as the last line
+before `</body>`. Set `<html lang>` to the chosen language; write all prose in it.
 
 Top-to-bottom: header · tldr-card · overview diagram (80vh) · sections per type
 · footer.

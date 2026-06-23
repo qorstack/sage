@@ -49,9 +49,13 @@ run it any time to get the latest files.)
    tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md (overwrite if it already exists).
-4. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
-   and save it as agents/sage/docs/docs-style-template.md (overwrite if it already exists).
-   This file is required by /sage-docs to generate styled HTML documentation.
+4. Fetch these three files into agents/sage/docs/ (overwrite if they exist) —
+   all required by /sage-docs to generate styled HTML documentation:
+   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
+   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.css
+   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.js
+   The .css and .js are the shared theme + diagram zoom/pan that every generated
+   doc references via `../agents/sage/docs/` — so docs stay tiny and update at once.
 5. Reply in **markdown** with two sections:
 
 ## Files installed / updated
@@ -76,8 +80,9 @@ description of each and **when** to run it:
   stack and adds them as skills
 - `/sage` — **runs before every change:** full cognition pipeline — reads team
   knowledge, assesses risk, captures what it learned after
-- `/sage-docs` — **on demand:** turns any document into a styled, self-contained
-  HTML file with an interactive SVG diagram in `docs/`
+- `/sage-docs` — **on demand:** turns any document into a styled HTML file with
+  an interactive SVG diagram in `docs/` (references shared CSS/JS in
+  `agents/sage/docs/`)
 
 Then ask: "Would you like me to run /sage-learning now to capture this
 codebase's patterns?"
@@ -132,7 +137,7 @@ After installing, run these commands in sequence. Each builds on the last.
 | 1 | `/sage-learning` | **Once after install** | Scans your codebase, writes rules + decisions to `agents/sage/`. Gives Sage a baseline of your real patterns before it touches anything. |
 | 2 | `/sage-search-skill` | **Once, then after stack changes** | Searches for current best practices for your stack and writes them as skills. Run again when you adopt a new framework or library. |
 | 3 | `/sage` | **Every code change (automatic via AGENTS.md)** | Runs the full pipeline: pick role → read knowledge → assess risk → code → capture → summarize. Happens automatically — you don't call it manually, AGENTS.md enforces it. |
-| 4 | `/sage-docs` | **On demand** | Turns any spec, README, or meeting note into a styled, self-contained HTML file with an interactive SVG diagram (zoom/pan). Use when a teammate needs to read — not when an AI needs to follow. |
+| 4 | `/sage-docs` | **On demand** | Turns any spec, README, or meeting note into a styled HTML file with an interactive SVG diagram (zoom/pan), referencing the shared theme + JS in `agents/sage/docs/`. Use when a teammate needs to read — not when an AI needs to follow. |
 
 > **Skip step 1?** Sage still works — it just starts with no team context.
 > Run `/sage-learning` later whenever you want to seed knowledge from real code.
@@ -224,13 +229,14 @@ Written: agents/sage/frontend/skills/server-component-boundaries.md
 6 skills added — review and approve
 ```
 
-**`/sage-docs`** — turn any document into a styled, self-contained HTML file with an interactive SVG diagram
+**`/sage-docs`** — turn any document into a styled HTML file with an interactive SVG diagram
 
 Give it any source material — a spec, README, API contract, PRD, meeting note.
 Sage classifies the doc type, decides if a diagram fits, generates an inline SVG
 diagram with zoom/pan (scroll to zoom, drag to pan) with full technical detail
-(exact endpoints, conditions, storage ops), and writes a single self-contained
-`docs/<slug>.html` with CSS inlined from the shared template.
+(exact endpoints, conditions, storage ops), and writes `docs/<slug>.html` that
+references the shared theme + zoom/pan JS in `agents/sage/docs/` — so docs stay
+tiny and a theme fix updates them all at once.
 
 ```text
 /sage-docs  [paste or describe the document]
@@ -238,7 +244,7 @@ diagram with zoom/pan (scroll to zoom, drag to pan) with full technical detail
 Doc type   · api-flow
 Diagram    · inline SVG — POST /api/v1/orders, GET /api/v1/products
 Output     · docs/checkout-flow.html
-CSS        · inlined from agents/sage/docs/docs-style-template.md
+Assets     · ../agents/sage/docs/sage-docs.css + sage-docs.js (shared)
 
 Sections written
 - Overview Diagram — interactive SVG: frontend → API → DB with exact endpoints + error cases

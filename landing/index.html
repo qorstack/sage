@@ -1583,9 +1583,12 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
    and save it (overwrite if it already exists). If none are found, ask me which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md (overwrite if it already exists).
-4. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
-   and save it as agents/sage/docs/docs-style-template.md (overwrite if it already exists).
-   This file is required by /sage-docs to generate styled HTML documentation.
+4. Fetch these three files into agents/sage/docs/ (overwrite if they exist) —
+   all required by /sage-docs to generate styled HTML documentation:
+   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
+   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.css
+   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.js
+   The .css and .js are the shared theme + diagram zoom/pan every generated doc references.
 5. Reply in markdown with two sections:
 
 ## Files installed / updated
@@ -1598,6 +1601,8 @@ List every file that was created or overwritten with its full path relative to t
 | `.claude/commands/sage.md` | updated |
 | `agents/sage/index.md` | created |
 | `agents/sage/docs/docs-style-template.md` | created |
+| `agents/sage/docs/sage-docs.css` | created |
+| `agents/sage/docs/sage-docs.js` | created |
 
 ## What to do next
 
@@ -1606,7 +1611,7 @@ List the four commands now available with a one-sentence description and when to
 - `/sage-learning` — **run first:** scans this codebase and writes team knowledge to `agents/sage/`
 - `/sage-search-skill` — **run second:** researches best practices for this stack and adds them as skills
 - `/sage` — **runs before every change:** full cognition pipeline — reads team knowledge, assesses risk, captures what it learned after
-- `/sage-docs` — **on demand:** turns any document into a styled, self-contained HTML file with an interactive SVG diagram in `docs/`
+- `/sage-docs` — **on demand:** turns any document into a styled HTML file with an interactive SVG diagram in `docs/` (references shared CSS/JS in `agents/sage/docs/`)
 
 Then ask: "Would you like me to run /sage-learning now to capture this codebase&#39;s patterns?"'
                     >
@@ -1638,9 +1643,12 @@ run any time to get the latest files.)
    which tool I use.
 3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
    and save it as agents/sage/index.md (overwrite if it already exists).
-4. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
-   and save it as agents/sage/docs/docs-style-template.md (overwrite if
-   it already exists). Required by /sage-docs for styled HTML generation.
+4. Fetch these three files into agents/sage/docs/ (overwrite if they exist),
+   all required by /sage-docs for styled HTML generation:
+   - .../agents/sage/docs/docs-style-template.md
+   - .../agents/sage/docs/sage-docs.css
+   - .../agents/sage/docs/sage-docs.js
+   (.css + .js are the shared theme + diagram zoom/pan every generated doc references.)
 5. Reply in markdown with two sections:
 
 ## Files installed / updated
@@ -1653,6 +1661,8 @@ List every file created or overwritten with its full path, e.g.:
 | `.claude/commands/sage.md` | updated |
 | `agents/sage/index.md` | created |
 | `agents/sage/docs/docs-style-template.md` | created |
+| `agents/sage/docs/sage-docs.css` | created |
+| `agents/sage/docs/sage-docs.js` | created |
 
 ## What to do next
 
@@ -1827,9 +1837,10 @@ git clone --depth 1 https://github.com/qorstack/sage t &amp;&amp; cp -r t/agents
                   >/sage-docs &nbsp;·&nbsp; on demand</span
                 >
                 <p>
-                  Turn any spec, README, or meeting note into a styled,
-                  self-contained HTML file with an interactive SVG diagram
-                  (scroll to zoom, drag to pan). Use when a teammate needs to
+                  Turn any spec, README, or meeting note into a styled
+                  HTML file with an interactive SVG diagram (scroll to zoom,
+                  drag to pan), sharing one theme + zoom/pan script from
+                  <code>agents/sage/docs/</code>. Use when a teammate needs to
                   <em>read</em> — not when an AI needs to follow.
                 </p>
               </div>
@@ -1961,7 +1972,8 @@ Diagram  · inline SVG (zoom/pan)
            POST /api/v1/orders
            GET  /api/v1/products
 Output   · docs/checkout-flow.html
-CSS      · inlined from template.md
+Assets   · ../agents/sage/docs/
+           sage-docs.css + .js (shared)
 
 Sections written
 - Overview Diagram — interactive SVG:

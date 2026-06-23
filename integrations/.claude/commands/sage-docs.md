@@ -132,7 +132,8 @@ below must explain all three — each diagram node maps 1:1 to the text.
 
 - placed at the top of the section, always before the request/response tables
 - used for `api-flow`, `backend-logic`, `frontend` only
-- each mini diagram needs its own JS zoom/pan instance (slug-suffixed IDs)
+- no extra JS — the shared `sage-docs.js` auto-wires every `.svg-diagram`; just
+  repeat the `.svg-diagram` block, no slug-suffixed IDs, buttons use `data-zoom`
 
 **Overview style by doc type:**
 
@@ -175,14 +176,40 @@ For flowchart TD:
 - **Parallel ops:** draw a fork (two lines) then join back
 - **Conditional side effect:** branch off the main path to the side-effect node
 
+**Clean edges (avoid the "weird lines" look):**
+
+- Connect from a node's **edge midpoint** (parent bottom-center → child
+  top-center), never from a corner. Compute each node's true center.
+- Prefer **orthogonal routing** (vertical then horizontal) over long diagonals;
+  a shared bus line + short drops beats many diagonals fanning from one point.
+- Lay nodes on a **consistent grid** (equal columns, aligned rows) so edges stay
+  short and parallel — misaligned nodes are what make lines look off.
+- Keep the drawing's bounding box tight — no stray off-canvas elements or huge
+  margins. The shared JS auto-centers via `getBBox()`; one stray element inflates
+  the box and pushes everything off-center.
+
 ---
 
 ### 4 — HTML structure
 
-**Output file:** `docs/<slug>.html` — self-contained, no external stylesheet.
+**Output file:** `docs/<slug>.html` — **reference the shared assets, do not
+inline CSS/JS.** The stylesheet and zoom/pan JS live in `agents/sage/docs/`.
 
-1. Extract CSS from the ` ```css ` block in docs-style-template.md → put in `<style>`
-2. Extract zoom/pan JS from docs-style-template.md → put in `<script>` at end of `<body>`
+```html
+<head>
+  …
+  <link rel="stylesheet" href="../agents/sage/docs/sage-docs.css" />
+</head>
+<body>
+  …
+  <script src="../agents/sage/docs/sage-docs.js"></script>  <!-- last line before </body> -->
+</body>
+```
+
+The JS auto-wires **every** `.svg-diagram` on the page (overview + all mini
+diagrams) — no inline `<style>`, no per-diagram script, no slug-suffixed IDs.
+Buttons use `data-zoom="in|out|fit"`. If `agents/sage/docs/sage-docs.css|js`
+don't exist yet, copy them from this repo first.
 
 Set `<html lang="...">` to the language chosen in §1 (`en` for English, `th` for
 Thai) and write all prose in that language.
@@ -256,8 +283,9 @@ self-contained unit.
        storage ops → cache ops → external calls → side effects → response -->
   <!-- MUST show: every error branch with its HTTP status as a leaf node -->
   <div class="diagram-container" style="margin:16px 24px 0;">
-    <div class="svg-diagram svg-diagram--mini" id="svg-zoom-{slug}">
-      <!-- controls + SVG with id="svg-content-{slug}" -->
+    <div class="svg-diagram svg-diagram--mini">
+      <!-- controls (buttons data-zoom="in|out|fit") + <svg> with <g id="svg-content"> -->
+      <!-- no per-diagram script — shared sage-docs.js wires it automatically -->
     </div>
   </div>
 
@@ -352,8 +380,8 @@ No fixed format — choose based on what the endpoint actually has:
   <!-- Mini diagram: data/event flow — user action → state → API → re-render -->
   <!-- Show: props received, state held, API calls triggered, child components -->
   <div class="diagram-container" style="margin:16px 24px 0;">
-    <div class="svg-diagram svg-diagram--mini" id="svg-zoom-{slug}">
-      <!-- controls + SVG -->
+    <div class="svg-diagram svg-diagram--mini">
+      <!-- controls (buttons data-zoom) + <svg> with <g id="svg-content"> -->
     </div>
   </div>
 
