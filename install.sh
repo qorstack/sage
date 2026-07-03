@@ -11,8 +11,15 @@ REPO="https://github.com/qorstack/sage"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-echo "Sage · fetching…"
-git clone --depth 1 "$REPO" "$TMP" >/dev/null 2>&1
+echo "Sage: fetching..."
+if ! command -v git >/dev/null 2>&1; then
+  echo "Sage: git is required but was not found. Install Git, then re-run."
+  exit 1
+fi
+if ! git clone --depth 1 --quiet "$REPO" "$TMP" >/dev/null 2>&1; then
+  echo "Sage: git clone failed. Check your network and try again."
+  exit 1
+fi
 
 # --- protocol + shared system files (always overwrite: these are Sage itself) ---
 cp "$TMP/AGENTS.md" ./AGENTS.md
@@ -45,5 +52,5 @@ if [ -z "$found" ]; then
   found=" .claude (default)"
 fi
 
-echo "Sage · installed. AGENTS.md + agents/sage/ + adapters for:$found"
+echo "Sage: installed. AGENTS.md + agents/sage/ + adapters for:$found"
 echo "Next: run  /sage-learning  to seed knowledge from your codebase."
