@@ -1,37 +1,14 @@
 ---
-trigger: manual
+description: Sage Search Skill — research current best practices for this stack
+alwaysApply: false
 ---
 
-# sage-search-skill — research best practices and write them as team skills
+# sage-search-skill
 
-When asked to run **sage-search-skill** or "research skills for this project":
+**Sage Search Skill — research current best practices for this stack**
 
-1. **Map the project.** Read root config files and a sample of source files.
-   Identify: stack, framework(s), domains, and what's already in `agents/sage/`.
+**Use when:** the user runs `/sage-search-skill`, or asks for the task above.
 
-2. **Research current best practices** for this exact stack. Focus on:
-   UI/component patterns, minimal code (YAGNI, SRP), code quality, performance,
-   and patterns trending in the last 12 months. Prefer specific and opinionated
-   guidance over generic advice.
-
-3. **Write skill entries** to `agents/sage/<domain>/skills/<slug>.md`:
-   ```markdown
-   ---
-   id: <slug>
-   type: skill
-   title: <short title>
-   domain: <domain>
-   status: proposed
-   source: ai
-   enforcement: advise
-   tags: [<tag>, ...]
-   ---
-
-   <one-paragraph explanation — what, why, when>
-
-   **Do:** concrete example
-   **Avoid:** anti-pattern
-   ```
-   One idea per file. Never duplicate existing entries. Update stale ones in place.
-
-4. **Report** what was written. The dev reviews and flips `status: approved`.
+Thin adapter — the command body lives in **one** place:
+**`agents/sage/commands/sage-search-skill.md`**. Read that file and follow it verbatim.
+Do not duplicate its steps here; edit the canonical file to change behaviour.

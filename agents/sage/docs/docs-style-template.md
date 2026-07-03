@@ -3,193 +3,223 @@ name: docs-style-template
 type: convention
 status: approved
 domain: docs
-applies_to: "docs/**/*.html"
+applies_to: "docs/**/*.md"
 source: human
 ---
 
-# Sage Docs — shared style + diagram assets
+# Sage Docs — Markdown flow style-guide (canonical)
 
-**How to use:** Sage docs no longer inline CSS/JS. The style and the zoom/pan
-behavior live in two shared files **next to this template**:
+The one reference for what a `/sage-docs` output should look like. Docs are
+**plain Markdown** (`docs/<slug>.md`) — no HTML, no CSS, no JS, no browser. A doc
+is read on GitHub, in an editor, in a PR diff. It must be **complete, concrete,
+and read top-to-bottom** like a senior engineer explaining the flow end-to-end.
 
-- [`sage-docs.css`](sage-docs.css) — the full dark-theme stylesheet
-- [`sage-docs.js`](sage-docs.js) — auto-wiring zoom/pan for every diagram
-
-A generated `docs/<slug>.html` just **references** them (relative path from
-`docs/` up to `agents/sage/docs/`):
-
-```html
-<head>
-  …
-  <link rel="stylesheet" href="../agents/sage/docs/sage-docs.css" />
-</head>
-<body>
-  …
-  <script src="../agents/sage/docs/sage-docs.js"></script>
-</body>
-```
-
-This keeps every doc tiny (no 400-line `<style>` / 100-line `<script>` repeated
-per file) and means a fix to the theme or zoom logic updates every doc at once.
-**Do not paste the CSS/JS inline** — edit the shared files instead. This template
-carries **no copyable CSS/JS**: the actual rules live in `sage-docs.css`, the
-actual behavior in `sage-docs.js`. What's below is only reference (color
-semantics) + the HTML structure scaffold to copy.
-
-> Trade-off: a generated doc is no longer a single standalone file — it needs
-> `agents/sage/docs/sage-docs.css|js` to sit in the same repo (they always do,
-> since `agents/sage/` is the knowledge store shipped with the repo). To hand
-> someone one truly standalone file, inline both manually as a one-off.
-
-**What the stylesheet gives you:**
-
-- Dark theme matching `sage.qorstack.com` (same tokens + gradients)
-- Inter + JetBrains Mono fonts (Google Fonts via `@import`)
-- Components: header, badges, TL;DR card, comp-meta grid, doc-section panels,
-  narrative `doc-article`, diagram zoom/pan, quick-ref, tables, code, callouts,
-  steps, conditions, footer — plus responsive (≤640 px) and print styles
-
-**Diagram approach:**
-
-- Inline `<svg>` with all drawing inside a `<g id="svg-content">` wrapper.
-- `sage-docs.js` auto-discovers **every** `.svg-diagram` on the page and wires
-  each one independently — no hardcoded IDs, no per-diagram script duplication.
-- Controls are plain buttons with `data-zoom="in|out|fit"` (no inline `onclick`).
-- Content size is auto-measured via `getBBox()` — you do **not** set SVG_W/SVG_H.
-  Override only if needed with `data-w` / `data-h` on the `.svg-diagram` element.
-- Never use CSS `transform` on a wrapper div (blurs at zoom) — the JS applies the
-  transform to the `<g>` so it stays vector-sharp.
-
-**Clean edges (avoid the "weird lines" look):**
-
-- Connect from a node's **edge midpoint**, not its corner — e.g. parent bottom
-  `(cx, y+h)` → child top `(cx, y)`. Compute `cx` as the node's true center.
-- Prefer **orthogonal routing** (vertical then horizontal, right angles) over
-  long diagonals. A shared bus line + short drops reads far cleaner than many
-  crossing diagonals fanning from one point.
-- Lay nodes on a **consistent grid** — equal column widths, aligned rows — so
-  edges stay short and parallel. Misaligned nodes are what make lines look off.
-- Keep the whole drawing's bounding box tight; the shared JS auto-centers it via
-  `getBBox()`, so don't add huge empty margins or stray off-canvas elements
-  (one stray element inflates the box and pushes everything off-center).
+> The gold-standard example this guide is modeled on is a real flow doc that
+> reads top-to-bottom with an ASCII overview, full step-by-step, and complete API
+> spec (e.g. `docs/<feature>-business-flow.md`). When in doubt, match its depth —
+> it is never abbreviated.
 
 ---
 
-## Color semantics (cheat-sheet — values live in `sage-docs.css`)
+## Non-negotiables
 
-Use this to pick which color a node/badge type should use when drawing an SVG.
-These are **not** rules to copy — they're already defined as `:root` variables
-in [`sage-docs.css`](sage-docs.css).
-
-| Token            | Value                    | Use                           |
-| ---------------- | ------------------------ | ----------------------------- |
-| `--bg`           | `#050505`                | page background               |
-| `--ink`          | `#f7f4ed`                | headings, high-emphasis text  |
-| `--text`         | `#d7d0c2`                | body text                     |
-| `--muted`        | `#8f897d`                | labels, captions              |
-| `--line`         | `rgba(247,244,237,0.14)` | borders                       |
-| `--panel-strong` | `#171714`                | section backgrounds           |
-| `--mint`         | `#68d99b`                | architecture, success, arrows |
-| `--cyan`         | `#71d7ff`                | API-flow, AI Agent node       |
-| `--amber`        | `#f0c45c`                | user-journey, warnings        |
-| `--violet`       | `#a98cff`                | backend-logic, docs output    |
-| `--red`          | `#ff5a49`                | runbook, danger               |
-
-The full rule set lives in [`sage-docs.css`](sage-docs.css) — edit there, not here.
+1. **Markdown only.** `.md`, not `.html`. Diagrams are **ASCII/text inside a
+   fenced code block**, not SVG or Mermaid — they render everywhere and diff
+   cleanly.
+2. **One language, never mixed.** All prose in the chosen language (English by
+   default; ask every time). Technical tokens (method, path, table, field,
+   status, key, DTO) keep their real names and do not count as mixing.
+3. **Complete, not summarized.** The doc is the artifact. Never cut a guard, an
+   error path, or a side effect to keep it short. Brevity means cutting empty
+   connectors, never conditions.
+4. **Concrete over abstract.** `422 { error: 'cart_empty' }` beats "return an
+   error". `UPDATE orders SET status='paid'` beats "save the status". Use real
+   names throughout.
+5. **Multi-repo aware.** When a flow spans systems in different repos, every
+   step/endpoint names **which system owns it** (see the Actors table).
 
 ---
 
-## HTML scaffold for a zoomable diagram section
+## Principles of good docs (govern every section)
 
-Buttons use `data-zoom`; the shared JS finds them. No `id` juggling needed — but
-keeping `id="svg-content"` on the `<g>` is recommended (the JS prefers it).
+Easy to read **+** complete conditions **+** concise — all three at once:
 
-```html
-<section class="diagram-section">
-  <h2>Overview</h2>
-  <div class="diagram-label">
-    {label · e.g. "click a node to jump to its section"}
-  </div>
-  <div class="diagram-container">
-    <div class="svg-diagram">
-      <div class="diagram-controls">
-        <button data-zoom="in" title="Zoom in">+</button>
-        <div class="sep"></div>
-        <button data-zoom="out" title="Zoom out">−</button>
-        <div class="sep"></div>
-        <button data-zoom="fit" title="Reset" style="font-size:11px">
-          fit
-        </button>
-        <div class="sep"></div>
-        <span class="zoom-level">100%</span>
-      </div>
-      <svg
-        width="100%"
-        height="100%"
-        xmlns="http://www.w3.org/2000/svg"
-        style="font-family:'Inter',system-ui,sans-serif; display:block;"
-      >
-        <defs>
-          <marker
-            id="ar-mint"
-            viewBox="0 0 10 8"
-            refX="9"
-            refY="4"
-            markerWidth="6"
-            markerHeight="5"
-            orient="auto"
-          >
-            <polygon points="0,0 10,4 0,8" fill="#68d99b" opacity="0.8" />
-          </marker>
-          <marker
-            id="ar-amber"
-            viewBox="0 0 10 8"
-            refX="9"
-            refY="4"
-            markerWidth="6"
-            markerHeight="5"
-            orient="auto"
-          >
-            <polygon points="0,0 10,4 0,8" fill="#f0c45c" opacity="0.7" />
-          </marker>
-          <marker
-            id="ar-violet"
-            viewBox="0 0 10 8"
-            refX="9"
-            refY="4"
-            markerWidth="6"
-            markerHeight="5"
-            orient="auto"
-          >
-            <polygon points="0,0 10,4 0,8" fill="#a98cff" opacity="0.7" />
-          </marker>
-          <marker
-            id="ar-cyan"
-            viewBox="0 0 10 8"
-            refX="9"
-            refY="4"
-            markerWidth="6"
-            markerHeight="5"
-            orient="auto"
-          >
-            <polygon points="0,0 10,4 0,8" fill="#71d7ff" opacity="0.8" />
-          </marker>
-        </defs>
-        <!-- All drawing inside this <g> — the JS transforms it (no CSS scale = no blur) -->
-        <g id="svg-content">
-          <!-- nodes, lines, text. Wrap a node in <a href="#slug"> for click-to-jump. -->
-        </g>
-      </svg>
-      <div class="diagram-hint">
-        scroll to zoom · drag to pan · click node to jump
-      </div>
-    </div>
-  </div>
-  <p class="diagram-caption">{one-line caption}</p>
-</section>
+1. **Answer-first** — open each section with one sentence on what it does, before
+   the details.
+2. **One idea per line** — each condition / branch / error on its own line.
+3. **Concise = cut connectors, not conditions** — drop "in the case that", "which
+   will then"; keep every guard, error, and side effect.
+4. **Show branches as when → then** — "when X → do Y → return Z", traceable
+   top-to-bottom.
+5. **Cover every exit** — one happy path + every error path. If a response table
+   lists 422 and 409, the logic must show both.
+
+> **The test:** someone who has never seen the code can re-implement every branch
+> from the doc = complete · you can delete words without losing meaning = not yet
+> concise enough.
+
+---
+
+## Document skeleton (top-to-bottom)
+
+The section set flexes with the doc type (see below), but a full flow doc reads
+in this order:
+
+```text
+# Title — <feature> (<system scope in parens>)
+> 2–4 line blockquote: what this flow is, which systems it spans, "refs real code as of <date>"
+
+## 1. Actors & Systems         table: system | responsibility | ownership  (+ trust boundary)
+## 2. End-to-end overview       ONE ASCII flow of the whole thing + a "Key/หัวใจ" callout
+## 3. Step-by-step              STEP 1..N — each names its system(s), APIs, actions, business rules
+## 4. State / data lifecycle    (if the flow holds client/session state)
+## 5. API spec                  every endpoint, grouped by system: request + response JSON, guards, side effects
+## 6. Status lifecycle          state codes + who sets each + allowed transitions (if any)
+## 7. Data model                tables/entities touched + their role in the flow
+## 8. Edge cases & errors       table: case → handling  (every failure mode)
+## 9. Security & concurrency    authz, idempotency, trust boundaries, amount/lock checks
+## 10. Build checklist          per-system `- [ ]` list of what to create/change
+## 11. Open questions           numbered — what must be confirmed before implementing
 ```
 
-**Multiple diagrams per page:** just repeat the `.svg-diagram` block (overview +
-one mini per endpoint). The shared JS wires each automatically — no extra
-script, no slug-suffixed IDs. Mini diagrams add class `svg-diagram--mini`:
-`<div class="svg-diagram svg-diagram--mini">`.
+Drop sections that don't apply (a `runbook` has no API spec; a `data-schema` is
+mostly §7). Never drop §11 when anything is uncertain — that is where
+`plan-flow`'s **verify** step lands.
+
+---
+
+## The overview ASCII flow (§2) — the centerpiece
+
+One fenced code block showing the whole flow in order. Rules:
+
+- **Vertical spine** with `│ ▼` for the main path; label each arrow with the
+  action **and** the call that carries it.
+- **Name the system** at each hop: `[Website] …`, `[Service] …`,
+  `[Gateway] …` — so a reader sees the boundary being crossed.
+- **Show the real call on the arrow:** `POST /api/TrnSubmits/{id}/pay`, not "pay".
+- **Branches** use `├─(A)` / `└─(B)` with a one-line note on each.
+- **Nested calls** indent under their caller with `└─`.
+- Follow the block with a **key insight** line (`**Key:** …` / `**หัวใจ:** …`)
+  stating the one thing a reader must not miss (e.g. "trust the webhook, not the
+  redirect").
+
+Skeleton:
+
+```text
+[User] <action that starts the flow>
+   │
+   ▼ <gesture> ── <System>: <what happens> (<call or "no API">)
+   │
+[System A] <page/handler>
+   │  ── <System B>: POST /api/... (<purpose>)
+   │  ── <System B>: GET  /api/... (<purpose>)
+   │
+   ▼ <decision / user action>
+   │  ── <System A> → <System B>: POST /api/.../action
+   │        └─ <System B> → <System C>: <nested call>
+   │              └─ <System C> → <System B>: returns { ... }
+   │
+   ├─(A) <trusted path — server-to-server>  → <outcome>
+   └─(B) <untrusted path — client redirect>  → <outcome>
+   │
+[System A] <final page> → <terminal state>
+```
+
+Keep it tight: consistent indentation, no stray characters, the whole flow on
+one spine. This block and the §3 steps must tell **the same story** — every hop
+in the diagram has a STEP below it.
+
+---
+
+## Step-by-step (§3)
+
+One `### STEP n — <title>` per hop. Each step states:
+
+- **System:** which system(s) this step runs in (bold line right under the
+  heading).
+- **APIs used** — full `METHOD /path` with a one-line purpose; mark whether it
+  **already exists** or **must be built**.
+- **Actions** — the concrete work, one idea per line (state writes, navigation,
+  guards). Use real key/field names.
+- **Business rules** — the exact numbers/formulas (`VAT 7% → 350`, flat rate,
+  ranges), not "calculate the fee".
+
+Mirror the overview: if STEP 3 fans out to A and B, the step text explains both.
+
+---
+
+## API spec (§5)
+
+Group by system (`### 5.1 <System> — existing (reuse)`, `### 5.2 <System> — new`).
+For **each endpoint**:
+
+- heading: `#### METHOD /path — <purpose>`
+- a fenced `jsonc` block with **`// Request`** and **`// Response 200`** (+ every
+  non-2xx it can return, e.g. `// Response 409 — <when>`), using real field
+  names and example values.
+- **Guard:** the authz / state precondition (IDOR check, `status == 'N'` only, …).
+- **Side effect:** every write / external call / event this endpoint causes.
+- **Idempotency:** state it explicitly for anything that moves money or fires on
+  a retryable webhook.
+
+---
+
+## Tables to prefer
+
+- **Actors:** `| System | Responsibility | Ownership |`
+- **Status lifecycle:** `| Code | Meaning | Set by |` + a `Transition:` line.
+- **Data model:** `| Table | Role in this flow |`
+- **Edge cases:** `| Case | Handling |` — one row per failure mode.
+- **Build checklist:** grouped `- [ ]` lists per system.
+
+Keep tables narrow (2–3 columns). Long detail goes in prose or a `jsonc` block,
+not a wide table.
+
+---
+
+## Doc types (pick one, shapes the section set)
+
+| Type            | Pick when                                                  | Leans on                           |
+| --------------- | ---------------------------------------------------------- | ---------------------------------- |
+| `api-flow`      | frontend/client calling backend endpoints                  | §2 spine, §3 steps, §5 API spec    |
+| `backend-logic` | server-side processing — conditions, storage, side effects | §3 branches, §5, §8 edge cases     |
+| `frontend`      | component tree, state flow, API calls from the UI          | §3 per-component, §4 state         |
+| `architecture`  | system components and their relationships                  | §1 actors, §2 graph, §7 model      |
+| `user-journey`  | steps a user takes through a feature                       | §2 spine, §3 steps                 |
+| `runbook`       | operational procedure — setup, deploy, debug               | §3 steps, §8 failures (no §5)      |
+| `data-schema`   | data models, entity relationships                          | §7 model (per-entity field tables) |
+| `general`       | none of the above                                          | whatever fits, same principles     |
+
+---
+
+## Verify pass (before you call the doc done)
+
+`plan-flow` step 2 lives here — review the doc as a skeptic:
+
+- [ ] every arrow in §2 has a matching STEP in §3 (same story, no orphan hop)
+- [ ] every error in an API response block appears in §3 logic and §8 edge cases
+- [ ] every storage write / external call / side effect is named (table + op)
+- [ ] trust boundaries are correct — who is allowed to compute money / hold
+      credentials / be believed (webhook vs redirect)
+- [ ] every uncertain decision is written in §11 Open Questions, and the risky
+      ones are asked to the human **before** coding
+
+If any item fails → fix the doc. Never output a flow you know is incomplete or
+haven't challenged.
+
+---
+
+## Summary (mandatory, printed after writing the file — the ONLY brief part)
+
+```text
+── Sage Docs ─────────────────────────────────────
+Language   · <chosen language>
+Mode       · CREATE | UPDATE
+Doc type   · <api-flow | backend-logic | frontend | architecture | user-journey | runbook | data-schema | general>
+Output     · docs/<slug>.md
+Systems    · <System A, System B, …>          ← repos/systems the flow spans
+Sections   · <§ list>
+Coverage   · <N> steps · <N> endpoints · <N> errors — all covered
+Open Q     · <N> (asked: <the ones raised to the human>)
+──────────────────────────────────────────────────
+```

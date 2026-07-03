@@ -814,6 +814,84 @@
         border-color: rgba(247, 244, 237, 0.5);
       }
 
+      /* Hero install — OS switch */
+      .hero-install {
+        margin: 26px 0 6px;
+        max-width: 820px;
+      }
+      .os-switch {
+        display: inline-flex;
+        gap: 4px;
+        padding: 4px;
+        margin-bottom: 10px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(247, 244, 237, 0.12);
+        border-radius: 10px;
+      }
+      .os-tab {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 8px 16px;
+        border-radius: 7px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .os-tab.is-active {
+        background: var(--mint, #6ee7a0);
+        color: #07120c;
+      }
+      .os-tab:not(.is-active):hover {
+        color: var(--ink);
+      }
+      .cmd-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(247, 244, 237, 0.14);
+        border-radius: 12px;
+        padding: 15px 15px 15px 17px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .cmd-prompt {
+        color: var(--mint, #6ee7a0);
+        font-weight: 700;
+        user-select: none;
+      }
+      .cmd-text {
+        flex: 1;
+        min-width: 0;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .cmd-text::-webkit-scrollbar {
+        display: none;
+      }
+      .cmd-box .copy {
+        margin-left: 0;
+        flex-shrink: 0;
+      }
+      .cmd-note {
+        margin: 10px 2px 0;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .cmd-note code {
+        color: var(--ink);
+      }
+
       pre {
         max-width: 100%;
         margin: 0;
@@ -1272,8 +1350,44 @@
             <span>Safe</span>
             <span>Agreed</span>
           </div>
+          <div class="hero-install" id="install-widget">
+            <div class="os-switch" role="tablist" aria-label="Choose your OS">
+              <button
+                class="os-tab is-active"
+                data-os="win"
+                role="tab"
+                aria-selected="true"
+              >
+                Windows
+              </button>
+              <button
+                class="os-tab"
+                data-os="unix"
+                role="tab"
+                aria-selected="false"
+              >
+                macOS · Linux
+              </button>
+            </div>
+            <div class="cmd-box">
+              <span class="cmd-prompt">PS&gt;</span>
+              <code class="cmd-text"
+                >irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</code
+              >
+              <button
+                class="copy"
+                data-copy="irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex"
+              >
+                Copy
+              </button>
+            </div>
+            <p class="cmd-note">
+              Detects your AI tools &amp; wires them up · re-run any time to
+              update · never touches your own knowledge
+            </p>
+          </div>
           <div class="hero-actions">
-            <a href="#install" class="btn primary">Install in one file</a>
+            <a href="#install" class="btn primary">How install works</a>
             <a href="#proof" class="btn">See AGENTS.md</a>
           </div>
         </div>
@@ -1550,11 +1664,11 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
           <div class="install-layout">
             <div>
               <div class="eyebrow">Install</div>
-              <h2>One file makes cognition enforceable.</h2>
+              <h2>One command makes cognition enforceable.</h2>
               <p class="lead">
-                Drop AGENTS.md into the repo. Wire up your agent. Commit it. Any
-                compatible coding agent now has a protocol to follow before it
-                writes code.
+                It fetches the protocol and commands, detects which AI tools your
+                repo uses, and wires them up. Re-run any time to update. Your own
+                knowledge is never overwritten.
               </p>
             </div>
 
@@ -1566,135 +1680,40 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
               <div class="install-body">
                 <div class="step">
                   <div class="step-head">
-                    <span class="step-num">00</span>
-                    <span>Or let your AI set it up</span>
-                    <button
-                      class="copy"
-                      data-copy='Set up or update Sage in this repo.
-
-(Works for both first install and updating an existing setup — run any time to get the latest files.)
-
-1. Fetch https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md
-   and save it as AGENTS.md at the repo root (overwrite if it already exists).
-2. Detect which AI tools this repo uses by checking for .claude/, .cursor/,
-   .windsurf/, .clinerules/, .github/instructions/, or GEMINI.md.
-   For each one found, fetch the matching adapter from
-   https://raw.githubusercontent.com/qorstack/sage/main/integrations/<tool-path>
-   and save it (overwrite if it already exists). If none are found, ask me which tool I use.
-3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
-   and save it as agents/sage/index.md (overwrite if it already exists).
-4. Fetch these three files into agents/sage/docs/ (overwrite if they exist) —
-   all required by /sage-docs to generate styled HTML documentation:
-   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
-   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.css
-   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.js
-   The .css and .js are the shared theme + diagram zoom/pan every generated doc references.
-5. Reply in markdown with two sections:
-
-## Files installed / updated
-
-List every file that was created or overwritten with its full path relative to the repo root, e.g.:
-
-| File | Status |
-|---|---|
-| `AGENTS.md` | updated |
-| `.claude/commands/sage.md` | updated |
-| `agents/sage/index.md` | created |
-| `agents/sage/docs/docs-style-template.md` | created |
-| `agents/sage/docs/sage-docs.css` | created |
-| `agents/sage/docs/sage-docs.js` | created |
-
-## What to do next
-
-List the four commands now available with a one-sentence description and when to run each:
-
-- `/sage-learning` — **run first:** scans this codebase and writes team knowledge to `agents/sage/`
-- `/sage-search-skill` — **run second:** researches best practices for this stack and adds them as skills
-- `/sage` — **runs before every change:** full cognition pipeline — reads team knowledge, assesses risk, captures what it learned after
-- `/sage-docs` — **on demand:** turns any document into a styled HTML file with an interactive SVG diagram in `docs/` (references shared CSS/JS in `agents/sage/docs/`)
-
-Then ask: "Would you like me to run /sage-learning now to capture this codebase&#39;s patterns?"'
-                    >
-                      Copy prompt
-                    </button>
-                  </div>
-                  <p
-                    style="
-                      margin: 0 0 12px;
-                      font-size: 14px;
-                      color: var(--muted);
-                    "
-                  >
-                    Paste into Claude Code, Cursor, Copilot, or any AI agent:
-                  </p>
-                  <pre style="overflow-x: hidden">
-Set up or update Sage in this repo.
-
-(Works for both first install and updating an existing setup —
-run any time to get the latest files.)
-
-1. Fetch https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md
-   and save it as AGENTS.md at the repo root (overwrite if it already exists).
-2. Detect which AI tools this repo uses by checking for .claude/, .cursor/,
-   .windsurf/, .clinerules/, .github/instructions/, or GEMINI.md.
-   For each one found, fetch the matching adapter from
-   https://raw.githubusercontent.com/qorstack/sage/main/integrations/&lt;tool-path&gt;
-   and save it (overwrite if it already exists). If none are found, ask me
-   which tool I use.
-3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
-   and save it as agents/sage/index.md (overwrite if it already exists).
-4. Fetch these three files into agents/sage/docs/ (overwrite if they exist),
-   all required by /sage-docs for styled HTML generation:
-   - .../agents/sage/docs/docs-style-template.md
-   - .../agents/sage/docs/sage-docs.css
-   - .../agents/sage/docs/sage-docs.js
-   (.css + .js are the shared theme + diagram zoom/pan every generated doc references.)
-5. Reply in markdown with two sections:
-
-## Files installed / updated
-
-List every file created or overwritten with its full path, e.g.:
-
-| File | Status |
-|---|---|
-| `AGENTS.md` | updated |
-| `.claude/commands/sage.md` | updated |
-| `agents/sage/index.md` | created |
-| `agents/sage/docs/docs-style-template.md` | created |
-| `agents/sage/docs/sage-docs.css` | created |
-| `agents/sage/docs/sage-docs.js` | created |
-
-## What to do next
-
-- `/sage-learning` — **run first:** scans codebase, writes team knowledge
-- `/sage-search-skill` — **run second:** researches best practices as skills
-- `/sage` — **runs before every change:** full cognition pipeline
-- `/sage-docs` — **on demand:** styled HTML file with SVG diagram in docs/
-
-Then ask: "Would you like me to run /sage-learning now?"</pre
-                  >
-                </div>
-
-                <div class="step">
-                  <div class="step-head">
                     <span class="step-num">01</span>
-                    <span>Drop the protocol into your repo</span>
+                    <span>Windows — PowerShell</span>
                     <button
                       class="copy"
-                      data-copy="curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md"
+                      data-copy="irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex"
                     >
                       Copy
                     </button>
                   </div>
                   <pre>
-curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md</pre
+irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
                   >
                 </div>
 
                 <div class="step">
                   <div class="step-head">
                     <span class="step-num">02</span>
-                    <span>Wire up your agent</span>
+                    <span>macOS / Linux</span>
+                    <button
+                      class="copy"
+                      data-copy="curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <pre>
+curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh</pre
+                  >
+                </div>
+
+                <div class="step">
+                  <div class="step-head">
+                    <span class="step-num">03</span>
+                    <span>Then seed knowledge from your code</span>
                   </div>
                   <p
                     style="
@@ -1703,37 +1722,13 @@ curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGE
                       color: var(--muted);
                     "
                   >
-                    Claude Code, Codex, OpenCode, Antigravity — native, nothing
-                    else needed.<br />
-                    For Cursor, Windsurf, Cline, Copilot, Gemini — copy the thin
-                    adapter:
+                    Detected &amp; wired automatically: Claude Code, Cursor,
+                    Windsurf, Cline, Copilot, Codex, Gemini. Run
+                    <code>/sage-learning</code> once to capture your team's real
+                    patterns — then just use <code>/sage</code>.
                   </p>
                   <pre>
-# Claude Code
-cp -r integrations/.claude .
-
-# Cursor
-cp -r integrations/.cursor .
-
-# Windsurf / Cline / Copilot / Gemini — same pattern
-cp -r integrations/.&lt;tool&gt; .</pre
-                  >
-                </div>
-
-                <div class="step">
-                  <div class="step-head">
-                    <span class="step-num">03</span>
-                    <span>Optionally seed starter knowledge</span>
-                    <button
-                      class="copy"
-                      data-copy="git clone --depth 1 https://github.com/qorstack/sage t && cp -r t/agents . && rm -rf t"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <pre>
-# or let /sage-learning fill it in from your real codebase
-git clone --depth 1 https://github.com/qorstack/sage t &amp;&amp; cp -r t/agents . &amp;&amp; rm -rf t</pre
+/sage-learning     # scan the repo, write team knowledge to agents/sage/</pre
                   >
                 </div>
               </div>
@@ -1816,9 +1811,12 @@ git clone --depth 1 https://github.com/qorstack/sage t &amp;&amp; cp -r t/agents
                 >
                 <p>
                   Full pipeline before and after every code change — pick role,
-                  read team knowledge, assess risk, code, capture, summarize.
-                  AGENTS.md enforces this automatically; you don't call it
-                  manually.
+                  read team knowledge, assess risk, code, capture, summarize. It
+                  also shows a short checklist and, once you confirm, runs the
+                  right specialist itself: <code>/sage-flow</code>,
+                  <code>/sage-unit-test</code>, <code>/sage-n2n-test</code>,
+                  <code>/sage-security-review</code>. You mostly just type
+                  <code>/sage</code>.
                 </p>
               </div>
             </div>
@@ -1837,11 +1835,11 @@ git clone --depth 1 https://github.com/qorstack/sage t &amp;&amp; cp -r t/agents
                   >/sage-docs &nbsp;·&nbsp; on demand</span
                 >
                 <p>
-                  Turn any spec, README, or meeting note into a styled
-                  HTML file with an interactive SVG diagram (scroll to zoom,
-                  drag to pan), sharing one theme + zoom/pan script from
-                  <code>agents/sage/docs/</code>. Use when a teammate needs to
-                  <em>read</em> — not when an AI needs to follow.
+                  Turn any spec, README, or meeting note into a plain-Markdown
+                  flow doc in <code>docs/</code> — end-to-end ASCII diagram, full
+                  step-by-step, complete API spec, open questions. Reads on
+                  GitHub, diffs in a PR — no HTML, CSS, or JS. Use when a teammate
+                  needs to <em>read</em> — not when an AI needs to follow.
                 </p>
               </div>
             </div>
@@ -1854,11 +1852,15 @@ git clone --depth 1 https://github.com/qorstack/sage t &amp;&amp; cp -r t/agents
           <div class="section-head">
             <div>
               <div class="eyebrow">Commands</div>
-              <h2>Four commands, full lifecycle.</h2>
+              <h2>You mostly just run /sage.</h2>
             </div>
             <p>
-              Learn your codebase first, refresh knowledge, run the pipeline
-              before every change, and generate human-readable docs on demand.
+              Before each change, <code>/sage</code> shows a short checklist and —
+              once you confirm — runs the right specialist itself: design the flow
+              (<code>/sage-flow</code>), write tests
+              (<code>/sage-unit-test</code>, <code>/sage-n2n-test</code>), review
+              security (<code>/sage-security-review</code>), refresh docs
+              (<code>/sage-docs</code>).
             </p>
           </div>
 
@@ -1967,21 +1969,21 @@ Written:
                 <pre>
 /sage-docs [paste spec or describe doc]
 
+Language · English
 Doc type · api-flow
-Diagram  · inline SVG (zoom/pan)
-           POST /api/v1/orders
-           GET  /api/v1/products
-Output   · docs/checkout-flow.html
-Assets   · ../agents/sage/docs/
-           sage-docs.css + .js (shared)
+Output   · docs/checkout-flow.md
+Systems  · Website, Service, Gateway
 
-Sections written
-- Overview Diagram — interactive SVG:
-  frontend → API → DB, exact
-  endpoints + all error cases
-- Quick Reference — endpoint table
-- Request / Response schema
-- Notes — retry, idempotency</pre
+Sections
+- Actors & Systems
+- End-to-end overview (ASCII flow)
+- Step-by-step + full API spec
+- Edge cases · Security
+- Open Questions
+Coverage · 7 steps · 8 endpoints
+           6 errors — all covered
+Plain Markdown — reads on GitHub,
+diffs in a PR. No HTML/CSS/JS.</pre
                 >
               </div>
             </div>
@@ -2057,8 +2059,9 @@ Reuse payments/idempotency.py; never roll your own.</pre
           <div class="eyebrow">Ship aligned code</div>
           <h2>Make every agent inherit your team's judgment.</h2>
           <p>
-            No server. No install step. Just a protocol and a Markdown knowledge
-            folder that make cognition part of the coding workflow.
+            No server. No build. No runtime. Just a protocol, a folder of
+            Markdown commands, and your team's knowledge — one command sets it up
+            and makes cognition part of the coding workflow.
           </p>
           <div class="hero-actions" style="justify-content: center">
             <a href="#install" class="btn primary">Install Sage</a>
@@ -2110,6 +2113,38 @@ Reuse payments/idempotency.py; never roll your own.</pre
           doCopy(button, button.dataset.copy);
         });
       });
+
+      // Hero install — Windows / macOS·Linux switch
+      (function () {
+        var widget = document.getElementById("install-widget");
+        if (!widget) return;
+        var CMD = {
+          win: {
+            prompt: "PS>",
+            text: "irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex",
+          },
+          unix: {
+            prompt: "$",
+            text: "curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh",
+          },
+        };
+        var promptEl = widget.querySelector(".cmd-prompt");
+        var textEl = widget.querySelector(".cmd-text");
+        var copyEl = widget.querySelector(".copy");
+        widget.querySelectorAll(".os-tab").forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            var os = tab.dataset.os;
+            widget.querySelectorAll(".os-tab").forEach(function (t) {
+              var on = t === tab;
+              t.classList.toggle("is-active", on);
+              t.setAttribute("aria-selected", on ? "true" : "false");
+            });
+            promptEl.textContent = CMD[os].prompt;
+            textEl.textContent = CMD[os].text;
+            copyEl.dataset.copy = CMD[os].text;
+          });
+        });
+      })();
     </script>
   </body>
 </html>

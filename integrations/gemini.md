@@ -1,203 +1,26 @@
 # Sage
 
-This project uses **Sage**. Before writing or modifying any code, read and
-follow **`AGENTS.md`** at the repo root — the cognition protocol.
+This project uses **Sage**, a cognition protocol. Before writing or modifying any
+code, read and follow **`AGENTS.md`** at the repo root — it is the single source
+of truth (role selection, the run checklist in §0, risk header, knowledge
+capture, the mandatory summary block). Follow it verbatim.
 
-Every code change runs five steps. Steps 1–3 before code; steps 4–5 after.
+## Commands
 
-**Model & effort ceiling — applies to every step.** Read the actual model and
-effort from the current session context before starting — never assume from
-memory or a previous run. State what you detected in the intent block.
+Sage's commands live, in full, under **`agents/sage/commands/`**. This file is a
+thin adapter — to run any command, open its canonical file and follow it verbatim.
+Don't rely on a copy here; the canonical file is authoritative.
 
-- **Ceiling = the session effort, and it is also the default.** You may go
-  BELOW it for trivial sub-tasks, but NEVER above it — for any reason. If the
-  session is `@ low`, **every** task is `low`, even complex ones. "Standard
-  implementation" or "complex logic" is not a reason to raise above the session
-  level — the ceiling always wins.
-- **Floor:** default `sonnet @ low`. Use `haiku @ low` for trivial
-  fully-specified tasks with no decisions (translation/rewording, adding a log
-  line, an explicit one-line edit) to save tokens — `sonnet` for anything
-  touching logic or behavior
-- **Effort levels** (meaning only, not a target): `low` · `medium` · `high` ·
-  `max` — ignore any level above the session effort
-- **Format:** state full version + effort for every task (≤ session) —
-  e.g. `sonnet 4.6 @ effort:low`
+| Command                | Run this file                                  | When                                     |
+| ---------------------- | ---------------------------------------------- | ---------------------------------------- |
+| `sage`                 | `agents/sage/commands/sage.md`                 | before any non-trivial code change       |
+| `sage-flow`            | `agents/sage/commands/sage-flow.md`            | design a feature/journey before coding   |
+| `sage-unit-test`       | `agents/sage/commands/sage-unit-test.md`       | write unit tests for a target            |
+| `sage-n2n-test`        | `agents/sage/commands/sage-n2n-test.md`        | drive the app end-to-end and prove it    |
+| `sage-security-review` | `agents/sage/commands/sage-security-review.md` | review a change for security holes       |
+| `sage-docs`            | `agents/sage/commands/sage-docs.md`            | turn a document into a Markdown flow doc |
+| `sage-learning`        | `agents/sage/commands/sage-learning.md`        | learn this codebase's patterns           |
+| `sage-search-skill`    | `agents/sage/commands/sage-search-skill.md`    | research best practices for the stack    |
 
-**Before code:**
-
-1. Pick the role lens for this phase (`architect`, `dev`, `debugger`, `frontend`,
-   `qa`, …) — infer from the request. Roles hand off between phases: plan with
-   `architect`, build with `dev`, fix with `debugger`. Each phase loads its own role.
-   **Open `agents/sage/roles/role-<lens>.md` immediately.**
-   - Found → read it, adopt as-is, output: `Role: <lens> [loaded]`. Do not re-derive.
-   - Missing → write the file to disk now (before step 2), output: `Role: <lens> [created]`.
-   On phase handoff output: `Role: <new-lens> [loaded] — handoff from <prev-lens>`.
-   Never start a phase without outputting the role line.
-2. Read `agents/sage/<domain>/rules.md` and relevant `decisions/` files.
-   Quote the rules that apply. Find reusable assets — **open the source file
-   and read its exports** before using them. Never infer an API from a name.
-   **Multi-repo workspace:** anchor all paths (`AGENTS.md`, `agents/sage/`,
-   role files) to the repo root of the file being edited — the closest ancestor
-   with `AGENTS.md`. Add `Repo: <repo-root>` to the intent block. Never read
-   or write knowledge across repos.
-3. Output the intent block, then declare a **parallel plan** — group tasks by
-   phase, mark each `[parallel]` or `[sequential]`. Annotate every task with
-   its model + effort tier. Mark tasks with 🟨 when starting, ✅ when done,
-   ❌ on failure — never continue silently. Stop and ask on `ask` / `reject`.
-
-   ```text
-   Role    : <role> — <task>
-   Model   : <version> @ effort:<level>  ← detected from session, not memory
-   Intent  : <what this change does>
-   Touches : <files, systems, domains>
-   Risk    : LOW | MEDIUM | HIGH — <why>
-   Decision: proceed | warn | ask | reject
-   ```
-
-**After code:**
-
-1. Capture knowledge — mandatory, every run. Knowledge goes to `agents/sage/`
-   **in the repo**, never to local memory. Write the **pattern** (transferable
-   rule), not the implementation. One of:
-   `[new]` create `agents/sage/<domain>/decisions/<slug>.md` ·
-   `[updated]` fix a stale entry ·
-   `[none]` name the existing rule that covered this.
-2. **A response without this block is incomplete.** Output as **plain markdown**
-   (no code fence) the block that matches your role. Full sentences; bullet
-   points for Mechanism, Fix, and Decisions.
-
-   *Debugger / bug fix:*
-
-   ```markdown
-   ── Sage ──────────────────────────────────────────
-   **Role** · debugger — <task>
-   **Model** · <version> @ effort:<level>
-   **Domain** · <domain> | **Risk** · <LOW|MEDIUM|HIGH>
-
-   **Root cause**
-   <why it broke — explain the specific condition or code path>
-
-   **Mechanism**
-   - <trigger>
-   - <propagation>
-   - <symptom>
-
-   **Fix**
-   - <what changed and why it addresses the root cause>
-   - <trade-offs, if any>
-
-   **Validated**
-   <concrete evidence the fix works — not "looks correct">
-
-   **Slipped**
-   <why this wasn't caught earlier — gap in tests, non-obvious API, etc.>
-
-   **Knowledge** · [new | updated | none] `<path>` — <reason>
-   ──────────────────────────────────────────────────
-   ```
-
-   *Dev / build task:*
-
-   ```markdown
-   ── Sage ──────────────────────────────────────────
-   **Role** · <role> — <task>
-   **Model** · <version> @ effort:<level>
-   **Domain** · <domain> | **Risk** · <LOW|MEDIUM|HIGH>
-
-   **Done**
-   <what was built or changed>
-
-   **Decisions**
-   - <key choice and why>
-   - <alternatives considered and ruled out>
-
-   **Validated**
-   <how you confirmed it works — what you ran or checked>
-
-   **Knowledge** · [new | updated | none] `<path>` — <reason>
-   ──────────────────────────────────────────────────
-   ```
-
-`AGENTS.md` is the source of truth — follow it verbatim.
-
----
-
-## Sage Docs
-
-When asked to run sage-docs or "document this" or "generate docs for":
-
-Role: `writer` — open `agents/sage/roles/role-writer.md` (create if missing).
-
-**Step 1 — Analyze & classify.** Extract actors, steps, conditions, data stores,
-side effects, API endpoints. Pick a doc type: `api-flow` · `backend-logic` ·
-`architecture` · `user-journey` · `runbook` · `data-schema` · `general`.
-
-**Step 2 — Diagram.** If 3+ ordered steps or meaningful branches exist, use
-**inline SVG** — place all drawing inside `<g id="svg-content">`. Apply pan/zoom
-via `group.setAttribute('transform', ...)`. **Never** CSS `transform` on a wrapper
-div — it rasterizes SVG pixels causing blurring at zoom. Read
-`agents/sage/docs/docs-style-template.md` §"Zoom/Pan JavaScript" and §"HTML
-scaffold for zoomable diagram section" for exact markup and JS.
-
-**Step 3 — Write `docs/<slug>.html`.** Generate a self-contained file — no
-external stylesheet. Read `agents/sage/docs/docs-style-template.md`, extract
-CSS from the first ` ```css ` block, paste inside `<style>` in `<head>`. HTML
-structure: `<header>` → diagram section (inline SVG, if applicable) → quick-ref
-section → N detail sections — structure per doc type exactly as in the Claude
-adapter at `integrations/.claude/commands/sage-docs.md` §Step 4.
-
-**Summary (mandatory):**
-
-```markdown
-── Sage Docs ─────────────────────────────────────
-**Doc type**   · <type>
-**Diagram**    · inline SVG | none — <reason>
-**Output**     · docs/<slug>.html
-**CSS**        · inlined from agents/sage/docs/docs-style-template.md
-
-**Sections written**
-- <section name> — <brief description>
-
-**Next** · open docs/<slug>.html in a browser to review
-──────────────────────────────────────────────────
-```
-
----
-
-## Sage Learning
-
-When asked to "learn this codebase" or run sage-learning:
-
-Study how **this team actually writes code** and turn it into Sage knowledge, so
-every future agent writes code that matches them. Run once per repo, and again
-after big refactors. Everything goes to `agents/sage/` **in the repo** — never
-to local memory.
-
-1. **Map the repo.** Identify domains, the stack, and conventions in use —
-   naming, error handling, folder layout, logging, testing, repeated patterns.
-2. **Find the reusable assets and read them — do not guess.** For each asset:
-   - **Open the file and read its exports** — signatures, parameter shapes,
-     return types. Never infer from the file name; only the source is authoritative.
-   - Document the full API in `decisions/<slug>.md` (exported symbols + purpose).
-   - Flag assets that cover more use-cases than their name suggests.
-3. **Spot the rules-in-practice.** Each consistent pattern is a candidate rule.
-4. **Write it to `agents/sage/`** (format in `AGENTS.md` §2):
-   - per-domain `rules.md`; `decisions/<slug>.md`; update relevant role files.
-   - Write the **pattern**, not the implementation — rules must apply next time.
-5. **Diff before writing**: never duplicate an existing entry; update in place.
-
-**A response without this block is incomplete.** Close with:
-
-```markdown
-── Sage Learning ─────────────────────────────────
-**Stack** · <language, framework, key libs>
-**Domains** · <list of domains found>
-
-**Written**
-- [new] `agents/sage/<domain>/decisions/<slug>.md` — <pattern title>
-- [updated] `agents/sage/<domain>/rules.md` — <what changed>
-- [skipped] `<file>` — already covered by `<existing-entry>`
-
-**Next** · flip `status: approved` on entries you want enforced
-──────────────────────────────────────────────────
-```
+The run checklist in `AGENTS.md` §0 is the dispatcher: `/sage` decides which
+commands apply, asks you to confirm, then runs the confirmed ones.

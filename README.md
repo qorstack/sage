@@ -22,109 +22,64 @@ four questions against your team's rules, and _then_ codes — or stops and asks
 | 🛡️  | **Is it safe?**   | what's the blast radius — money, auth, data?              |
 | 🤝  | **Did we agree?** | does it respect the rules in `agents/sage/`?              |
 
-No install, no server, no Python. Sage is a cognition protocol in a single
-**[`AGENTS.md`](https://github.com/qorstack/sage/blob/main/AGENTS.md)** —
-Markdown you read, edit, and `git push`. Any agent that reads `AGENTS.md`
-(Claude Code, Cursor, Codex, Copilot…) follows it.
+No server, no build, no Python. Sage is a cognition protocol —
+**[`AGENTS.md`](https://github.com/qorstack/sage/blob/main/AGENTS.md)** plus a
+folder of Markdown commands and team knowledge you read, edit, and `git push`.
+One command installs it; any agent that reads `AGENTS.md` (Claude Code, Cursor,
+Codex, Copilot…) follows it.
 
-## Install — one file, any machine
+## Install — one command
 
-### Let your AI set it up
+Run this in your repo. It fetches the protocol + commands, **detects which AI
+tools you use** (Claude Code, Cursor, Windsurf, Cline, Copilot, Codex, Gemini),
+and drops the matching thin adapters. Re-run any time to update.
 
-Paste this into any AI coding agent (Claude Code, Cursor, Copilot, Windsurf…):
+**Windows (PowerShell):**
 
-```text
-Set up or update Sage in this repo.
-
-(This prompt works for both first install and updating an existing Sage setup —
-run it any time to get the latest files.)
-
-1. Fetch https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md
-   and save it as AGENTS.md at the repo root (overwrite if it already exists).
-2. Detect which AI tools this repo uses by checking for .claude/, .cursor/,
-   .windsurf/, .clinerules/, .github/instructions/, or GEMINI.md.
-   For each one found, fetch the matching adapter from
-   https://raw.githubusercontent.com/qorstack/sage/main/integrations/<tool-path>
-   and save it (overwrite if it already exists). If none are found, ask me which
-   tool I use.
-3. Fetch https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/index.md
-   and save it as agents/sage/index.md (overwrite if it already exists).
-4. Fetch these three files into agents/sage/docs/ (overwrite if they exist) —
-   all required by /sage-docs to generate styled HTML documentation:
-   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/docs-style-template.md
-   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.css
-   - https://raw.githubusercontent.com/qorstack/sage/main/agents/sage/docs/sage-docs.js
-   The .css and .js are the shared theme + diagram zoom/pan that every generated
-   doc references via `../agents/sage/docs/` — so docs stay tiny and update at once.
-5. Reply in **markdown** with two sections:
-
-## Files installed / updated
-
-List every file that was created or overwritten, with its full path relative to
-the repo root, e.g.:
-
-| File | Status |
-|---|---|
-| `AGENTS.md` | updated |
-| `.claude/commands/sage.md` | updated |
-| `agents/sage/index.md` | created |
-
-## What to do next
-
-List the four commands now available, one per line, with a one-sentence
-description of each and **when** to run it:
-
-- `/sage-learning` — **run first:** scans this codebase and writes team
-  knowledge to `agents/sage/`
-- `/sage-search-skill` — **run second:** researches best practices for this
-  stack and adds them as skills
-- `/sage` — **runs before every change:** full cognition pipeline — reads team
-  knowledge, assesses risk, captures what it learned after
-- `/sage-docs` — **on demand:** turns any document into a styled HTML file with
-  an interactive SVG diagram in `docs/` (references shared CSS/JS in
-  `agents/sage/docs/`)
-
-Then ask: "Would you like me to run /sage-learning now to capture this
-codebase's patterns?"
+```powershell
+irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
 ```
 
-Or install manually:
-
-### 1. Copy the protocol
-
-Run this in your repo (works on Windows, macOS, and Linux):
+**macOS / Linux:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md
+curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh
 ```
 
-No terminal? Download
-[`AGENTS.md`](https://github.com/qorstack/sage/blob/main/AGENTS.md)
-and drop it in your repo root.
+It never overwrites your own knowledge under `agents/sage/<domain>/` — only
+Sage's own system files (the protocol, the commands, the style-guide) and the
+tool adapters. Then run `/sage-learning` to seed knowledge from your codebase.
 
-### 2. Wire up your agent
+<details>
+<summary><b>Prefer to install by hand?</b></summary>
 
-**Claude Code, Codex, OpenCode, Antigravity** read `AGENTS.md` natively — nothing else needed.
-
-For **Cursor, Windsurf, Cline, Copilot, Gemini**, copy the thin adapter for your tool:
-
-| Tool           | Command                            |
-| -------------- | ---------------------------------- |
-| Claude Code    | `cp -r integrations/.claude .`     |
-| Cursor         | `cp -r integrations/.cursor .`     |
-| Windsurf       | `cp -r integrations/.windsurf .`   |
-| Cline          | `cp -r integrations/.clinerules .` |
-| GitHub Copilot | `cp -r integrations/.github .`     |
-| Gemini CLI     | `cp integrations/GEMINI.md .`      |
-
-Each adapter is one line: "read and follow `AGENTS.md`." Edit the protocol in
-one place and every agent stays in step.
-
-### 3. Optionally seed starter knowledge
+**1. Copy the protocol.** Download
+[`AGENTS.md`](https://github.com/qorstack/sage/blob/main/AGENTS.md) into your repo
+root, then copy `agents/sage/` from this repo (the canonical commands, the
+style-guide, and starter knowledge). Or clone and copy:
 
 ```bash
-git clone --depth 1 https://github.com/qorstack/sage t && cp -r t/agents . && rm -rf t
+git clone --depth 1 https://github.com/qorstack/sage t && cp t/AGENTS.md . && cp -r t/agents . && rm -rf t
 ```
+
+**2. Wire up your agent.** **Claude Code, Codex, OpenCode, Antigravity** read
+`AGENTS.md` natively. For the rest, copy the thin adapter for your tool:
+
+| Tool           | Command                                 |
+| -------------- | --------------------------------------- |
+| Claude Code    | `cp -r integrations/.claude .`          |
+| Cursor         | `cp -r integrations/.cursor .`          |
+| Windsurf       | `cp -r integrations/.windsurf .`        |
+| Cline          | `cp -r integrations/.clinerules .`      |
+| GitHub Copilot | `cp -r integrations/.github .`          |
+| Codex          | `cp -r integrations/.codex .`           |
+| Gemini CLI     | `cp integrations/gemini.md ./GEMINI.md` |
+
+Each adapter is thin — it points at `AGENTS.md` and the canonical commands under
+`agents/sage/commands/`. Edit the protocol in one place and every agent stays in
+step.
+
+</details>
 
 Commit everything. That's the whole setup.
 
@@ -132,21 +87,37 @@ Commit everything. That's the whole setup.
 
 After installing, run these commands in sequence. Each builds on the last.
 
-| # | Command | When | What it does |
-| --- | --- | --- | --- |
-| 1 | `/sage-learning` | **Once after install** | Scans your codebase, writes rules + decisions to `agents/sage/`. Gives Sage a baseline of your real patterns before it touches anything. |
-| 2 | `/sage-search-skill` | **Once, then after stack changes** | Searches for current best practices for your stack and writes them as skills. Run again when you adopt a new framework or library. |
-| 3 | `/sage` | **Every code change (automatic via AGENTS.md)** | Runs the full pipeline: pick role → read knowledge → assess risk → code → capture → summarize. Happens automatically — you don't call it manually, AGENTS.md enforces it. |
-| 4 | `/sage-docs` | **On demand** | Turns any spec, README, or meeting note into a styled HTML file with an interactive SVG diagram (zoom/pan), referencing the shared theme + JS in `agents/sage/docs/`. Use when a teammate needs to read — not when an AI needs to follow. |
+| #   | Command              | When                                            | What it does                                                                                                                                                                                                                                    |
+| --- | -------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `/sage-learning`     | **Once after install**                          | Scans your codebase, writes rules + decisions to `agents/sage/`. Gives Sage a baseline of your real patterns before it touches anything.                                                                                                        |
+| 2   | `/sage-search-skill` | **Once, then after stack changes**              | Searches for current best practices for your stack and writes them as skills. Run again when you adopt a new framework or library.                                                                                                              |
+| 3   | `/sage`              | **Every code change (automatic via AGENTS.md)** | Runs the full pipeline: pick role → read knowledge → assess risk → code → capture → summarize. Happens automatically — you don't call it manually, AGENTS.md enforces it.                                                                       |
+| 4   | `/sage-docs`         | **On demand**                                   | Turns any spec, README, or meeting note into a plain-Markdown flow doc (`docs/<slug>.md`) — end-to-end ASCII diagram, full step-by-step, complete API spec, open questions. Use when a teammate needs to read — not when an AI needs to follow. |
 
 > **Skip step 1?** Sage still works — it just starts with no team context.
 > Run `/sage-learning` later whenever you want to seed knowledge from real code.
+
+**You mostly just use `/sage`.** Before each change it shows a short **checklist**
+and — once you confirm — runs the right specialist command itself, so you don't
+have to remember them:
+
+| Checklist item    | Runs                    | For                                      |
+| ----------------- | ----------------------- | ---------------------------------------- |
+| `plan-flow`       | `/sage-flow`            | design the flow before coding            |
+| `unit-test`       | `/sage-unit-test`       | write unit tests for what changed        |
+| `n2n-test`        | `/sage-n2n-test`        | drive the flow end-to-end (browser/load) |
+| `security-review` | `/sage-security-review` | check sensitive changes for holes        |
+| `update-docs`     | `/sage-docs`            | refresh the human-facing docs            |
+
+Sage auto-checks what fits the task and auto-unchecks what doesn't (with a
+reason) — you confirm, it runs. Every command's full body lives once in
+`agents/sage/commands/`; the per-tool files just point at it.
 
 ---
 
 ## Commands
 
-Four commands cover the full lifecycle:
+The lifecycle commands you run directly:
 
 **`/sage`** — run the full cognition pipeline before any code change
 
@@ -229,28 +200,25 @@ Written: agents/sage/frontend/skills/server-component-boundaries.md
 6 skills added — review and approve
 ```
 
-**`/sage-docs`** — turn any document into a styled HTML file with an interactive SVG diagram
+**`/sage-docs`** — turn any document into a plain-Markdown flow doc
 
 Give it any source material — a spec, README, API contract, PRD, meeting note.
-Sage classifies the doc type, decides if a diagram fits, generates an inline SVG
-diagram with zoom/pan (scroll to zoom, drag to pan) with full technical detail
-(exact endpoints, conditions, storage ops), and writes `docs/<slug>.html` that
-references the shared theme + zoom/pan JS in `agents/sage/docs/` — so docs stay
-tiny and a theme fix updates them all at once.
+Sage classifies the doc type, builds an end-to-end ASCII flow, then writes
+`docs/<slug>.md` with full technical detail (actors → step-by-step → complete API
+spec → edge cases → security → open questions). Plain Markdown — no CSS/JS, no
+browser; it reads on GitHub and diffs cleanly in a PR. Then it verifies the flow
+as a skeptic and asks you about anything genuinely uncertain before finishing.
 
 ```text
 /sage-docs  [paste or describe the document]
 
+Language   · English
 Doc type   · api-flow
-Diagram    · inline SVG — POST /api/v1/orders, GET /api/v1/products
-Output     · docs/checkout-flow.html
-Assets     · ../agents/sage/docs/sage-docs.css + sage-docs.js (shared)
-
-Sections written
-- Overview Diagram — interactive SVG: frontend → API → DB with exact endpoints + error cases
-- Quick Reference — endpoint summary table (method, path, auth, purpose)
-- Endpoint Detail — request body schema, 201 response, 4xx error table
-- Notes — idempotency, retry behavior
+Output     · docs/checkout-flow.md
+Systems    · Website, Service, Payment-service
+Sections   · Actors · Overview (ASCII) · Steps · API spec · Edge cases · Security · Open Questions
+Coverage   · 7 steps · 8 endpoints · 6 errors — all covered
+Open Q     · 2 (asked: SUB number timing · flat vs ranged fee)
 ```
 
 ## Your rules, as Markdown
@@ -274,8 +242,8 @@ to `approved`. It even keeps a library of senior personas in `agents/sage/roles/
 
 Run **`/sage-learning`** once to seed `agents/sage/` straight from your existing
 code — Sage studies the team's real patterns and writes them up so future code
-matches. Then run **`/sage-docs`** any time you need a document a human will
-open in a browser, not an AI.
+matches. Then run **`/sage-docs`** any time you need a flow doc a human will read
+on GitHub, not an AI.
 
 ## Works with every agent
 
