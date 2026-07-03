@@ -81,19 +81,19 @@ Use this to pick which color a node/badge type should use when drawing an SVG.
 These are **not** rules to copy — they're already defined as `:root` variables
 in [`sage-docs.css`](sage-docs.css).
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--bg` | `#050505` | page background |
-| `--ink` | `#f7f4ed` | headings, high-emphasis text |
-| `--text` | `#d7d0c2` | body text |
-| `--muted` | `#8f897d` | labels, captions |
-| `--line` | `rgba(247,244,237,0.14)` | borders |
-| `--panel-strong` | `#171714` | section backgrounds |
-| `--mint` | `#68d99b` | architecture, success, arrows |
-| `--cyan` | `#71d7ff` | API-flow, AI Agent node |
-| `--amber` | `#f0c45c` | user-journey, warnings |
-| `--violet` | `#a98cff` | backend-logic, docs output |
-| `--red` | `#ff5a49` | runbook, danger |
+| Token            | Value                    | Use                           |
+| ---------------- | ------------------------ | ----------------------------- |
+| `--bg`           | `#050505`                | page background               |
+| `--ink`          | `#f7f4ed`                | headings, high-emphasis text  |
+| `--text`         | `#d7d0c2`                | body text                     |
+| `--muted`        | `#8f897d`                | labels, captions              |
+| `--line`         | `rgba(247,244,237,0.14)` | borders                       |
+| `--panel-strong` | `#171714`                | section backgrounds           |
+| `--mint`         | `#68d99b`                | architecture, success, arrows |
+| `--cyan`         | `#71d7ff`                | API-flow, AI Agent node       |
+| `--amber`        | `#f0c45c`                | user-journey, warnings        |
+| `--violet`       | `#a98cff`                | backend-logic, docs output    |
+| `--red`          | `#ff5a49`                | runbook, danger               |
 
 The full rule set lives in [`sage-docs.css`](sage-docs.css) — edit there, not here.
 
@@ -107,7 +107,9 @@ keeping `id="svg-content"` on the `<g>` is recommended (the JS prefers it).
 ```html
 <section class="diagram-section">
   <h2>Overview</h2>
-  <div class="diagram-label">{label · e.g. "click a node to jump to its section"}</div>
+  <div class="diagram-label">
+    {label · e.g. "click a node to jump to its section"}
+  </div>
   <div class="diagram-container">
     <div class="svg-diagram">
       <div class="diagram-controls">
@@ -115,24 +117,72 @@ keeping `id="svg-content"` on the `<g>` is recommended (the JS prefers it).
         <div class="sep"></div>
         <button data-zoom="out" title="Zoom out">−</button>
         <div class="sep"></div>
-        <button data-zoom="fit" title="Reset" style="font-size:11px">fit</button>
+        <button data-zoom="fit" title="Reset" style="font-size:11px">
+          fit
+        </button>
         <div class="sep"></div>
         <span class="zoom-level">100%</span>
       </div>
-      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"
-           style="font-family:'Inter',system-ui,sans-serif; display:block;">
+      <svg
+        width="100%"
+        height="100%"
+        xmlns="http://www.w3.org/2000/svg"
+        style="font-family:'Inter',system-ui,sans-serif; display:block;"
+      >
         <defs>
-          <marker id="ar-mint"   viewBox="0 0 10 8" refX="9" refY="4" markerWidth="6" markerHeight="5" orient="auto"><polygon points="0,0 10,4 0,8" fill="#68d99b" opacity="0.8"/></marker>
-          <marker id="ar-amber"  viewBox="0 0 10 8" refX="9" refY="4" markerWidth="6" markerHeight="5" orient="auto"><polygon points="0,0 10,4 0,8" fill="#f0c45c" opacity="0.7"/></marker>
-          <marker id="ar-violet" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="6" markerHeight="5" orient="auto"><polygon points="0,0 10,4 0,8" fill="#a98cff" opacity="0.7"/></marker>
-          <marker id="ar-cyan"   viewBox="0 0 10 8" refX="9" refY="4" markerWidth="6" markerHeight="5" orient="auto"><polygon points="0,0 10,4 0,8" fill="#71d7ff" opacity="0.8"/></marker>
+          <marker
+            id="ar-mint"
+            viewBox="0 0 10 8"
+            refX="9"
+            refY="4"
+            markerWidth="6"
+            markerHeight="5"
+            orient="auto"
+          >
+            <polygon points="0,0 10,4 0,8" fill="#68d99b" opacity="0.8" />
+          </marker>
+          <marker
+            id="ar-amber"
+            viewBox="0 0 10 8"
+            refX="9"
+            refY="4"
+            markerWidth="6"
+            markerHeight="5"
+            orient="auto"
+          >
+            <polygon points="0,0 10,4 0,8" fill="#f0c45c" opacity="0.7" />
+          </marker>
+          <marker
+            id="ar-violet"
+            viewBox="0 0 10 8"
+            refX="9"
+            refY="4"
+            markerWidth="6"
+            markerHeight="5"
+            orient="auto"
+          >
+            <polygon points="0,0 10,4 0,8" fill="#a98cff" opacity="0.7" />
+          </marker>
+          <marker
+            id="ar-cyan"
+            viewBox="0 0 10 8"
+            refX="9"
+            refY="4"
+            markerWidth="6"
+            markerHeight="5"
+            orient="auto"
+          >
+            <polygon points="0,0 10,4 0,8" fill="#71d7ff" opacity="0.8" />
+          </marker>
         </defs>
         <!-- All drawing inside this <g> — the JS transforms it (no CSS scale = no blur) -->
         <g id="svg-content">
           <!-- nodes, lines, text. Wrap a node in <a href="#slug"> for click-to-jump. -->
         </g>
       </svg>
-      <div class="diagram-hint">scroll to zoom · drag to pan · click node to jump</div>
+      <div class="diagram-hint">
+        scroll to zoom · drag to pan · click node to jump
+      </div>
     </div>
   </div>
   <p class="diagram-caption">{one-line caption}</p>
@@ -143,47 +193,3 @@ keeping `id="svg-content"` on the `<g>` is recommended (the JS prefers it).
 one mini per endpoint). The shared JS wires each automatically — no extra
 script, no slug-suffixed IDs. Mini diagrams add class `svg-diagram--mini`:
 `<div class="svg-diagram svg-diagram--mini">`.
-
----
-
-## Sticky sidebar TOC — single-file, no framework
-
-`sage-docs.js` builds a **left sticky sidebar** (full-height contents shortcut)
-automatically from the page's `h2`/`h3` content headings, and highlights the
-active one on scroll. The sidebar header shows the page title (from `<h1>`); the
-list is jump-shortcuts to each section. It shows on wide screens (≥1100 px) and
-adds `body.has-toc` so the reading column shifts right to clear it — on narrow
-screens it hides and the column is full-width. **No markup needed** — it just
-appears. To make it useful:
-
-- Use **one `<h1>`** (the page title), then `h2` for main sections, `h3` for
-  detail under an `h2`. Avoid `h4`+ (the TOC only tracks `h2`/`h3`).
-- Give each `h2`/`h3` (or its `section`) a **stable `id`** for clean anchors. If
-  you omit it, the JS slugifies the heading text — fine, but a hand-set id is
-  more stable across edits. Add `scroll-margin-top: 24px` so jumps don't hide
-  under the top edge (already on `.doc-article h2` and the per-section pattern).
-- Name headings as a **concept or action that's searchable** — never vague
-  buckets like `Other`, `Misc`, `เพิ่มเติม`.
-- Headings inside `.diagram-section`, `.tldr-card`, `.quick-ref`, `.doc-footer`
-  are skipped — the TOC lists real content sections only.
-
-## Status badge
-
-Put the doc's lifecycle state in the header `doc-meta` row:
-
-```html
-<span class="badge badge-status-draft">draft</span>      <!-- amber -->
-<span class="badge badge-status-stable">stable</span>    <!-- mint  -->
-<span class="badge badge-status-deprecated">deprecated</span> <!-- red -->
-```
-
-## Related Documents (cross-links)
-
-End a doc with a `## Related Documents` section linking the docs that belong
-together — they're separate single-file `docs/*.html`, linked, not merged:
-
-- a frontend doc → its API contract
-- a backend doc → its data model + permissions
-- an API doc → the feature that uses it
-- a QA doc → the acceptance criteria
-- don't duplicate the same fact across files — link to one source of truth

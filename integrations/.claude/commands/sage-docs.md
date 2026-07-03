@@ -202,49 +202,28 @@ inline CSS/JS.** The stylesheet and zoom/pan JS live in `agents/sage/docs/`.
 </head>
 <body>
   …
-  <script src="../agents/sage/docs/sage-docs.js"></script>  <!-- last line before </body> -->
+  <script src="../agents/sage/docs/sage-docs.js"></script>
+  <!-- last line before </body> -->
 </body>
 ```
 
 The JS auto-wires **every** `.svg-diagram` on the page (overview + all mini
 diagrams) — no inline `<style>`, no per-diagram script, no slug-suffixed IDs.
-Buttons use `data-zoom="in|out|fit"`. It also auto-builds the "On this page"
-TOC (next point). If `agents/sage/docs/sage-docs.css|js` don't exist yet, copy
-them from this repo first.
+Buttons use `data-zoom="in|out|fit"`. If `agents/sage/docs/sage-docs.css|js`
+don't exist yet, copy them from this repo first.
 
 Set `<html lang="...">` to the language chosen in §1 (`en` for English, `th` for
 Thai) and write all prose in that language.
 
-**Headings + sticky sidebar TOC (auto):** `sage-docs.js` builds a left sticky
-sidebar (full-height contents shortcut) from the page's `h2`/`h3`,
-scroll-highlights the active one, and shifts the reading column right to clear it
-(≥1100 px; hidden on mobile) — no markup needed. To make it useful:
-
-- one `<h1>` (the title); `h2` for main sections, `h3` for detail; avoid `h4`+
-- give each `h2`/`h3` (or its `section`) a stable `id` + `scroll-margin-top:24px`
-  (JS auto-slugs any heading missing an id, but a hand-set id is more stable)
-- name headings as a searchable concept/action — never `Other` / `Misc` / vague
-
-**Status badge:** put the doc's lifecycle in the header `doc-meta` row —
-`<span class="badge badge-status-draft|stable|deprecated">…</span>`. Use `draft`
-when the requirement is still unclear, and list Open Questions / Assumptions.
-
 **The document must always read top-to-bottom:**
 
 ```text
-<header>          breadcrumb · badges (+ status badge) · title · subtitle · date
+<header>          breadcrumb · badges · title · subtitle · date
 <div.tldr-card>   TL;DR 2–3 sentences + stat grid
 <section.diagram-section>  overview diagram (80vh)
 <article/sections>         content per type — see §5
-<section> Related Documents   cross-links to FE/BE/API/data-model/QA docs
 <footer>
 ```
-
-**Related Documents (cross-link discipline):** end the doc with a
-`Related Documents` block linking the docs that belong together (separate
-single-file `docs/*.html`, linked — never merged): frontend → API contract ·
-backend → data model + permissions · API → the feature using it · QA →
-acceptance criteria. Don't duplicate a fact across files; link to one source.
 
 **TL;DR card (mandatory, always right after header):**
 
