@@ -1700,13 +1700,13 @@ irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
                     <span>macOS / Linux</span>
                     <button
                       class="copy"
-                      data-copy="curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh"
+                      data-copy="sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)&quot;"
                     >
                       Copy
                     </button>
                   </div>
                   <pre>
-curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh</pre
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"</pre
                   >
                 </div>
 
@@ -2125,7 +2125,7 @@ Reuse payments/idempotency.py; never roll your own.</pre
           },
           unix: {
             prompt: "$",
-            text: "curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh",
+            text: 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"',
           },
         };
         var promptEl = widget.querySelector(".cmd-prompt");

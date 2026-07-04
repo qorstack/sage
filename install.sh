@@ -1,13 +1,16 @@
 #!/bin/sh
 # Sage installer — one command, any repo. Sets up (or updates) Sage:
-#   curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh
+#   sh -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
 #
-# Shows an arrow-key checkbox (Up/Down move, Space toggle, a=all, Enter confirm),
-# fetches the protocol + commands, and drops the adapters you pick. It NEVER
-# touches your own knowledge under agents/sage/<domain>/.
+# (Use the sh -c "$(...)" form — NOT `curl | sh` — so the picker can read your
+# keyboard. With `curl | sh` the script's stdin is the pipe, not the terminal.)
+#
+# Lets you pick which AI tools to wire up, fetches the protocol + commands, and
+# drops the adapters you pick. It NEVER touches your own knowledge under
+# agents/sage/<domain>/.
 #
 # Non-interactive? Prefix with SAGE_TOOLS, e.g.
-#   curl -fsSL .../install.sh | SAGE_TOOLS='claude,cursor' sh   (or 'all')
+#   SAGE_TOOLS='claude,cursor' sh -c "$(curl -fsSL .../install.sh)"   (or 'all')
 set -eu
 
 REPO="https://github.com/qorstack/sage"
@@ -17,7 +20,7 @@ TMP=""
 
 cleanup() {
   [ -n "$TTY_STTY" ] && stty "$TTY_STTY" </dev/tty 2>/dev/null || true
-  [ -w /dev/tty ] && printf '\033[?25h' >/dev/tty 2>/dev/null || true
+  ( printf '\033[?25h' >/dev/tty ) 2>/dev/null || true
   [ -n "$TMP" ] && rm -rf "$TMP" || true
 }
 trap cleanup EXIT INT TERM
@@ -41,6 +44,16 @@ key_name() {
     cline) echo "Cline" ;; copilot) echo "GitHub Copilot" ;; codex) echo "Codex" ;;
     gemini) echo "Gemini CLI" ;; *) echo "" ;;
   esac
+}
+
+read_choice() {  # read one interactive line into $line; return 1 if no input
+  if [ -t 0 ]; then
+    IFS= read -r line          # stdin is the terminal (sh -c "$(curl ...)")
+  elif [ -r /dev/tty ]; then
+    IFS= read -r line </dev/tty # fallback for `curl | sh`
+  else
+    return 1
+  fi
 }
 
 parse_tools() {  # $1 = raw string -> sets $picked
@@ -123,7 +136,7 @@ select_tools_tui() {
 # [x] checkbox by number-toggle over /dev/tty (uses line-read; works everywhere,
 # including git-bash). Sets $picked. Returns 1 if there is no tty.
 select_tools_menu() {
-  [ -r /dev/tty ] || return 1
+  { [ -t 0 ] || [ -r /dev/tty ]; } || return 1
   for k in $ALL; do eval "chk_$k=0"; done
   printf '\nSage: select AI tools — type a number to toggle, "a" for all, Enter when done.\n' >/dev/tty
   drawn=0
@@ -142,7 +155,7 @@ select_tools_menu() {
       i=$((i + 1))
     done
     printf 'toggle (number) / a=all / Enter=confirm: ' >/dev/tty
-    IFS= read -r line </dev/tty || line=""
+    read_choice || line=""
     [ -z "$line" ] && break
     case "$(printf '%s' "$line" | tr 'A-Z' 'a-z' | tr -d ' ')" in
       a | all) for k in $ALL; do eval "chk_$k=1"; done ;;
