@@ -126,11 +126,19 @@ select_tools_menu() {
   [ -r /dev/tty ] || return 1
   for k in $ALL; do eval "chk_$k=0"; done
   printf '\nSage: select AI tools — type a number to toggle, "a" for all, Enter when done.\n' >/dev/tty
+  drawn=0
   while :; do
+    # redraw the list + prompt in place so only the latest state shows
+    [ "$drawn" = 1 ] && printf '\033[8A\033[J' >/dev/tty
+    drawn=1
     i=1
     for k in $ALL; do
-      eval "v=\$chk_$k"; box='[ ]'; [ "$v" = 1 ] && box='[x]'
-      printf '  %s %d) %s\n' "$box" "$i" "$(key_name "$k")" >/dev/tty
+      eval "v=\$chk_$k"
+      if [ "$v" = 1 ]; then
+        printf '  \033[36m[x] %d) %s\033[0m\n' "$i" "$(key_name "$k")" >/dev/tty
+      else
+        printf '  [ ] %d) %s\n' "$i" "$(key_name "$k")" >/dev/tty
+      fi
       i=$((i + 1))
     done
     printf 'toggle (number) / a=all / Enter=confirm: ' >/dev/tty
@@ -147,7 +155,6 @@ select_tools_menu() {
           esac
         done ;;
     esac
-    printf '\n' >/dev/tty
   done
   picked=""
   for k in $ALL; do eval "v=\$chk_$k"; [ "$v" = 1 ] && picked="$picked $k"; done
