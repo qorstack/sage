@@ -49,12 +49,10 @@
     }
     catch { return $null }
     $checked = @{}; foreach ($k in $keys) { $checked[$k] = $false }
-    $pos = 0            # focus starts on the FIRST checkbox
     $curVis = $true
     try {
       [Console]::WriteLine('')
-      [Console]::WriteLine('Sage: select AI tools')
-      [Console]::WriteLine('  1-7 toggle a row - Space toggle - j/k or arrows move - A all - Enter confirm')
+      [Console]::WriteLine('Sage: select AI tools - press 1-7 to toggle, A = all, Enter = confirm')
       [Console]::WriteLine('')
       # reserve one line per tool, then derive the true top row (scroll-safe)
       foreach ($k in $keys) { [Console]::WriteLine('') }
@@ -65,38 +63,28 @@
         $width = [Math]::Max(20, [Console]::WindowWidth - 1)
         for ($i = 0; $i -lt $keys.Count; $i++) {
           [Console]::SetCursorPosition(0, $top + $i)
-          $mark = if ($checked[$keys[$i]]) { '[x]' } else { '[ ]' }
-          if ($i -eq $pos) {
+          if ($checked[$keys[$i]]) {
             [Console]::ForegroundColor = 'Cyan'
-            [Console]::Write(('> {0} {1}) {2}' -f $mark, ($i + 1), $tools[$keys[$i]].name).PadRight($width))
+            [Console]::Write(('  [x] {0}) {1}' -f ($i + 1), $tools[$keys[$i]].name).PadRight($width))
             [Console]::ResetColor()
           }
           else {
-            [Console]::Write(('  {0} {1}) {2}' -f $mark, ($i + 1), $tools[$keys[$i]].name).PadRight($width))
+            [Console]::Write(('  [ ] {0}) {1}' -f ($i + 1), $tools[$keys[$i]].name).PadRight($width))
           }
         }
         $key = [Console]::ReadKey($true)
-        switch ($key.Key.ToString()) {
-          'UpArrow' { $pos = ($pos - 1 + $keys.Count) % $keys.Count }
-          'DownArrow' { $pos = ($pos + 1) % $keys.Count }
-          'Spacebar' { $checked[$keys[$pos]] = -not $checked[$keys[$pos]] }
-          'Enter' {
-            [Console]::SetCursorPosition(0, $top + $keys.Count)
-            return (($keys | Where-Object { $checked[$_] }) -join ',')
-          }
-          default {
-            $ch = "$($key.KeyChar)".ToLower()
-            if ($ch -eq 'a') {
-              $allOn = @($keys | Where-Object { -not $checked[$_] }).Count -eq 0
-              foreach ($k in $keys) { $checked[$k] = -not $allOn }
-            }
-            elseif ($ch -match '^[1-7]$') {
-              $pos = [int]$ch - 1
-              $checked[$keys[$pos]] = -not $checked[$keys[$pos]]
-            }
-            elseif ($ch -in 'k', 'w') { $pos = ($pos - 1 + $keys.Count) % $keys.Count }
-            elseif ($ch -in 'j', 's') { $pos = ($pos + 1) % $keys.Count }
-          }
+        if ($key.Key.ToString() -eq 'Enter') {
+          [Console]::SetCursorPosition(0, $top + $keys.Count)
+          return (($keys | Where-Object { $checked[$_] }) -join ',')
+        }
+        $ch = "$($key.KeyChar)".ToLower()
+        if ($ch -eq 'a') {
+          $allOn = @($keys | Where-Object { -not $checked[$_] }).Count -eq 0
+          foreach ($k in $keys) { $checked[$k] = -not $allOn }
+        }
+        elseif ($ch -match '^[1-7]$') {
+          $idx = [int]$ch - 1
+          $checked[$keys[$idx]] = -not $checked[$keys[$idx]]
         }
       }
     }

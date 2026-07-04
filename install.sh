@@ -4,11 +4,10 @@
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
 #
 # Lets you pick which AI tools to wire up with a checkbox picker:
-#   move   : Up/Down arrows, or j / k, or Tab
-#   toggle : Space (current row) or press 1-7 (that row, instantly)
-#   a      : select/clear all      Enter : confirm
-# Arrow keys are swallowed by some Windows consoles (git-bash/MSYS) — the
-# letter/number keys always work, so the picker stays fully usable everywhere.
+#   press 1-7 to toggle a row (instant, no Enter needed)
+#   a = select/clear all         Enter = confirm
+# Number keys are plain characters, so this works in every console — including
+# git-bash/MSYS, which swallows arrow keys.
 # It NEVER touches your own knowledge under agents/sage/<domain>/.
 #
 # Non-interactive? Prefix with SAGE_TOOLS:
@@ -76,8 +75,8 @@ toggle_row() { # $1 = row number
 }
 
 # Checkbox picker over /dev/tty using stty raw reads (dd) — the input path that
-# works on git-bash/MSYS as well as macOS/Linux. Movement never depends on
-# arrows alone: j/k, Tab, and instant 1-7 toggles always work.
+# works on git-bash/MSYS as well as macOS/Linux. Number keys toggle instantly;
+# no cursor, no arrows — nothing a console can swallow.
 # Returns 1 when unusable so the caller falls back to the numbered prompt.
 select_tools_tui() {
   [ -r /dev/tty ] && [ -w /dev/tty ] || return 1
@@ -87,11 +86,10 @@ select_tools_tui() {
   stty -echo -icanon min 1 time 0 </dev/tty 2>/dev/null || { TTY_STTY=""; return 1; }
   printf '\033[?25l' >/dev/tty
 
-  ESC=$(printf '\033'); CR=$(printf '\r'); TAB=$(printf '\t')
-  pos=1
+  CR=$(printf '\r')
   for k in $ALL; do eval "chk_$k=0"; done
 
-  printf '\nSage: select AI tools\n  1-7 toggle a row - Space toggle - j/k or arrows move - a all - Enter confirm\n\n' >/dev/tty
+  printf '\nSage: select AI tools — press 1-7 to toggle, a = all, Enter = confirm\n\n' >/dev/tty
   drawn=0
   while :; do
     [ "$drawn" = 1 ] && printf '\033[%dA' "$NTOOLS" >/dev/tty
@@ -99,34 +97,21 @@ select_tools_tui() {
     i=1
     for k in $ALL; do
       eval "v=\$chk_$k"
-      box='[ ]'; [ "$v" = 1 ] && box='[x]'
-      if [ "$i" -eq "$pos" ]; then
-        printf '\r\033[K\033[36m> %s %d) %s\033[0m\n' "$box" "$i" "$(key_name "$k")" >/dev/tty
+      if [ "$v" = 1 ]; then
+        printf '\r\033[K  \033[36m[x] %d) %s\033[0m\n' "$i" "$(key_name "$k")" >/dev/tty
       else
-        printf '\r\033[K  %s %d) %s\n' "$box" "$i" "$(key_name "$k")" >/dev/tty
+        printf '\r\033[K  [ ] %d) %s\n' "$i" "$(key_name "$k")" >/dev/tty
       fi
       i=$((i + 1))
     done
     c=$(dd bs=1 count=1 2>/dev/null </dev/tty) || c=""
     case "$c" in
       "" | "$CR") break ;; # Enter (NL is stripped by $(...), CR arrives raw)
-      " ") toggle_row "$pos" ;;
-      [1-7]) pos=$c; toggle_row "$c" ;;
-      k | K | w | W) pos=$((pos > 1 ? pos - 1 : NTOOLS)) ;;
-      j | J | s | S | "$TAB") pos=$((pos < NTOOLS ? pos + 1 : 1)) ;;
+      [1-7]) toggle_row "$c" ;;
       a | A)
         on=1; for k in $ALL; do eval "v=\$chk_$k"; [ "$v" = 0 ] && on=0; done
         nv=1; [ "$on" = 1 ] && nv=0
         for k in $ALL; do eval "chk_$k=$nv"; done ;;
-      "$ESC")
-        # arrow keys: read the rest of the sequence without blocking
-        stty -icanon min 0 time 2 </dev/tty 2>/dev/null || true
-        seq=$(dd bs=1 count=2 2>/dev/null </dev/tty) || seq=""
-        stty -icanon min 1 time 0 </dev/tty 2>/dev/null || true
-        case "$seq" in
-          "[A" | "OA" | "[Z") pos=$((pos > 1 ? pos - 1 : NTOOLS)) ;;
-          "[B" | "OB") pos=$((pos < NTOOLS ? pos + 1 : 1)) ;;
-        esac ;;
     esac
   done
 
