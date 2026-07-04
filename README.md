@@ -31,7 +31,7 @@ Codex, Copilot…) follows it.
 ## Install — one command
 
 Run this in your repo. It **asks which AI tools to wire up** (multi-select:
-Claude Code, Cursor, Windsurf, Cline, Copilot, Codex, Gemini), fetches the
+Claude Code, Codex, Cursor, Copilot, Gemini, Windsurf, Cline), fetches the
 protocol + commands, and drops the adapters you pick. Re-run any time to update.
 
 **Windows (PowerShell):**

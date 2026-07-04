@@ -15,7 +15,7 @@
 set -eu
 
 REPO="https://github.com/qorstack/sage"
-ALL="claude cursor windsurf cline copilot codex gemini"
+ALL="claude codex cursor copilot gemini windsurf cline"
 NTOOLS=7
 TTY_STTY=""
 TMP=""
@@ -29,8 +29,8 @@ trap cleanup EXIT INT TERM
 
 num_to_key() {
   case "$1" in
-    1) echo claude ;; 2) echo cursor ;; 3) echo windsurf ;; 4) echo cline ;;
-    5) echo copilot ;; 6) echo codex ;; 7) echo gemini ;; *) echo "" ;;
+    1) echo claude ;; 2) echo codex ;; 3) echo cursor ;; 4) echo copilot ;;
+    5) echo gemini ;; 6) echo windsurf ;; 7) echo cline ;; *) echo "" ;;
   esac
 }
 key_src() {

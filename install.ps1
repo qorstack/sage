@@ -16,12 +16,12 @@
   # key -> adapter source dir under integrations/ + destination + label
   $tools = [ordered]@{
     claude   = @{ src = '.claude';     dest = '.claude';     name = 'Claude Code' }
+    codex    = @{ src = '.codex';      dest = '.codex';      name = 'Codex' }
     cursor   = @{ src = '.cursor';     dest = '.cursor';     name = 'Cursor' }
+    copilot  = @{ src = '.github';     dest = '.github';     name = 'GitHub Copilot' }
+    gemini   = @{ src = 'gemini';      dest = 'GEMINI.md';   name = 'Gemini CLI' }
     windsurf = @{ src = '.windsurf';   dest = '.windsurf';   name = 'Windsurf' }
     cline    = @{ src = '.clinerules'; dest = '.clinerules'; name = 'Cline' }
-    copilot  = @{ src = '.github';     dest = '.github';     name = 'GitHub Copilot' }
-    codex    = @{ src = '.codex';      dest = '.codex';      name = 'Codex' }
-    gemini   = @{ src = 'gemini';      dest = 'GEMINI.md';   name = 'Gemini CLI' }
   }
   $keys = @($tools.Keys)
 
