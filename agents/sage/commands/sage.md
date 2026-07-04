@@ -1,7 +1,42 @@
 # /sage — Sage cognition pipeline
 
 Run before any non-trivial code change. Steps 1–3 run **before** you write code.
-Steps 4–5 run **after**. All five are mandatory — never skip, never abbreviate.
+Steps 4–5 run **after**. All are mandatory — never skip, never abbreviate.
+
+## Step 0 — Run checklist (MANDATORY — ask first, EVERY run)
+
+**Before anything else — before detecting the model, before loading the role,
+before reading a single file — you MUST present the run checklist and get the
+human's answer.** This is exactly as mandatory as the language question in
+`/sage-docs`: never skip it, never assume it, never proceed without it — even if
+you ran `/sage` a moment ago in this same session.
+
+**How:** call **AskUserQuestion** with a single **multi-select** question,
+`"Which steps should this /sage run include?"`, listing these options — mark each
+that fits the task as recommended, and **pre-explain any you're proposing to skip
+and why** in the option descriptions:
+
+- **plan-flow** — design + verify the flow before coding (`/sage-flow`)
+- **unit-test** — write unit tests for the changed logic (`/sage-unit-test`)
+- **n2n-test** — drive the flow end-to-end in a browser / load tool (`/sage-n2n-test`)
+- **security-review** — review sensitive changes for holes (`/sage-security-review`)
+- **auto-switch-model** — auto-pick model + effort per task, within the ceiling
+
+Recommend the ones the task needs (auto-uncheck the clearly-irrelevant ones with
+a one-line reason in their description), but the human makes the final call in the
+dialog. `automate-test` (run the suite) and `update-docs` (`/sage-docs`) are
+**core** — they always run after code, so they are not in the picker; state that.
+
+**After they answer**, echo the confirmed line, then continue to the steps below,
+invoking each selected command at its point in the pipeline:
+
+```text
+Checklist · ✓ plan-flow → /sage-flow · ✓ unit-test · ~~n2n-test~~ (no UI) · ~~security-review~~ (not sensitive) · ✓ auto-switch-model · core: automate-test + update-docs
+```
+
+If the environment has no way to prompt (a non-interactive/headless run), state
+that, apply the recommended defaults (everything that fits the task), and say
+which you enabled — never silently run nothing.
 
 ## Model & effort — applies to every step
 

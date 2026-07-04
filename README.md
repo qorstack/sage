@@ -30,9 +30,9 @@ Codex, Copilot…) follows it.
 
 ## Install — one command
 
-Run this in your repo. It fetches the protocol + commands, **detects which AI
-tools you use** (Claude Code, Cursor, Windsurf, Cline, Copilot, Codex, Gemini),
-and drops the matching thin adapters. Re-run any time to update.
+Run this in your repo. It **asks which AI tools to wire up** (multi-select:
+Claude Code, Cursor, Windsurf, Cline, Copilot, Codex, Gemini), fetches the
+protocol + commands, and drops the adapters you pick. Re-run any time to update.
 
 **Windows (PowerShell):**
 

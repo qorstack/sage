@@ -24,11 +24,18 @@ in the §4 reply header as `Repo: <repo-root>` (omit when only one repo is open)
 
 Before the §1 pipeline, on **every** code request, Sage acts as a **dispatcher**:
 it decides which of the steps below the task needs, then **presents the checklist
-and waits for the human to confirm before running anything.** In Claude Code,
-show it with **AskUserQuestion** (multi-select); in other tools, print it and wait
-for a reply. Sage never silently launches a sub-command — it always asks first.
-**Every toggle defaults to ON (✓)**, and each maps to a command whose full body
-lives in `agents/sage/commands/` (edit there to change behaviour).
+and waits for the human to confirm before running anything.**
+
+**This gate is MANDATORY and non-skippable — exactly as mandatory as the language
+question in `/sage-docs`.** Never skip it, never assume it, never proceed to code
+without showing it first — even if you ran `/sage` a moment ago in this session.
+In Claude Code, show it with **AskUserQuestion** as a single **multi-select**
+question (`"Which steps should this /sage run include?"`); in other tools, print
+the list and wait for a reply. Sage never silently launches — or silently skips —
+a sub-command; it always asks first. **Every toggle defaults to ON (✓)**, and each
+maps to a command whose full body lives in `agents/sage/commands/` (edit there to
+change behaviour). If the environment truly cannot prompt (headless run), say so,
+apply the recommended defaults, and state which you enabled — never run nothing.
 
 **Always-on — this is Sage itself, never a checkbox:**
 
