@@ -1,9 +1,9 @@
 # Sage installer — one command, any repo. Sets up (or updates) Sage:
 #   irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
 #
-# It asks which AI tools to wire up (multi-select), fetches the protocol +
-# commands, and drops the matching thin adapters. It NEVER touches your own
-# knowledge under agents/sage/<domain>/ — only Sage's own system files.
+# It shows a checkbox picker of AI tools (Up/Down move, Space toggle, A all,
+# Enter confirm), fetches the protocol + commands, and drops the adapters you
+# pick. It NEVER touches your own knowledge under agents/sage/<domain>/.
 #
 # Non-interactive? Set $env:SAGE_TOOLS first, e.g.
 #   $env:SAGE_TOOLS='claude,cursor'; irm .../install.ps1 | iex   (or 'all')
@@ -25,43 +25,79 @@
   }
   $keys = @($tools.Keys)
 
-  # --- choose tools: $env:SAGE_TOOLS override, else interactive multi-select ---
-  if ($env:SAGE_TOOLS) {
-    $raw = $env:SAGE_TOOLS
-  }
-  else {
-    Write-Host ''
-    Write-Host 'Sage: which AI tools should I wire up?'
-    for ($i = 0; $i -lt $keys.Count; $i++) {
-      Write-Host ('  {0}) {1}' -f ($i + 1), $tools[$keys[$i]].name)
-    }
-    $raw = Read-Host 'Enter numbers (e.g. 1,2,5), names, or "a" for all'
-  }
-
-  $picked = @()
-  if ([string]::IsNullOrWhiteSpace($raw) -or $raw.Trim().ToLower() -in @('a', 'all')) {
-    $picked = $keys
-  }
-  else {
+  function Parse-Tools([string]$raw) {
+    if ([string]::IsNullOrWhiteSpace($raw) -or $raw.Trim().ToLower() -in @('a', 'all')) { return $keys }
+    $out = @()
     foreach ($tok in ($raw -split '[,\s]+')) {
       $t = $tok.Trim().ToLower()
       if ($t -eq '') { continue }
-      if ($t -match '^\d+$') {
-        $idx = [int]$t - 1
-        if ($idx -ge 0 -and $idx -lt $keys.Count) { $picked += $keys[$idx] }
-      }
-      elseif ($tools.Contains($t)) { $picked += $t }
+      if ($t -match '^\d+$') { $i = [int]$t - 1; if ($i -ge 0 -and $i -lt $keys.Count) { $out += $keys[$i] } }
+      elseif ($tools.Contains($t)) { $out += $t }
     }
-    $picked = @($picked | Select-Object -Unique)
-  }
-  if ($picked.Count -eq 0) {
-    Write-Host 'Sage: no valid tools selected. Nothing to do.'
-    return
+    return @($out | Select-Object -Unique)
   }
 
+  # Interactive arrow-key checkbox. Returns $null if no interactive console
+  # (then the caller falls back to a typed prompt / SAGE_TOOLS / all).
+  function Select-ToolsTui {
+    try { $null = [Console]::CursorTop } catch { return $null }
+    $checked = @{}; foreach ($k in $keys) { $checked[$k] = $false }
+    $pos = 0
+    try {
+      [Console]::WriteLine('Sage: select AI tools  (Up/Down move - Space toggle - A all - Enter confirm)')
+      $top = [Console]::CursorTop
+      foreach ($k in $keys) { [Console]::WriteLine('') }
+      $width = [Math]::Max(20, [Console]::WindowWidth - 1)
+      while ($true) {
+        for ($i = 0; $i -lt $keys.Count; $i++) {
+          [Console]::SetCursorPosition(0, $top + $i)
+          $mark = if ($checked[$keys[$i]]) { '[x]' } else { '[ ]' }
+          $ptr = if ($i -eq $pos) { '>' } else { ' ' }
+          $line = '{0} {1} {2}' -f $ptr, $mark, $tools[$keys[$i]].name
+          [Console]::Write($line.PadRight($width))
+        }
+        $key = [Console]::ReadKey($true)
+        switch ($key.Key) {
+          'UpArrow' { $pos = ($pos - 1 + $keys.Count) % $keys.Count }
+          'DownArrow' { $pos = ($pos + 1) % $keys.Count }
+          'Spacebar' { $checked[$keys[$pos]] = -not $checked[$keys[$pos]] }
+          'Enter' {
+            [Console]::SetCursorPosition(0, $top + $keys.Count)
+            return @($keys | Where-Object { $checked[$_] })
+          }
+          default {
+            if ($key.KeyChar -eq 'a' -or $key.KeyChar -eq 'A') {
+              $allOn = -not ($keys | Where-Object { -not $checked[$_] })
+              foreach ($k in $keys) { $checked[$k] = -not $allOn }
+            }
+          }
+        }
+      }
+    }
+    catch { return $null }
+  }
+
+  # --- choose tools: env override, else checkbox TUI, else typed prompt / all ---
+  if ($env:SAGE_TOOLS) {
+    $picked = Parse-Tools $env:SAGE_TOOLS
+  }
+  else {
+    $picked = Select-ToolsTui
+    if ($null -eq $picked) {
+      try {
+        Write-Host ''
+        Write-Host 'Sage: which AI tools should I wire up?'
+        for ($i = 0; $i -lt $keys.Count; $i++) { Write-Host ('  {0}) {1}' -f ($i + 1), $tools[$keys[$i]].name) }
+        $picked = Parse-Tools (Read-Host 'Enter numbers (e.g. 1,2,5), names, or "a" for all')
+      }
+      catch { $picked = $keys }
+    }
+  }
+  $picked = @($picked)
+  if ($picked.Count -eq 0) { Write-Host 'Sage: no tools selected. Nothing to do.'; return }
+
   if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Host 'Sage: git is required but was not found. Install Git, then re-run.'
-    return
+    Write-Host 'Sage: git is required but was not found. Install Git, then re-run.'; return
   }
 
   $tmp = Join-Path $env:TEMP ('sage-' + [guid]::NewGuid().ToString('N'))
@@ -73,10 +109,7 @@
   git clone --depth 1 --quiet $repo $tmp 2>&1 | Out-Null
   $cloneOk = ($LASTEXITCODE -eq 0)
   $ErrorActionPreference = $eap
-  if (-not $cloneOk) {
-    Write-Host "Sage: git clone failed (exit $LASTEXITCODE). Check your network and try again."
-    return
-  }
+  if (-not $cloneOk) { Write-Host "Sage: git clone failed (exit $LASTEXITCODE). Check your network and try again."; return }
 
   try {
     # --- protocol + shared system files (always overwrite: these are Sage itself) ---
@@ -93,9 +126,7 @@
     $installed = @()
     foreach ($k in $picked) {
       $t = $tools[$k]
-      if ($k -eq 'gemini') {
-        Copy-Item "$tmp/integrations/gemini.md" './GEMINI.md' -Force
-      }
+      if ($k -eq 'gemini') { Copy-Item "$tmp/integrations/gemini.md" './GEMINI.md' -Force }
       else {
         New-Item -ItemType Directory -Force -Path $t.dest | Out-Null
         Copy-Item "$tmp/integrations/$($t.src)/*" $t.dest -Recurse -Force
@@ -106,7 +137,5 @@
     Write-Host ('Sage: installed. AGENTS.md + agents/sage/ + adapters for: ' + ($installed -join ', '))
     Write-Host 'Next: run  /sage-learning  to seed knowledge from your codebase.'
   }
-  finally {
-    Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
-  }
+  finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }
 }

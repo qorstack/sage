@@ -2,15 +2,16 @@
 # Sage installer — one command, any repo. Sets up (or updates) Sage:
 #   curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh | sh
 #
-# It asks which AI tools to wire up (multi-select), fetches the protocol +
-# commands, and drops the matching thin adapters. It NEVER touches your own
-# knowledge under agents/sage/<domain>/ — only Sage's own system files.
+# It shows an [x] checkbox picker of AI tools (type a number to toggle, Enter to
+# confirm), fetches the protocol + commands, and drops the adapters you pick.
+# It NEVER touches your own knowledge under agents/sage/<domain>/.
 #
 # Non-interactive? Prefix with SAGE_TOOLS, e.g.
 #   curl -fsSL .../install.sh | SAGE_TOOLS='claude,cursor' sh   (or 'all')
 set -eu
 
 REPO="https://github.com/qorstack/sage"
+ALL="claude cursor windsurf cline copilot codex gemini"
 
 num_to_key() {
   case "$1" in
@@ -32,39 +33,61 @@ key_name() {
     gemini) echo "Gemini CLI" ;; *) echo "" ;;
   esac
 }
-ALL="claude cursor windsurf cline copilot codex gemini"
 
-# --- choose tools: SAGE_TOOLS override, else interactive multi-select ---
+parse_tools() {  # $1 = raw string -> sets $picked
+  picked=""
+  case "$(printf '%s' "$1" | tr 'A-Z' 'a-z' | tr -d ' ')" in
+    a|all|"") picked="$ALL"; return ;;
+  esac
+  for tok in $(printf '%s' "$1" | tr ',' ' '); do
+    case "$tok" in
+      [1-7]) k=$(num_to_key "$tok") ;;
+      claude|cursor|windsurf|cline|copilot|codex|gemini) k="$tok" ;;
+      *) k="" ;;
+    esac
+    if [ -n "$k" ]; then
+      case " $picked " in *" $k "*) : ;; *) picked="$picked $k" ;; esac
+    fi
+  done
+}
+
+# --- choose tools: SAGE_TOOLS override, else [x] checkbox over /dev/tty, else all ---
 if [ -n "${SAGE_TOOLS:-}" ]; then
-  raw="$SAGE_TOOLS"
+  parse_tools "$SAGE_TOOLS"
 elif [ -r /dev/tty ]; then
-  printf 'Sage: which AI tools should I wire up?\n'
-  printf '  1) Claude Code\n  2) Cursor\n  3) Windsurf\n  4) Cline\n'
-  printf '  5) GitHub Copilot\n  6) Codex\n  7) Gemini CLI\n'
-  printf 'Enter numbers (e.g. 1,2,5), names, or "a" for all: '
-  read raw </dev/tty
+  for k in $ALL; do eval "chk_$k=0"; done
+  printf 'Sage: select AI tools — type a number to toggle, "a" for all, Enter when done.\n' >/dev/tty
+  while :; do
+    i=1
+    for k in $ALL; do
+      eval "v=\$chk_$k"; mark='[ ]'; [ "$v" = 1 ] && mark='[x]'
+      printf '  %s %d) %s\n' "$mark" "$i" "$(key_name "$k")" >/dev/tty
+      i=$((i + 1))
+    done
+    printf 'toggle (number) / a=all / Enter=confirm: ' >/dev/tty
+    IFS= read -r line </dev/tty || line=""
+    [ -z "$line" ] && break
+    case "$(printf '%s' "$line" | tr 'A-Z' 'a-z' | tr -d ' ')" in
+      a|all) for k in $ALL; do eval "chk_$k=1"; done ;;
+      *)
+        for tok in $(printf '%s' "$line" | tr ',' ' '); do
+          case "$tok" in
+            [1-7])
+              ck=$(num_to_key "$tok"); eval "v=\$chk_$ck"
+              if [ "$v" = 1 ]; then eval "chk_$ck=0"; else eval "chk_$ck=1"; fi ;;
+          esac
+        done ;;
+    esac
+    printf '\n' >/dev/tty
+  done
+  picked=""
+  for k in $ALL; do eval "v=\$chk_$k"; [ "$v" = 1 ] && picked="$picked $k"; done
 else
-  raw="all"
+  picked="$ALL"
 fi
 
-case "$(printf '%s' "$raw" | tr 'A-Z' 'a-z' | tr -d ' ')" in
-  a|all|"") picked="$ALL" ;;
-  *)
-    picked=""
-    for tok in $(printf '%s' "$raw" | tr ',' ' '); do
-      case "$tok" in
-        [1-7]) k=$(num_to_key "$tok") ;;
-        claude|cursor|windsurf|cline|copilot|codex|gemini) k="$tok" ;;
-        *) k="" ;;
-      esac
-      if [ -n "$k" ]; then
-        case " $picked " in *" $k "*) : ;; *) picked="$picked $k" ;; esac
-      fi
-    done
-    ;;
-esac
 if [ -z "$(printf '%s' "$picked" | tr -d ' ')" ]; then
-  echo "Sage: no valid tools selected. Nothing to do."
+  echo "Sage: no tools selected. Nothing to do."
   exit 0
 fi
 
