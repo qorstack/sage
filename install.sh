@@ -3,10 +3,13 @@
 #
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
 #
-# Lets you pick which AI tools to wire up — an arrow-key checkbox when running
-# under bash (git-bash, macOS, Linux), a plain numbered prompt elsewhere —
-# fetches the protocol + commands, and drops the adapters you pick. It NEVER
-# touches your own knowledge under agents/sage/<domain>/.
+# Lets you pick which AI tools to wire up with a checkbox picker:
+#   move   : Up/Down arrows, or j / k, or Tab
+#   toggle : Space (current row) or press 1-7 (that row, instantly)
+#   a      : select/clear all      Enter : confirm
+# Arrow keys are swallowed by some Windows consoles (git-bash/MSYS) — the
+# letter/number keys always work, so the picker stays fully usable everywhere.
+# It NEVER touches your own knowledge under agents/sage/<domain>/.
 #
 # Non-interactive? Prefix with SAGE_TOOLS:
 #   SAGE_TOOLS='claude,cursor' bash -c "$(curl -fsSL .../install.sh)"   (or 'all')
@@ -15,9 +18,11 @@ set -eu
 REPO="https://github.com/qorstack/sage"
 ALL="claude cursor windsurf cline copilot codex gemini"
 NTOOLS=7
+TTY_STTY=""
 TMP=""
 
 cleanup() {
+  [ -n "$TTY_STTY" ] && stty "$TTY_STTY" </dev/tty 2>/dev/null || true
   ( printf '\033[?25h' >/dev/tty ) 2>/dev/null || true
   [ -n "$TMP" ] && rm -rf "$TMP" || true
 }
@@ -64,63 +69,70 @@ collect_picked() {
   for k in $ALL; do eval "v=\$chk_$k"; [ "$v" = 1 ] && picked="$picked $k"; done
 }
 
-# Arrow-key checkbox — requires bash (git-bash, macOS, and Linux bash all
-# qualify; bash's `read -rsn1` handles raw key input itself, no stty games).
-# Keys come from fd 3 (the terminal), UI is drawn on stderr.
-# Returns 1 when unusable so the caller falls back to the numbered prompt.
-select_tools_arrows() {
-  [ -n "${BASH_VERSION:-}" ] || return 1
-  [ -t 2 ] || return 1
-  if [ -t 0 ]; then
-    exec 3<&0
-  elif [ -r /dev/tty ]; then
-    exec 3</dev/tty || return 1
-  else
-    return 1
-  fi
+toggle_row() { # $1 = row number
+  tk=$(num_to_key "$1")
+  eval "tv=\$chk_$tk"
+  if [ "$tv" = 1 ]; then eval "chk_$tk=0"; else eval "chk_$tk=1"; fi
+}
 
-  ESC=$(printf '\033'); CR=$(printf '\r')
+# Checkbox picker over /dev/tty using stty raw reads (dd) — the input path that
+# works on git-bash/MSYS as well as macOS/Linux. Movement never depends on
+# arrows alone: j/k, Tab, and instant 1-7 toggles always work.
+# Returns 1 when unusable so the caller falls back to the numbered prompt.
+select_tools_tui() {
+  [ -r /dev/tty ] && [ -w /dev/tty ] || return 1
+  command -v stty >/dev/null 2>&1 || return 1
+  command -v dd >/dev/null 2>&1 || return 1
+  TTY_STTY=$(stty -g </dev/tty 2>/dev/null) || return 1
+  stty -echo -icanon min 1 time 0 </dev/tty 2>/dev/null || { TTY_STTY=""; return 1; }
+  printf '\033[?25l' >/dev/tty
+
+  ESC=$(printf '\033'); CR=$(printf '\r'); TAB=$(printf '\t')
   pos=1
   for k in $ALL; do eval "chk_$k=0"; done
 
-  printf '\nSage: select AI tools\n  Up/Down move - Space toggle - a all - Enter confirm\n\n' >&2
-  printf '\033[?25l' >&2
+  printf '\nSage: select AI tools\n  1-7 toggle a row - Space toggle - j/k or arrows move - a all - Enter confirm\n\n' >/dev/tty
   drawn=0
   while :; do
-    [ "$drawn" = 1 ] && printf '\033[%dA' "$NTOOLS" >&2
+    [ "$drawn" = 1 ] && printf '\033[%dA' "$NTOOLS" >/dev/tty
     drawn=1
     i=1
     for k in $ALL; do
       eval "v=\$chk_$k"
       box='[ ]'; [ "$v" = 1 ] && box='[x]'
       if [ "$i" -eq "$pos" ]; then
-        printf '\r\033[K\033[36m> %s %s\033[0m\n' "$box" "$(key_name "$k")" >&2
+        printf '\r\033[K\033[36m> %s %d) %s\033[0m\n' "$box" "$i" "$(key_name "$k")" >/dev/tty
       else
-        printf '\r\033[K  %s %s\n' "$box" "$(key_name "$k")" >&2
+        printf '\r\033[K  %s %d) %s\n' "$box" "$i" "$(key_name "$k")" >/dev/tty
       fi
       i=$((i + 1))
     done
-    key=""
-    IFS= read -rsn1 -u3 key 2>/dev/null || { printf '\033[?25h' >&2; return 1; }
-    case "$key" in
-      "$ESC")
-        seq=""
-        IFS= read -rsn2 -t 1 -u3 seq 2>/dev/null || seq=""
-        case "$seq" in
-          "[A" | "OA") pos=$((pos > 1 ? pos - 1 : NTOOLS)) ;;
-          "[B" | "OB") pos=$((pos < NTOOLS ? pos + 1 : 1)) ;;
-        esac ;;
-      " ")
-        ck=$(num_to_key "$pos"); eval "v=\$chk_$ck"
-        if [ "$v" = 1 ]; then eval "chk_$ck=0"; else eval "chk_$ck=1"; fi ;;
+    c=$(dd bs=1 count=1 2>/dev/null </dev/tty) || c=""
+    case "$c" in
+      "" | "$CR") break ;; # Enter (NL is stripped by $(...), CR arrives raw)
+      " ") toggle_row "$pos" ;;
+      [1-7]) pos=$c; toggle_row "$c" ;;
+      k | K | w | W) pos=$((pos > 1 ? pos - 1 : NTOOLS)) ;;
+      j | J | s | S | "$TAB") pos=$((pos < NTOOLS ? pos + 1 : 1)) ;;
       a | A)
         on=1; for k in $ALL; do eval "v=\$chk_$k"; [ "$v" = 0 ] && on=0; done
         nv=1; [ "$on" = 1 ] && nv=0
         for k in $ALL; do eval "chk_$k=$nv"; done ;;
-      "" | "$CR") break ;;
+      "$ESC")
+        # arrow keys: read the rest of the sequence without blocking
+        stty -icanon min 0 time 2 </dev/tty 2>/dev/null || true
+        seq=$(dd bs=1 count=2 2>/dev/null </dev/tty) || seq=""
+        stty -icanon min 1 time 0 </dev/tty 2>/dev/null || true
+        case "$seq" in
+          "[A" | "OA" | "[Z") pos=$((pos > 1 ? pos - 1 : NTOOLS)) ;;
+          "[B" | "OB") pos=$((pos < NTOOLS ? pos + 1 : 1)) ;;
+        esac ;;
     esac
   done
-  printf '\033[?25h' >&2
+
+  stty "$TTY_STTY" </dev/tty 2>/dev/null || true
+  TTY_STTY=""
+  printf '\033[?25h\n' >/dev/tty
   collect_picked
   return 0
 }
@@ -149,10 +161,10 @@ select_tools_prompt() {
   return 0
 }
 
-# --- choose tools: SAGE_TOOLS override, else arrow checkbox, else prompt, else all ---
+# --- choose tools: SAGE_TOOLS override, else checkbox picker, else prompt, else all ---
 if [ -n "${SAGE_TOOLS:-}" ]; then
   parse_tools "$SAGE_TOOLS"
-elif select_tools_arrows; then
+elif select_tools_tui; then
   :
 elif select_tools_prompt; then
   :

@@ -54,7 +54,7 @@
     try {
       [Console]::WriteLine('')
       [Console]::WriteLine('Sage: select AI tools')
-      [Console]::WriteLine('  Up/Down move - Space toggle - A all - Enter confirm')
+      [Console]::WriteLine('  1-7 toggle a row - Space toggle - j/k or arrows move - A all - Enter confirm')
       [Console]::WriteLine('')
       # reserve one line per tool, then derive the true top row (scroll-safe)
       foreach ($k in $keys) { [Console]::WriteLine('') }
@@ -68,11 +68,11 @@
           $mark = if ($checked[$keys[$i]]) { '[x]' } else { '[ ]' }
           if ($i -eq $pos) {
             [Console]::ForegroundColor = 'Cyan'
-            [Console]::Write(('> {0} {1}' -f $mark, $tools[$keys[$i]].name).PadRight($width))
+            [Console]::Write(('> {0} {1}) {2}' -f $mark, ($i + 1), $tools[$keys[$i]].name).PadRight($width))
             [Console]::ResetColor()
           }
           else {
-            [Console]::Write(('  {0} {1}' -f $mark, $tools[$keys[$i]].name).PadRight($width))
+            [Console]::Write(('  {0} {1}) {2}' -f $mark, ($i + 1), $tools[$keys[$i]].name).PadRight($width))
           }
         }
         $key = [Console]::ReadKey($true)
@@ -85,10 +85,17 @@
             return (($keys | Where-Object { $checked[$_] }) -join ',')
           }
           default {
-            if ("$($key.KeyChar)".ToLower() -eq 'a') {
+            $ch = "$($key.KeyChar)".ToLower()
+            if ($ch -eq 'a') {
               $allOn = @($keys | Where-Object { -not $checked[$_] }).Count -eq 0
               foreach ($k in $keys) { $checked[$k] = -not $allOn }
             }
+            elseif ($ch -match '^[1-7]$') {
+              $pos = [int]$ch - 1
+              $checked[$keys[$pos]] = -not $checked[$keys[$pos]]
+            }
+            elseif ($ch -in 'k', 'w') { $pos = ($pos - 1 + $keys.Count) % $keys.Count }
+            elseif ($ch -in 'j', 's') { $pos = ($pos + 1) % $keys.Count }
           }
         }
       }
