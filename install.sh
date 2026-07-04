@@ -60,6 +60,12 @@ parse_tools() {  # $1 = raw string -> sets $picked
 
 # Arrow-key + space checkbox over /dev/tty. Sets $picked. Returns 1 if unusable.
 select_tools_tui() {
+  # Raw-mode arrow keys are unreliable under Windows shells (git-bash / MSYS /
+  # Cygwin) — the console is not a real PTY. Bail so the caller uses the
+  # number-toggle menu instead. (On Windows, prefer the PowerShell installer.)
+  case "$(uname -s 2>/dev/null || echo x)" in
+    MINGW* | MSYS* | CYGWIN* | Windows_NT) return 1 ;;
+  esac
   [ -r /dev/tty ] || return 1
   command -v stty >/dev/null 2>&1 || return 1
   command -v dd >/dev/null 2>&1 || return 1
@@ -114,17 +120,47 @@ select_tools_tui() {
   return 0
 }
 
-# --- choose tools: SAGE_TOOLS override, else checkbox TUI, else typed / all ---
+# [x] checkbox by number-toggle over /dev/tty (uses line-read; works everywhere,
+# including git-bash). Sets $picked. Returns 1 if there is no tty.
+select_tools_menu() {
+  [ -r /dev/tty ] || return 1
+  for k in $ALL; do eval "chk_$k=0"; done
+  printf '\nSage: select AI tools — type a number to toggle, "a" for all, Enter when done.\n' >/dev/tty
+  while :; do
+    i=1
+    for k in $ALL; do
+      eval "v=\$chk_$k"; box='[ ]'; [ "$v" = 1 ] && box='[x]'
+      printf '  %s %d) %s\n' "$box" "$i" "$(key_name "$k")" >/dev/tty
+      i=$((i + 1))
+    done
+    printf 'toggle (number) / a=all / Enter=confirm: ' >/dev/tty
+    IFS= read -r line </dev/tty || line=""
+    [ -z "$line" ] && break
+    case "$(printf '%s' "$line" | tr 'A-Z' 'a-z' | tr -d ' ')" in
+      a | all) for k in $ALL; do eval "chk_$k=1"; done ;;
+      *)
+        for tok in $(printf '%s' "$line" | tr ',' ' '); do
+          case "$tok" in
+            [1-7])
+              ck=$(num_to_key "$tok"); eval "v=\$chk_$ck"
+              if [ "$v" = 1 ]; then eval "chk_$ck=0"; else eval "chk_$ck=1"; fi ;;
+          esac
+        done ;;
+    esac
+    printf '\n' >/dev/tty
+  done
+  picked=""
+  for k in $ALL; do eval "v=\$chk_$k"; [ "$v" = 1 ] && picked="$picked $k"; done
+  return 0
+}
+
+# --- choose tools: SAGE_TOOLS override, else arrow TUI (unix), else menu, else all ---
 if [ -n "${SAGE_TOOLS:-}" ]; then
   parse_tools "$SAGE_TOOLS"
 elif select_tools_tui; then
   :
-elif [ -r /dev/tty ]; then
-  printf 'Sage: which AI tools? (numbers e.g. 1,2,5, names, or "a" for all)\n' >/dev/tty
-  i=1; for k in $ALL; do printf '  %d) %s\n' "$i" "$(key_name "$k")" >/dev/tty; i=$((i + 1)); done
-  printf '> ' >/dev/tty
-  IFS= read -r line </dev/tty || line="all"
-  parse_tools "$line"
+elif select_tools_menu; then
+  :
 else
   picked="$ALL"
 fi

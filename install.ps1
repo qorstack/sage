@@ -69,7 +69,7 @@
           }
         }
         $key = [Console]::ReadKey($true)
-        switch ($key.Key) {
+        switch ($key.Key.ToString()) {
           'UpArrow' { $pos = ($pos - 1 + $keys.Count) % $keys.Count }
           'DownArrow' { $pos = ($pos + 1) % $keys.Count }
           'Spacebar' { $checked[$keys[$pos]] = -not $checked[$keys[$pos]] }
@@ -90,25 +90,45 @@
     finally { try { [Console]::CursorVisible = $curVis; [Console]::ResetColor() } catch {} }
   }
 
-  # --- choose tools: env override, else checkbox TUI, else typed prompt / all ---
+  # [x] checkbox by number-toggle. Runs when the arrow TUI can't (e.g. the VSCode
+  # PowerShell Integrated Console, where ReadKey is unavailable). Uses Read-Host,
+  # so it works wherever the shell can prompt. Returns a comma-joined key string.
+  function Select-ToolsMenu {
+    $checked = @{}; foreach ($k in $keys) { $checked[$k] = $false }
+    Write-Host ''
+    Write-Host 'Sage: select AI tools - type a number to toggle, "a" for all, Enter when done.'
+    while ($true) {
+      for ($i = 0; $i -lt $keys.Count; $i++) {
+        $mark = if ($checked[$keys[$i]]) { '[x]' } else { '[ ]' }
+        Write-Host ('  {0} {1}) {2}' -f $mark, ($i + 1), $tools[$keys[$i]].name)
+      }
+      $line = ''
+      try { $line = Read-Host 'toggle (number) / a=all / Enter=confirm' }
+      catch { foreach ($k in $keys) { $checked[$k] = $true }; break }
+      if ([string]::IsNullOrWhiteSpace($line)) { break }
+      if ($line.Trim().ToLower() -in @('a', 'all')) { foreach ($k in $keys) { $checked[$k] = $true } }
+      else {
+        foreach ($tok in ($line -split '[,\s]+')) {
+          if ($tok -match '^\d+$') {
+            $idx = [int]$tok - 1
+            if ($idx -ge 0 -and $idx -lt $keys.Count) { $checked[$keys[$idx]] = -not $checked[$keys[$idx]] }
+          }
+        }
+      }
+      Write-Host ''
+    }
+    return (($keys | Where-Object { $checked[$_] }) -join ',')
+  }
+
+  # --- choose tools: env override, else arrow TUI, else [x] number-toggle menu ---
   if ($env:SAGE_TOOLS) {
     $picked = Parse-Tools $env:SAGE_TOOLS
   }
   else {
     $sel = Select-ToolsTui
-    if ($null -eq $sel) {
-      try {
-        Write-Host ''
-        Write-Host 'Sage: which AI tools should I wire up?'
-        for ($i = 0; $i -lt $keys.Count; $i++) { Write-Host ('  {0}) {1}' -f ($i + 1), $tools[$keys[$i]].name) }
-        $picked = Parse-Tools (Read-Host 'Enter numbers (e.g. 1,2,5), names, or "a" for all')
-      }
-      catch { $picked = $keys }
-    }
-    else {
-      $picked = @()
-      foreach ($k in ($sel -split ',')) { if ($k -ne '') { $picked += $k } }
-    }
+    if ($null -eq $sel) { $sel = Select-ToolsMenu }
+    $picked = @()
+    foreach ($k in ($sel -split ',')) { if ($k -ne '') { $picked += $k } }
   }
   $picked = @($picked)
   if ($picked.Count -eq 0) { Write-Host 'Sage: no tools selected. Nothing to do.'; return }
