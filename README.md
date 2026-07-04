@@ -43,7 +43,7 @@ irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
 **macOS / Linux:**
 
 ```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
 ```
 
 It never overwrites your own knowledge under `agents/sage/<domain>/` — only

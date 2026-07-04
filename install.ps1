@@ -40,7 +40,14 @@
   # Interactive arrow-key checkbox. Returns a comma-joined key string (may be
   # empty), or $null if there is no usable console (caller then falls back).
   function Select-ToolsTui {
-    try { $null = [Console]::CursorTop; $null = [Console]::WindowWidth } catch { return $null }
+    # Arrow keys need a real console: bail (to the number-toggle menu) when input
+    # is redirected or ReadKey is unavailable (e.g. VSCode Integrated Console).
+    try {
+      if ([Console]::IsInputRedirected) { return $null }
+      $null = [Console]::KeyAvailable
+      $null = [Console]::CursorTop; $null = [Console]::WindowWidth
+    }
+    catch { return $null }
     $checked = @{}; foreach ($k in $keys) { $checked[$k] = $false }
     $pos = 0            # focus starts on the FIRST checkbox
     $curVis = $true
