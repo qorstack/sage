@@ -37,24 +37,36 @@
     return @($out | Select-Object -Unique)
   }
 
-  # Interactive arrow-key checkbox. Returns $null if no interactive console
-  # (then the caller falls back to a typed prompt / SAGE_TOOLS / all).
+  # Interactive arrow-key checkbox. Returns a comma-joined key string (may be
+  # empty), or $null if there is no usable console (caller then falls back).
   function Select-ToolsTui {
-    try { $null = [Console]::CursorTop } catch { return $null }
+    try { $null = [Console]::CursorTop; $null = [Console]::WindowWidth } catch { return $null }
     $checked = @{}; foreach ($k in $keys) { $checked[$k] = $false }
-    $pos = 0
+    $pos = 0            # focus starts on the FIRST checkbox
+    $curVis = $true
     try {
-      [Console]::WriteLine('Sage: select AI tools  (Up/Down move - Space toggle - A all - Enter confirm)')
-      $top = [Console]::CursorTop
+      [Console]::WriteLine('')
+      [Console]::WriteLine('Sage: select AI tools')
+      [Console]::WriteLine('  Up/Down move - Space toggle - A all - Enter confirm')
+      [Console]::WriteLine('')
+      # reserve one line per tool, then derive the true top row (scroll-safe)
       foreach ($k in $keys) { [Console]::WriteLine('') }
-      $width = [Math]::Max(20, [Console]::WindowWidth - 1)
+      $top = [Console]::CursorTop - $keys.Count
+      try { $curVis = [Console]::CursorVisible } catch {}
+      try { [Console]::CursorVisible = $false } catch {}
       while ($true) {
+        $width = [Math]::Max(20, [Console]::WindowWidth - 1)
         for ($i = 0; $i -lt $keys.Count; $i++) {
           [Console]::SetCursorPosition(0, $top + $i)
           $mark = if ($checked[$keys[$i]]) { '[x]' } else { '[ ]' }
-          $ptr = if ($i -eq $pos) { '>' } else { ' ' }
-          $line = '{0} {1} {2}' -f $ptr, $mark, $tools[$keys[$i]].name
-          [Console]::Write($line.PadRight($width))
+          if ($i -eq $pos) {
+            [Console]::ForegroundColor = 'Cyan'
+            [Console]::Write(('> {0} {1}' -f $mark, $tools[$keys[$i]].name).PadRight($width))
+            [Console]::ResetColor()
+          }
+          else {
+            [Console]::Write(('  {0} {1}' -f $mark, $tools[$keys[$i]].name).PadRight($width))
+          }
         }
         $key = [Console]::ReadKey($true)
         switch ($key.Key) {
@@ -63,11 +75,11 @@
           'Spacebar' { $checked[$keys[$pos]] = -not $checked[$keys[$pos]] }
           'Enter' {
             [Console]::SetCursorPosition(0, $top + $keys.Count)
-            return @($keys | Where-Object { $checked[$_] })
+            return (($keys | Where-Object { $checked[$_] }) -join ',')
           }
           default {
-            if ($key.KeyChar -eq 'a' -or $key.KeyChar -eq 'A') {
-              $allOn = -not ($keys | Where-Object { -not $checked[$_] })
+            if ("$($key.KeyChar)".ToLower() -eq 'a') {
+              $allOn = @($keys | Where-Object { -not $checked[$_] }).Count -eq 0
               foreach ($k in $keys) { $checked[$k] = -not $allOn }
             }
           }
@@ -75,6 +87,7 @@
       }
     }
     catch { return $null }
+    finally { try { [Console]::CursorVisible = $curVis; [Console]::ResetColor() } catch {} }
   }
 
   # --- choose tools: env override, else checkbox TUI, else typed prompt / all ---
@@ -82,8 +95,8 @@
     $picked = Parse-Tools $env:SAGE_TOOLS
   }
   else {
-    $picked = Select-ToolsTui
-    if ($null -eq $picked) {
+    $sel = Select-ToolsTui
+    if ($null -eq $sel) {
       try {
         Write-Host ''
         Write-Host 'Sage: which AI tools should I wire up?'
@@ -91,6 +104,10 @@
         $picked = Parse-Tools (Read-Host 'Enter numbers (e.g. 1,2,5), names, or "a" for all')
       }
       catch { $picked = $keys }
+    }
+    else {
+      $picked = @()
+      foreach ($k in ($sel -split ',')) { if ($k -ne '') { $picked += $k } }
     }
   }
   $picked = @($picked)
