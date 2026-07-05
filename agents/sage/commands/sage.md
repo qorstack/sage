@@ -3,18 +3,30 @@
 Run before any non-trivial code change. Steps 1–3 run **before** you write code.
 Steps 4–5 run **after**. All are mandatory — never skip, never abbreviate.
 
-## Step 0 — Run checklist (MANDATORY — ask first, EVERY run)
+## Step 0 — Gauge the task, then run the checklist
 
-**Before anything else — before detecting the model, before loading the role,
-before reading a single file — you MUST present the run checklist and get the
-human's answer.** This is exactly as mandatory as the language question in
-`/sage-docs`: never skip it, never assume it, never proceed without it — even if
-you ran `/sage` a moment ago in this same session.
+**Step 0a — is this trivial or substantial? (decide first, silently.)**
+
+- **Trivial** — no logic/behaviour change, no real decision: a typo, a rename, a
+  copy/comment tweak, a log line, a formatting pass, an explicit one-line edit, or
+  just answering/explaining. **Do NOT show the checklist.** Open with one line —
+  `Checklist · skipped (trivial: <why>)` — and go do the work (role + a glance at
+  risk still apply; `automate-test` still runs if there's something to run). Don't
+  make the human answer a picker for a one-liner.
+- **Substantial** — touches logic, control flow, an API, a schema, money/auth/PII,
+  more than one file, a new feature, or a bug that needs investigation. Go to 0b.
+  When unsure which side it's on, treat it as substantial.
+
+**Step 0b — the checklist (substantial tasks only, then MANDATORY).** Present the
+run checklist and get the human's answer before proceeding — as mandatory as the
+language question in `/sage-docs`: on a substantial task never skip it, never
+assume it, never code without it.
 
 **How:** call **AskUserQuestion** with a single **multi-select** question,
-`"Which steps should this /sage run include?"`, listing these options — mark each
-that fits the task as recommended, and **pre-explain any you're proposing to skip
-and why** in the option descriptions:
+`"Which steps should this /sage run include?"` (put the task in one line in the
+question header), listing these options — mark each that fits the task as
+recommended, and **pre-explain any you're proposing to skip and why** in the
+option descriptions:
 
 - **plan-flow** — design + verify the flow before coding (`/sage-flow`)
 - **unit-test** — write unit tests for the changed logic (`/sage-unit-test`)

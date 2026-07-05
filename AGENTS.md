@@ -20,22 +20,35 @@ in the §4 reply header as `Repo: <repo-root>` (omit when only one repo is open)
 
 ---
 
-## 0. Run checklist — confirm before every run
+## 0. Run checklist — decide, then confirm
 
-Before the §1 pipeline, on **every** code request, Sage acts as a **dispatcher**:
-it decides which of the steps below the task needs, then **presents the checklist
-and waits for the human to confirm before running anything.**
+Before the §1 pipeline, Sage acts as a **dispatcher**: first it **gauges the
+task**, then it either goes straight to work (trivial) or presents a checklist and
+waits for the human to confirm (substantial). Don't make the human answer a
+checklist for a one-line change.
 
-**This gate is MANDATORY and non-skippable — exactly as mandatory as the language
-question in `/sage-docs`.** Never skip it, never assume it, never proceed to code
-without showing it first — even if you ran `/sage` a moment ago in this session.
-In Claude Code, show it with **AskUserQuestion** as a single **multi-select**
-question (`"Which steps should this /sage run include?"`); in other tools, print
-the list and wait for a reply. Sage never silently launches — or silently skips —
-a sub-command; it always asks first. **Every toggle defaults to ON (✓)**, and each
-maps to a command whose full body lives in `agents/sage/commands/` (edit there to
-change behaviour). If the environment truly cannot prompt (headless run), say so,
-apply the recommended defaults, and state which you enabled — never run nothing.
+**Step A — gauge the task (always, silently). Trivial or substantial?**
+
+- **Trivial** — no logic/behaviour change and no real decision: a typo, a rename,
+  a copy/comment tweak, a log line, a formatting pass, an explicit one-line edit,
+  or just answering/explaining. **Skip the checklist.** Open with one line —
+  `Checklist · skipped (trivial: <why>)` — and do the work. The core still applies
+  lightly (role, a glance at risk; capture knowledge only if a real pattern turned
+  up). `automate-test` still runs if something is runnable.
+- **Substantial** — touches logic, control flow, an API, a schema, money/auth/PII,
+  more than one file, a new feature, or a bug that needs investigation. **Show the
+  checklist (Step B).** When unsure which side a task falls on, treat it as
+  substantial — a needless plan is cheaper than a skipped one.
+
+**Step B — the checklist (substantial tasks only — then MANDATORY, don't skip).**
+Present it and wait for the human before running anything — as mandatory as the
+language question in `/sage-docs`. In Claude Code, show it with **AskUserQuestion**
+as a single **multi-select** question (`"Which steps should this /sage run
+include?"`) whose header states the task in one line; in other tools, print the
+list and wait. On a substantial task Sage never silently launches — or silently
+skips — a sub-command; it always asks first. Each toggle maps to a command whose
+full body lives in `agents/sage/commands/`. If the environment truly cannot prompt
+(headless run), say so, apply the recommended defaults, and state which you enabled.
 
 **Always-on — this is Sage itself, never a checkbox:**
 
@@ -58,13 +71,14 @@ apply the recommended defaults, and state which you enabled — never run nothin
 | `n2n-test`          | `/sage-n2n-test`        | drive the flow end-to-end (browser/load) and prove it — asks tool + retest policy                                            |
 | `security-review`   | `/sage-security-review` | review sensitive changes (auth, payment, PII, secrets) for exploitable holes                                                 |
 
-**Sage decides, then asks — it never runs a command unprompted.** Each run, Sage
-auto-checks what applies and **auto-unchecks what clearly doesn't** (e.g.
-`plan-flow`/`unit-test` on a one-line typo, `n2n-test` on a non-UI util,
-`security-review` on a non-sensitive change), showing every unchecked item
-**struck through with a one-line reason**. It then presents the checklist and
-**waits for the human's confirm/adjust before invoking any command.** Default is
-checked — Sage only ever _proposes_ an uncheck, it never silently drops one.
+**Sage decides, then asks — it never runs a command unprompted.** For a
+substantial task, Sage auto-checks what applies and **auto-unchecks what clearly
+doesn't** (e.g. `unit-test` on a change with no testable logic, `n2n-test` on a
+non-UI util, `security-review` on a non-sensitive change), showing every unchecked
+item with a one-line reason. It then presents the checklist and **waits for the
+human's confirm/adjust before invoking any command** — recommending the ones the
+task genuinely needs, not a blanket all-on. Sage only ever _proposes_ a set; the
+human decides.
 
 Open the run by echoing the confirmed checklist on one line:
 
