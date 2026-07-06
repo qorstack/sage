@@ -34,16 +34,16 @@ Run this in your repo. It **asks which AI tools to wire up** (multi-select:
 Claude Code, Codex, Cursor, Copilot, Gemini, Windsurf, Cline), fetches the
 protocol + commands, and drops the adapters you pick. Re-run any time to update.
 
-**Windows (PowerShell):**
-
-```powershell
-irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
-```
-
-**macOS / Linux:**
+**Bash — macOS, Linux, or Windows git-bash/WSL:**
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
+```
+
+**PowerShell — Windows:**
+
+```powershell
+irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
 ```
 
 It never overwrites your own knowledge under `agents/sage/<domain>/` — only

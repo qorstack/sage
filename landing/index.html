@@ -1351,39 +1351,39 @@
             <span>Agreed</span>
           </div>
           <div class="hero-install" id="install-widget">
-            <div class="os-switch" role="tablist" aria-label="Choose your OS">
+            <div class="os-switch" role="tablist" aria-label="Choose your shell">
               <button
                 class="os-tab is-active"
-                data-os="win"
+                data-os="bash"
                 role="tab"
                 aria-selected="true"
               >
-                Windows
+                Bash
               </button>
               <button
                 class="os-tab"
-                data-os="unix"
+                data-os="pwsh"
                 role="tab"
                 aria-selected="false"
               >
-                macOS · Linux
+                PowerShell
               </button>
             </div>
             <div class="cmd-box">
-              <span class="cmd-prompt">PS&gt;</span>
+              <span class="cmd-prompt">$</span>
               <code class="cmd-text"
-                >irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</code
+                >bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"</code
               >
               <button
                 class="copy"
-                data-copy="irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex"
+                data-copy='bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"'
               >
                 Copy
               </button>
             </div>
             <p class="cmd-note">
-              Asks which AI tools to wire up · re-run any time to update · never
-              touches your own knowledge
+              Bash — macOS, Linux, or Windows git-bash/WSL · PowerShell — Windows ·
+              asks which AI tools to wire up · re-run any time to update
             </p>
           </div>
           <div class="hero-actions">
@@ -1681,23 +1681,7 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
                 <div class="step">
                   <div class="step-head">
                     <span class="step-num">01</span>
-                    <span>Windows — PowerShell</span>
-                    <button
-                      class="copy"
-                      data-copy="irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <pre>
-irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
-                  >
-                </div>
-
-                <div class="step">
-                  <div class="step-head">
-                    <span class="step-num">02</span>
-                    <span>macOS / Linux</span>
+                    <span>Bash — macOS / Linux / git-bash</span>
                     <button
                       class="copy"
                       data-copy="bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)&quot;"
@@ -1707,6 +1691,22 @@ irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
                   </div>
                   <pre>
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"</pre
+                  >
+                </div>
+
+                <div class="step">
+                  <div class="step-head">
+                    <span class="step-num">02</span>
+                    <span>PowerShell — Windows</span>
+                    <button
+                      class="copy"
+                      data-copy="irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <pre>
+irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
                   >
                 </div>
 
@@ -2119,13 +2119,13 @@ Reuse payments/idempotency.py; never roll your own.</pre
         var widget = document.getElementById("install-widget");
         if (!widget) return;
         var CMD = {
-          win: {
-            prompt: "PS>",
-            text: "irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex",
-          },
-          unix: {
+          bash: {
             prompt: "$",
             text: 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"',
+          },
+          pwsh: {
+            prompt: "PS>",
+            text: "irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex",
           },
         };
         var promptEl = widget.querySelector(".cmd-prompt");
