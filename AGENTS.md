@@ -22,33 +22,55 @@ in the §4 reply header as `Repo: <repo-root>` (omit when only one repo is open)
 
 ## 0. Run checklist — decide, then confirm
 
-Before the §1 pipeline, Sage acts as a **dispatcher**: first it **gauges the
-task**, then it either goes straight to work (trivial) or presents a checklist and
-waits for the human to confirm (substantial). Don't make the human answer a
-checklist for a one-line change.
+Before the §1 pipeline, Sage decides whether to show the checklist from two
+inputs: the per-machine preference in `.sage-local.json`, and — in smart mode —
+how big the task is. **Read `.sage-local.json` at the repo root first** (a
+gitignored, per-machine file holding `askMode` and the last `checklist`).
 
-**Step A — gauge the task (always, silently). Trivial or substantial?**
+**Step A — first run: force the ask + set the mode.** If `.sage-local.json`
+**doesn't exist yet**, this is the first run on this machine: **ALWAYS show the
+checklist — never skip the first time — and ask how often to ask from now on.**
+Use **AskUserQuestion** with **two** questions:
 
-- **Trivial** — no logic/behaviour change and no real decision: a typo, a rename,
-  a copy/comment tweak, a log line, a formatting pass, an explicit one-line edit,
-  or just answering/explaining. **Skip the checklist.** Open with one line —
-  `Checklist · skipped (trivial: <why>)` — and do the work. The core still applies
-  lightly (role, a glance at risk; capture knowledge only if a real pattern turned
-  up). `automate-test` still runs if something is runnable.
-- **Substantial** — touches logic, control flow, an API, a schema, money/auth/PII,
-  more than one file, a new feature, or a bug that needs investigation. **Show the
-  checklist (Step B).** When unsure which side a task falls on, treat it as
-  substantial — a needless plan is cheaper than a skipped one.
+1. multi-select — `"Which steps should this /sage run include?"` (all five toggles
+   below; the header states the task in one line).
+2. single-select — `"From now on, when should /sage ask this?"`:
+   - **Every time** → `askMode: "always"`
+   - **Only big changes** → `askMode: "smart"` (skips small one-liners like typos
+     and renames; still pops up for anything that needs a plan)
 
-**Step B — the checklist (substantial tasks only — then MANDATORY, don't skip).**
-Present it and wait for the human before running anything — as mandatory as the
-language question in `/sage-docs`. In Claude Code, show it with **AskUserQuestion**
-as a single **multi-select** question (`"Which steps should this /sage run
-include?"`) whose header states the task in one line; in other tools, print the
-list and wait. On a substantial task Sage never silently launches — or silently
-skips — a sub-command; it always asks first. Each toggle maps to a command whose
-full body lives in `agents/sage/commands/`. If the environment truly cannot prompt
-(headless run), say so, apply the recommended defaults, and state which you enabled.
+After they answer, **create `.sage-local.json`** with their `askMode` + `checklist`
+and add `.sage-local.json` to `.gitignore` if it's missing.
+
+**Step B — later runs: obey the saved `askMode`.**
+
+- **`always`** — show the checklist on **every** code request; never skip it.
+- **`smart`** — gauge the task first. Show the checklist for **substantial** work;
+  for **trivial** work, skip it with one line `Checklist · skipped (trivial:
+<why>)` and just do it (role + a glance at risk still apply; `automate-test`
+  still runs if something is runnable).
+
+**Trivial** = no logic/behaviour change and no real decision (a typo, rename,
+copy/comment tweak, log line, formatting pass, explicit one-line edit, or just
+answering). **Substantial** = touches logic, control flow, an API, a schema,
+money/auth/PII, more than one file, a new feature, or a bug that needs
+investigation. When unsure, treat it as substantial.
+
+**Override — plan-worthy work always pops the checklist.** Even in smart mode, if
+the task genuinely warrants a plan — a new feature, multi-file or cross-repo work,
+anything touching money/auth/PII, or real uncertainty — **always show the checklist
+and recommend `plan-flow`.** Never let a plan-worthy task slip through as
+"trivial". (To change how often it asks otherwise, edit `askMode` in
+`.sage-local.json`, or just tell Sage.)
+
+**When the checklist shows, it is MANDATORY — don't skip it then.** Present it and
+wait for the human before running anything — as mandatory as the language question
+in `/sage-docs`. In Claude Code use **AskUserQuestion** (multi-select); in other
+tools print the list and wait. Sage never silently launches — or silently skips —
+a sub-command once the checklist is due. Each toggle maps to a command whose full
+body lives in `agents/sage/commands/`. If the environment truly cannot prompt
+(headless run), say so, apply the saved/recommended defaults, and state which you
+enabled.
 
 **Always-on — this is Sage itself, never a checkbox:**
 
@@ -88,10 +110,12 @@ if either is missing) so the next run defaults to what they last chose here — 
 shared with the team, never committed. Sage only ever _proposes_ a set; the human
 decides.
 
-`.sage-local.json` — per-machine checklist memory (gitignored), valid JSON:
+`.sage-local.json` — per-machine memory (gitignored), valid JSON. `askMode` is
+`"always"` or `"smart"`; `checklist` is the last confirmed selection:
 
 ```json
 {
+  "askMode": "always",
   "checklist": {
     "auto-switch-model": true,
     "plan-flow": true,

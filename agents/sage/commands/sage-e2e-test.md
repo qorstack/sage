@@ -40,11 +40,17 @@ what the user sees, not on internals). Output `Role: qa [loaded|created]`.
 
 ## Step 2 — Detect the e2e/load stack + the flow (never assume)
 
-1. **Find the tool.** Look for an existing setup — `playwright.config.*`,
-   `cypress.config.*`, `wdio.conf.*`, a `k6`/`artillery` script, an `e2e/` or
-   `tests/e2e/` folder, the run script in the manifest. Open 1–2 existing e2e
-   tests and copy their style (selectors strategy, fixtures, base URL, auth
-   setup, how they wait).
+1. **Match the repo's own stack — never introduce a foreign-language tool.**
+   First detect the project's language from its manifest (`package.json` → JS/TS,
+   `go.mod` → Go, `pyproject.toml` / `requirements.txt` → Python, `Gemfile` →
+   Ruby, `*.csproj` → .NET, …). The e2e tool **must** belong to that ecosystem —
+   e.g. **Playwright or Cypress** for a JS/TS app; **never** a Python tool
+   (Selenium-py, Locust) in a JS/TS repo just because it exists on the machine.
+   Then look for an **existing** setup and **reuse it as-is** — do not swap in a
+   different tool: `playwright.config.*`, `cypress.config.*`, `wdio.conf.*`, a
+   `k6`/`artillery` script, an `e2e/` or `tests/e2e/` folder, the run script in
+   the manifest. Open 1–2 existing e2e tests and copy their style (selectors,
+   fixtures, base URL, auth, waits).
 2. **Find the flow.** Prefer an existing `agents/sage/flows/<slug>-flow.md` (from
    `/sage-flow`) or a `docs/<slug>.md` — the step-by-step and edge cases are your
    test script. Otherwise reconstruct the journey from the routes/pages/endpoints.
@@ -52,9 +58,10 @@ what the user sees, not on internals). Output `Role: qa [loaded|created]`.
    data or test accounts, env vars, and any external service that must be mocked
    or pointed at a sandbox (payment gateway, email, third-party API).
 
-If the repo has **no e2e/load setup at all**, stop and ask which tool to add
-(propose Playwright for browser, k6 for load) — adding a toolchain is the human's
-call.
+If the repo has **no e2e/load setup at all**, stop and **ask which tool to add,
+proposing the one that fits the detected stack** (e.g. Playwright or Cypress for a
+JS/TS browser app, k6 for load) — never a tool from another language. Adding a
+toolchain is the human's call.
 
 ---
 
@@ -62,8 +69,9 @@ call.
 
 Never launch a browser or fire load without confirming first. Use AskUserQuestion:
 
-- **Which tool / mode** — e2e browser (Playwright/Cypress/…) vs load (k6/…), if
-  the repo has more than one or none yet.
+- **Which tool / mode** — confirm the tool (it **must match the repo's stack**)
+  and the mode (e2e browser vs load). If a setup already exists, default to it and
+  just confirm; if none, propose the stack-matching tool and ask.
 - **Scope** — happy path only, or happy path + the key edge cases from the flow.
 - **Retest policy** — after the first run, **re-run on failure? how many
   retries?** and **should this be saved as a repeatable test** (committed spec)

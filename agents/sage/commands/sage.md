@@ -3,26 +3,37 @@
 Run before any non-trivial code change. Steps 1–3 run **before** you write code.
 Steps 4–5 run **after**. All are mandatory — never skip, never abbreviate.
 
-## Step 0 — Gauge the task, then run the checklist
+## Step 0 — Decide whether to ask, then run the checklist
 
-**Step 0a — is this trivial or substantial? (decide first, silently.)**
+**Step 0a — read the per-machine preference.** Read `.sage-local.json` at the repo
+root (gitignored). It holds `askMode` (`"always"` or `"smart"`) and the last
+`checklist`.
 
-- **Trivial** — no logic/behaviour change, no real decision: a typo, a rename, a
-  copy/comment tweak, a log line, a formatting pass, an explicit one-line edit, or
-  just answering/explaining. **Do NOT show the checklist.** Open with one line —
-  `Checklist · skipped (trivial: <why>)` — and go do the work (role + a glance at
-  risk still apply; `automate-test` still runs if there's something to run). Don't
-  make the human answer a picker for a one-liner.
-- **Substantial** — touches logic, control flow, an API, a schema, money/auth/PII,
-  more than one file, a new feature, or a bug that needs investigation. Go to 0b.
-  When unsure which side it's on, treat it as substantial.
+- **First run — the file doesn't exist yet → ALWAYS show the checklist** (never
+  skip the first time) **and ask how often to ask from now on.** Call
+  **AskUserQuestion** with **two** questions: (1) the multi-select checklist below,
+  and (2) single-select `"From now on, when should /sage ask this?"` → **Every
+  time** (`askMode: "always"`) or **Only big changes** (`askMode: "smart"`, skips
+  small one-liners like typos/renames; still pops up for anything that needs a
+  plan). Then create `.sage-local.json` with `askMode` + `checklist`, and add it
+  to `.gitignore` if missing.
+- **`askMode: "always"`** → show the checklist on **every** run.
+- **`askMode: "smart"`** → gauge the task: **substantial** (logic, control flow,
+  API, schema, money/auth/PII, multiple files, a feature, a bug needing
+  investigation) → show the checklist; **trivial** (typo, rename, log line,
+  one-line edit, a question) → skip it with `Checklist · skipped (trivial: <why>)`
+  and just do it (role + a glance at risk still apply; `automate-test` still runs).
+  When unsure, treat it as substantial.
+  - **Override:** if the task genuinely needs a plan — a feature, multi-file or
+    cross-repo change, money/auth/PII, or real uncertainty — **always show the
+    checklist and recommend `plan-flow`**, even in smart mode. Never let a
+    plan-worthy task slip through as "trivial".
 
-**Step 0b — the checklist (substantial tasks only, then MANDATORY).** Present the
-run checklist and get the human's answer before proceeding — as mandatory as the
-language question in `/sage-docs`: on a substantial task never skip it, never
-assume it, never code without it.
+**Step 0b — the checklist (then MANDATORY).** When it's due, present it and get the
+human's answer before proceeding — as mandatory as the language question in
+`/sage-docs`: never skip it, never assume it, never code without it.
 
-**How:** call **AskUserQuestion** with a single **multi-select** question,
+**How:** call **AskUserQuestion** with a **multi-select** question,
 `"Which steps should this /sage run include?"` (put the task in one line in the
 question header). **Always list all five options below — never omit one, including
 `auto-switch-model`** — so the human sees the full set every time. Mark the ones
@@ -38,16 +49,16 @@ the description:
 `automate-test` (run the suite) and `update-docs` (`/sage-docs`) are **core** —
 they always run after code, so they are not in the picker; state that.
 
-**Remember the last choice per machine.** Before showing the picker, read
-`.sage-local.json` at the repo root (a **gitignored, per-machine** file) and use
-its `checklist` as the default checked/unchecked state, then adjust for this task's
-obvious fit. **After the human answers, write their selection back to
-`.sage-local.json`** — create the file and add `.sage-local.json` to `.gitignore`
-if either is missing — so next time defaults to what they last chose here. Shape
-(valid JSON):
+**Remember the last choice per machine.** Use the `checklist` from
+`.sage-local.json` as the default checked/unchecked state, then adjust for this
+task's obvious fit. **After the human answers, write their selection (and
+`askMode`) back to `.sage-local.json`** — create the file and add it to
+`.gitignore` if either is missing — so next time defaults to what they last chose
+here. Shape (valid JSON; `askMode` is `"always"` or `"smart"`):
 
 ```json
 {
+  "askMode": "always",
   "checklist": {
     "auto-switch-model": true,
     "plan-flow": true,
