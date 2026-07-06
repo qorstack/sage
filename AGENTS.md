@@ -71,14 +71,36 @@ full body lives in `agents/sage/commands/`. If the environment truly cannot prom
 | `n2n-test`          | `/sage-n2n-test`        | drive the flow end-to-end (browser/load) and prove it — asks tool + retest policy                                            |
 | `security-review`   | `/sage-security-review` | review sensitive changes (auth, payment, PII, secrets) for exploitable holes                                                 |
 
-**Sage decides, then asks — it never runs a command unprompted.** For a
-substantial task, Sage auto-checks what applies and **auto-unchecks what clearly
-doesn't** (e.g. `unit-test` on a change with no testable logic, `n2n-test` on a
-non-UI util, `security-review` on a non-sensitive change), showing every unchecked
-item with a one-line reason. It then presents the checklist and **waits for the
-human's confirm/adjust before invoking any command** — recommending the ones the
-task genuinely needs, not a blanket all-on. Sage only ever _proposes_ a set; the
-human decides.
+**Show all five, every time — never hide a toggle.** When a substantial task
+triggers the checklist, the picker lists **all five** toggles above (including
+`auto-switch-model`), so the human always sees the full set and can turn any one
+on. Sage pre-checks the ones the task needs and leaves the rest unchecked **with a
+one-line reason each** (e.g. `unit-test` off for a change with no testable logic,
+`n2n-test` off for a non-UI util, `security-review` off for a non-sensitive
+change). It never drops an option from the list; it only sets each one's default.
+
+**Defaults are remembered per machine.** Read `.sage-local.json` at the repo root
+— a **gitignored, per-machine** file holding the last confirmed selection on this
+machine. Use it as the starting defaults, then adjust for the current task's
+obvious fit. **After the human confirms, write their selection back to
+`.sage-local.json`** (create the file, and add `.sage-local.json` to `.gitignore`,
+if either is missing) so the next run defaults to what they last chose here — not
+shared with the team, never committed. Sage only ever _proposes_ a set; the human
+decides.
+
+`.sage-local.json` — per-machine checklist memory (gitignored), valid JSON:
+
+```json
+{
+  "checklist": {
+    "auto-switch-model": true,
+    "plan-flow": true,
+    "unit-test": true,
+    "n2n-test": false,
+    "security-review": true
+  }
+}
+```
 
 Open the run by echoing the confirmed checklist on one line:
 

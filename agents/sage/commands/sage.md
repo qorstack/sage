@@ -24,20 +24,39 @@ assume it, never code without it.
 
 **How:** call **AskUserQuestion** with a single **multi-select** question,
 `"Which steps should this /sage run include?"` (put the task in one line in the
-question header), listing these options — mark each that fits the task as
-recommended, and **pre-explain any you're proposing to skip and why** in the
-option descriptions:
+question header). **Always list all five options below — never omit one, including
+`auto-switch-model`** — so the human sees the full set every time. Mark the ones
+the task needs as recommended; leave the rest unchecked with a one-line reason in
+the description:
 
+- **auto-switch-model** — auto-pick model + effort per task, within the ceiling
 - **plan-flow** — design + verify the flow before coding (`/sage-flow`)
 - **unit-test** — write unit tests for the changed logic (`/sage-unit-test`)
 - **n2n-test** — drive the flow end-to-end in a browser / load tool (`/sage-n2n-test`)
 - **security-review** — review sensitive changes for holes (`/sage-security-review`)
-- **auto-switch-model** — auto-pick model + effort per task, within the ceiling
 
-Recommend the ones the task needs (auto-uncheck the clearly-irrelevant ones with
-a one-line reason in their description), but the human makes the final call in the
-dialog. `automate-test` (run the suite) and `update-docs` (`/sage-docs`) are
-**core** — they always run after code, so they are not in the picker; state that.
+`automate-test` (run the suite) and `update-docs` (`/sage-docs`) are **core** —
+they always run after code, so they are not in the picker; state that.
+
+**Remember the last choice per machine.** Before showing the picker, read
+`.sage-local.json` at the repo root (a **gitignored, per-machine** file) and use
+its `checklist` as the default checked/unchecked state, then adjust for this task's
+obvious fit. **After the human answers, write their selection back to
+`.sage-local.json`** — create the file and add `.sage-local.json` to `.gitignore`
+if either is missing — so next time defaults to what they last chose here. Shape
+(valid JSON):
+
+```json
+{
+  "checklist": {
+    "auto-switch-model": true,
+    "plan-flow": true,
+    "unit-test": true,
+    "n2n-test": false,
+    "security-review": true
+  }
+}
+```
 
 **After they answer**, echo the confirmed line, then continue to the steps below,
 invoking each selected command at its point in the pipeline:
