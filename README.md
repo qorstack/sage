@@ -105,7 +105,7 @@ have to remember them:
 | ----------------- | ----------------------- | ---------------------------------------- |
 | `plan-flow`       | `/sage-flow`            | design the flow before coding            |
 | `unit-test`       | `/sage-unit-test`       | write unit tests for what changed        |
-| `n2n-test`        | `/sage-n2n-test`        | drive the flow end-to-end (browser/load) |
+| `e2e-test`        | `/sage-e2e-test`        | drive the flow end-to-end (browser/load) |
 | `security-review` | `/sage-security-review` | check sensitive changes for holes        |
 | `update-docs`     | `/sage-docs`            | refresh the human-facing docs            |
 

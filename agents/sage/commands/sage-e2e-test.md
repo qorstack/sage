@@ -1,4 +1,4 @@
-# /sage-n2n-test — drive the real app end-to-end and prove the flow works
+# /sage-e2e-test — drive the real app end-to-end and prove the flow works
 
 Test a **whole flow the way a user (or load) hits it** — open the real browser,
 walk the journey step by step, assert what actually happens, and report the real
@@ -10,7 +10,7 @@ repo already has — **Playwright, Cypress, Puppeteer, Selenium, WebdriverIO**
 (browser) or **k6, Locust, Artillery, JMeter** (load) — and never imposes one.
 If the repo has none, it asks which to add before doing anything.
 
-> **Invoked by the run checklist.** When `n2n-test` is active (§0 of `AGENTS.md`),
+> **Invoked by the run checklist.** When `e2e-test` is active (§0 of `AGENTS.md`),
 > Sage runs this itself for flows with a UI or an externally-observable journey.
 > It auto-unchecks when there is nothing end-to-end to drive (a pure library, a
 > non-UI util). It is the **end-to-end** sibling of `/sage-unit-test` (units) and
@@ -137,7 +137,7 @@ Decision: proceed | ask | reject
 Output as plain markdown (no code fence):
 
 ```markdown
-── Sage N2N Test ─────────────────────────────────
+── Sage E2E Test ─────────────────────────────────
 **Role** · qa — e2e for <flow>
 **Model** · <model> @ effort:<effort>
 **Tool** · <playwright | k6 | …> | **Risk** · <LOW|MEDIUM|HIGH>

@@ -53,16 +53,17 @@ place and every agent stays in step.
 
 ## Commands included
 
-| Command                 | What it does                                                        |
-| ----------------------- | ------------------------------------------------------------------- |
-| `/sage`                 | Run the cognition pipeline + run checklist before any code change   |
-| `/sage-flow`            | Turn a feature/journey into an implementation-ready business flow   |
-| `/sage-unit-test`       | Write unit tests that match how this repo already tests             |
-| `/sage-n2n-test`        | Drive the app end-to-end (Playwright/k6/…) and prove the flow       |
-| `/sage-security-review` | Review a change for real, exploitable security holes                |
-| `/sage-docs`            | Turn any document into a plain-Markdown flow doc (`docs/<slug>.md`) |
-| `/sage-learning`        | Scan the codebase and capture team knowledge to `agents/sage/`      |
-| `/sage-search-skill`    | Research current best practices for this stack and write skills     |
+| Command                 | What it does                                                           |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `/sage`                 | Run the cognition pipeline + run checklist before any code change      |
+| `/sage-flow`            | Turn a feature/journey into an implementation-ready business flow      |
+| `/sage-unit-test`       | Write unit tests that match how this repo already tests                |
+| `/sage-e2e-test`        | Drive the app end-to-end (Playwright/k6/…) and prove the flow          |
+| `/sage-security-review` | Review a change for real, exploitable security holes                   |
+| `/sage-docs`            | Turn any document into a plain-Markdown flow doc (`docs/<slug>.md`)    |
+| `/sage-learning`        | Scan the codebase and capture team knowledge to `agents/sage/`         |
+| `/sage-search-skill`    | Research current best practices for this stack and write skills        |
+| `/sage-update`          | Update Sage in this repo to the latest version (re-runs the installer) |
 
 `/sage` is the one you use most — its §0 checklist decides which of the others to
 run, asks you to confirm, then runs them for you.

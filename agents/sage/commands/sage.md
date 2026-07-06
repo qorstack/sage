@@ -32,7 +32,7 @@ the description:
 - **auto-switch-model** — auto-pick model + effort per task, within the ceiling
 - **plan-flow** — design + verify the flow before coding (`/sage-flow`)
 - **unit-test** — write unit tests for the changed logic (`/sage-unit-test`)
-- **n2n-test** — drive the flow end-to-end in a browser / load tool (`/sage-n2n-test`)
+- **e2e-test** — drive the flow end-to-end in a browser / load tool (`/sage-e2e-test`)
 - **security-review** — review sensitive changes for holes (`/sage-security-review`)
 
 `automate-test` (run the suite) and `update-docs` (`/sage-docs`) are **core** —
@@ -52,7 +52,7 @@ if either is missing — so next time defaults to what they last chose here. Sha
     "auto-switch-model": true,
     "plan-flow": true,
     "unit-test": true,
-    "n2n-test": false,
+    "e2e-test": false,
     "security-review": true
   }
 }
@@ -62,7 +62,7 @@ if either is missing — so next time defaults to what they last chose here. Sha
 invoking each selected command at its point in the pipeline:
 
 ```text
-Checklist · ✓ plan-flow → /sage-flow · ✓ unit-test · ~~n2n-test~~ (no UI) · ~~security-review~~ (not sensitive) · ✓ auto-switch-model · core: automate-test + update-docs
+Checklist · ✓ plan-flow → /sage-flow · ✓ unit-test · ~~e2e-test~~ (no UI) · ~~security-review~~ (not sensitive) · ✓ auto-switch-model · core: automate-test + update-docs
 ```
 
 If the environment has no way to prompt (a non-interactive/headless run), state

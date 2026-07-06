@@ -12,7 +12,7 @@ only asserts "it renders", is not worth writing.
 > **Invoked by the run checklist.** When `unit-test` is active (§0 of `AGENTS.md`),
 > Sage runs this itself for the logic it added or changed. It **authors new unit
 > tests**; the core `automate-test` step **runs the whole existing suite** and
-> reports the result; `/sage-n2n-test` covers **end-to-end / browser** testing.
+> reports the result; `/sage-e2e-test` covers **end-to-end / browser** testing.
 
 ---
 

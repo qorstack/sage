@@ -68,7 +68,7 @@ full body lives in `agents/sage/commands/`. If the environment truly cannot prom
 | `auto-switch-model` | inline (§1.4)           | pick model + effort per task tier automatically — never above the session ceiling, and never below it for `plan-flow` (§1.4) |
 | `plan-flow`         | `/sage-flow`            | build the full flow **and** verify it before coding (two tasks — see below)                                                  |
 | `unit-test`         | `/sage-unit-test`       | write unit tests for the logic added or changed                                                                              |
-| `n2n-test`          | `/sage-n2n-test`        | drive the flow end-to-end (browser/load) and prove it — asks tool + retest policy                                            |
+| `e2e-test`          | `/sage-e2e-test`        | drive the flow end-to-end (browser/load) and prove it — asks tool + retest policy                                            |
 | `security-review`   | `/sage-security-review` | review sensitive changes (auth, payment, PII, secrets) for exploitable holes                                                 |
 
 **Show all five, every time — never hide a toggle.** When a substantial task
@@ -76,7 +76,7 @@ triggers the checklist, the picker lists **all five** toggles above (including
 `auto-switch-model`), so the human always sees the full set and can turn any one
 on. Sage pre-checks the ones the task needs and leaves the rest unchecked **with a
 one-line reason each** (e.g. `unit-test` off for a change with no testable logic,
-`n2n-test` off for a non-UI util, `security-review` off for a non-sensitive
+`e2e-test` off for a non-UI util, `security-review` off for a non-sensitive
 change). It never drops an option from the list; it only sets each one's default.
 
 **Defaults are remembered per machine.** Read `.sage-local.json` at the repo root
@@ -96,7 +96,7 @@ decides.
     "auto-switch-model": true,
     "plan-flow": true,
     "unit-test": true,
-    "n2n-test": false,
+    "e2e-test": false,
     "security-review": true
   }
 }
@@ -105,7 +105,7 @@ decides.
 Open the run by echoing the confirmed checklist on one line:
 
 ```text
-Checklist · ✓ auto-switch-model · ✓ plan-flow → /sage-flow · ✓ unit-test → /sage-unit-test · ~~n2n-test~~ (no UI) · ~~security-review~~ (not sensitive)  ·  core: automate-test + update-docs → /sage-docs
+Checklist · ✓ auto-switch-model · ✓ plan-flow → /sage-flow · ✓ unit-test → /sage-unit-test · ~~e2e-test~~ (no UI) · ~~security-review~~ (not sensitive)  ·  core: automate-test + update-docs → /sage-docs
 ```
 
 **`plan-flow` runs `/sage-flow`, which is two tasks in this order — never just
