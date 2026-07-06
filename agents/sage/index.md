@@ -13,7 +13,7 @@ you: when you state a rule in chat, it writes one here as `status: proposed`.
 agents/sage/
   index.md                  # this file
   commands/<name>.md        # canonical command bodies — the tool adapters point here
-  docs/docs-style-template.md  # the /sage-docs + /sage-flow markdown style-guide
+  docs-style-template.md    # the /sage-docs + /sage-flow markdown style-guide
   flows/<slug>-flow.md      # implementation-ready flow docs from /sage-flow
   roles/role-<lens>.md      # reusable senior personas (ikigai roles) — see AGENTS.md §2
   <domain>/                 # e.g. billing, search, your own domains

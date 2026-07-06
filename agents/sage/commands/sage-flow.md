@@ -18,7 +18,7 @@ unknown.
 > lives in Step 4 below.
 >
 > **Shape & prose** follow the shared style-guide
-> [`agents/sage/docs/docs-style-template.md`](agents/sage/docs/docs-style-template.md)
+> [`agents/sage/docs-style-template.md`](agents/sage/docs-style-template.md)
 > (ASCII overview rules, "when → then", concrete-over-abstract). `/sage-flow` is
 > the **pre-code design** artifact (reuse-vs-build, cross-repo contracts) written
 > to `agents/sage/flows/`; `/sage-docs` is the **post-code** human doc in `docs/`.

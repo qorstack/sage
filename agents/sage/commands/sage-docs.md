@@ -6,7 +6,7 @@ Take source material (spec, README, PRD, code, meeting note) and produce
 build checklist → open questions. No HTML, no CSS, no JS, no browser.
 
 **The style-guide is the source of truth:** read
-[`agents/sage/docs/docs-style-template.md`](agents/sage/docs/docs-style-template.md)
+[`agents/sage/docs-style-template.md`](agents/sage/docs-style-template.md)
 before generating — it defines the skeleton, the ASCII-flow rules, and the
 completeness bar. This command is the workflow around it.
 

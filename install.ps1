@@ -151,11 +151,16 @@
   if (-not $cloneOk) { Write-Host "Sage: git clone failed (exit $LASTEXITCODE). Check your network and try again."; return }
 
   try {
-    # --- protocol + shared system files (always overwrite: these are Sage itself) ---
+    # --- protocol + Sage-owned files. Clears only what Sage owns; your knowledge
+    #     (agents/sage/<domain>/, roles/, flows/, index.md), generated docs, and
+    #     .sage-local.json are never touched. ---
     Copy-Item "$tmp/AGENTS.md" './AGENTS.md' -Force
-    New-Item -ItemType Directory -Force -Path 'agents/sage/commands', 'agents/sage/docs' | Out-Null
-    Copy-Item "$tmp/agents/sage/commands/*.md" 'agents/sage/commands/' -Force
-    Copy-Item "$tmp/agents/sage/docs/docs-style-template.md" 'agents/sage/docs/' -Force
+    if (Test-Path 'agents/sage/commands') { Remove-Item 'agents/sage/commands' -Recurse -Force -ErrorAction SilentlyContinue }
+    New-Item -ItemType Directory -Force -Path 'agents/sage' | Out-Null
+    Copy-Item "$tmp/agents/sage/commands" 'agents/sage/commands' -Recurse -Force
+    Copy-Item "$tmp/agents/sage/docs-style-template.md" 'agents/sage/docs-style-template.md' -Force
+    # migrate old layout: remove only the old Sage assets from agents/sage/docs/, keep the folder.
+    Remove-Item 'agents/sage/docs/docs-style-template.md', 'agents/sage/docs/sage-docs.css', 'agents/sage/docs/sage-docs.js' -Force -ErrorAction SilentlyContinue
 
     # --- starter knowledge (seed only if absent: never clobber the team's edits) ---
     if (-not (Test-Path 'agents/sage/index.md')) { Copy-Item "$tmp/agents/sage/index.md" 'agents/sage/index.md' -Force }
@@ -168,6 +173,7 @@
       if ($k -eq 'gemini') { Copy-Item "$tmp/integrations/gemini.md" './GEMINI.md' -Force }
       else {
         New-Item -ItemType Directory -Force -Path $t.dest | Out-Null
+        Get-ChildItem $t.dest -Recurse -Filter 'sage*' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
         Copy-Item "$tmp/integrations/$($t.src)/*" $t.dest -Recurse -Force
       }
       $installed += $t.name

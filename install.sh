@@ -174,11 +174,17 @@ if ! git clone --depth 1 --quiet "$REPO" "$TMP" >/dev/null 2>&1; then
   exit 1
 fi
 
-# --- protocol + shared system files (always overwrite: these are Sage itself) ---
+# --- protocol + Sage-owned files. Clears only what Sage owns; your knowledge
+#     (agents/sage/<domain>/, roles/, flows/, index.md), generated docs, and
+#     .sage-local.json are never touched. ---
 cp "$TMP/AGENTS.md" ./AGENTS.md
-mkdir -p agents/sage/commands agents/sage/docs
-cp "$TMP/agents/sage/commands/"*.md agents/sage/commands/
-cp "$TMP/agents/sage/docs/docs-style-template.md" agents/sage/docs/
+rm -rf agents/sage/commands                       # 100% Sage-owned; clears any old/renamed command
+mkdir -p agents/sage
+cp -r "$TMP/agents/sage/commands" agents/sage/commands
+cp "$TMP/agents/sage/docs-style-template.md" agents/sage/docs-style-template.md
+# migrate old layout: the style-guide used to sit in agents/sage/docs/ next to
+# generated docs — remove only the old Sage assets there, never the folder itself.
+rm -f agents/sage/docs/docs-style-template.md agents/sage/docs/sage-docs.css agents/sage/docs/sage-docs.js
 
 # --- starter knowledge (seed only if absent: never clobber the team's edits) ---
 [ -f agents/sage/index.md ] || cp "$TMP/agents/sage/index.md" agents/sage/index.md
@@ -192,6 +198,7 @@ for k in $picked; do
   else
     src=$(key_src "$k")
     mkdir -p "$src"
+    find "$src" -name 'sage*' -type f -delete 2>/dev/null || true # drop renamed/removed adapters
     cp -r "$TMP/integrations/$src/." "$src/"
   fi
   installed="$installed $(key_name "$k"),"
