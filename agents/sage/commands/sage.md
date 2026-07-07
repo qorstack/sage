@@ -5,6 +5,11 @@ Steps 4–5 run **after**. All are mandatory — never skip, never abbreviate.
 
 ## Step 0 — Decide whether to ask, then run the checklist
 
+**Guard (before anything): if the request changes no files — a pure question,
+advice, or an explanation ("should we use pnpm?", "what does X do?") — it is NOT a
+code request. Just answer it. Do NOT show the checklist in any mode**, and never
+invent a "None / just answer" option to escape a picker you shouldn't have shown.
+
 **Step 0a — read the per-machine preference.** Read `.sage-local.json` at the repo
 root (gitignored). It holds `askMode` (`"always"` or `"smart"`) and the last
 `checklist`.
@@ -33,21 +38,30 @@ root (gitignored). It holds `askMode` (`"always"` or `"smart"`) and the last
 human's answer before proceeding — as mandatory as the language question in
 `/sage-docs`: never skip it, never assume it, never code without it.
 
-**How:** call **AskUserQuestion** with a **multi-select** question,
-`"Which steps should this /sage run include?"` (put the task in one line in the
-question header). **Always list all five options below — never omit one, including
-`auto-switch-model`** — so the human sees the full set every time. Mark the ones
-the task needs as recommended; leave the rest unchecked with a one-line reason in
-the description:
+**How — use this EXACT picker, identical on every run and every machine. Do NOT
+improvise it.** Call **AskUserQuestion**, `multiSelect: true`, header
+`"Task: <task in one line>. Which /sage steps should run?"`. List **exactly these
+five options, in this order, every time** — never add one (no "None", no
+"just answer"), never drop one, never reorder or rename:
 
-- **auto-switch-model** — auto-pick model + effort per task, within the ceiling
-- **plan-flow** — design + verify the flow before coding (`/sage-flow`)
-- **unit-test** — write unit tests for the changed logic (`/sage-unit-test`)
-- **e2e-test** — drive the flow end-to-end in a browser / load tool (`/sage-e2e-test`)
-- **security-review** — review sensitive changes for holes (`/sage-security-review`)
+1. **auto-switch-model** — auto-pick model + effort per task, within the ceiling
+2. **plan-flow** — design + verify the flow before coding (`/sage-flow`)
+3. **unit-test** — write unit tests for the changed logic (`/sage-unit-test`)
+4. **e2e-test** — drive the flow end-to-end, browser/load (`/sage-e2e-test`)
+5. **security-review** — review sensitive changes for holes (`/sage-security-review`)
+
+(The dialog appends its own "Other" — leave it; add no escapes of your own. A pure
+question with no code never reaches here — it's trivial, so just answer it.)
+
+**Pre-check honestly — the checked state MUST match the reason.** Check an option
+only when it genuinely applies to THIS task; leave the rest **unchecked** with a
+one-line reason. **Never check a step whose reason is "not applicable" or "only
+if…"** — if it doesn't apply, it stays unchecked. Start from the saved `checklist`
+in `.sage-local.json`; `auto-switch-model` defaults on unless the human pinned a
+model.
 
 `automate-test` (run the suite) and `update-docs` (`/sage-docs`) are **core** —
-they always run after code, so they are not in the picker; state that.
+always run after code, never in the picker; just state that.
 
 **Remember the last choice per machine.** Use the `checklist` from
 `.sage-local.json` as the default checked/unchecked state, then adjust for this

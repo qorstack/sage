@@ -22,6 +22,11 @@ in the §4 reply header as `Repo: <repo-root>` (omit when only one repo is open)
 
 ## 0. Run checklist — decide, then confirm
 
+**Guard first: if the request changes no files — a pure question, advice, or an
+explanation ("should we use pnpm?", "what does X do?") — it is NOT a code request.
+Just answer it. Do NOT show the checklist in any mode**, and never invent a
+"None / just answer" option to escape a picker you shouldn't have shown.
+
 Before the §1 pipeline, Sage decides whether to show the checklist from two
 inputs: the per-machine preference in `.sage-local.json`, and — in smart mode —
 how big the task is. **Read `.sage-local.json` at the repo root first** (a
@@ -93,13 +98,18 @@ enabled.
 | `e2e-test`          | `/sage-e2e-test`        | drive the flow end-to-end (browser/load) and prove it — asks tool + retest policy                                            |
 | `security-review`   | `/sage-security-review` | review sensitive changes (auth, payment, PII, secrets) for exploitable holes                                                 |
 
-**Show all five, every time — never hide a toggle.** When a substantial task
-triggers the checklist, the picker lists **all five** toggles above (including
-`auto-switch-model`), so the human always sees the full set and can turn any one
-on. Sage pre-checks the ones the task needs and leaves the rest unchecked **with a
-one-line reason each** (e.g. `unit-test` off for a change with no testable logic,
-`e2e-test` off for a non-UI util, `security-review` off for a non-sensitive
-change). It never drops an option from the list; it only sets each one's default.
+**The picker is LOCKED — identical on every run and every machine; do NOT
+improvise it.** When the checklist shows, `AskUserQuestion` (`multiSelect: true`)
+lists **exactly these five options, in this order, every time** — never add one
+(no "None", no "just answer"), never drop one, never reorder or rename:
+**`auto-switch-model` · `plan-flow` · `unit-test` · `e2e-test` ·
+`security-review`**.
+
+(The dialog appends its own "Other" — leave it; add no escapes of your own.)
+**Pre-check honestly: the checked state MUST match the reason.** Check an option
+only when it genuinely applies to this task; leave the rest unchecked with a
+one-line reason. **Never check a step whose reason is "not applicable" or
+"only if…"** — if it doesn't apply, it stays unchecked.
 
 **Defaults are remembered per machine.** Read `.sage-local.json` at the repo root
 — a **gitignored, per-machine** file holding the last confirmed selection on this
