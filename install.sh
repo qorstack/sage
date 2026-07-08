@@ -222,8 +222,7 @@ Commands now available:
   /sage-e2e-test        drive the app end-to-end (Playwright/Cypress/k6/…) and prove the flow
   /sage-security-review review a change for real, exploitable security holes
   /sage-docs            turn a spec/flow into a plain-Markdown doc in docs/
-  /sage-learning        scan the codebase and capture the team's patterns
-  /sage-search-skill    research current best practices for this stack
+  /sage-learning        learn this repo's patterns + research best practices for its stack
   /sage-setting         change how /sage runs (mode: auto/ask, default steps)
   /sage-update          re-run this installer to update Sage
 

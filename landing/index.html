@@ -1763,12 +1763,14 @@ irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
               <span class="step-num" style="margin-top: 2px">01</span>
               <div>
                 <span class="file-label" style="color: var(--amber)"
-                  >/sage-learning &nbsp;·&nbsp; once after install</span
+                  >/sage-learning &nbsp;·&nbsp; once after install, + after big
+                  changes</span
                 >
                 <p>
-                  Scans your codebase and writes your team's real patterns into
-                  <code>agents/sage/</code>. Gives Sage a knowledge baseline
-                  before it touches anything.
+                  Learns your codebase's real patterns (rules + decisions)
+                  <em>and</em> researches current best practices for your stack
+                  (skills) — one run. Gives Sage a knowledge baseline before it
+                  touches anything.
                 </p>
               </div>
             </div>
@@ -1782,28 +1784,6 @@ irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
               "
             >
               <span class="step-num" style="margin-top: 2px">02</span>
-              <div>
-                <span class="file-label" style="color: var(--violet)"
-                  >/sage-search-skill &nbsp;·&nbsp; once, then after stack
-                  changes</span
-                >
-                <p>
-                  Researches current best practices for your stack and writes
-                  them as skills. Re-run when you adopt a new framework or
-                  library.
-                </p>
-              </div>
-            </div>
-            <div
-              class="file"
-              style="
-                display: grid;
-                grid-template-columns: auto 1fr;
-                gap: 16px;
-                align-items: start;
-              "
-            >
-              <span class="step-num" style="margin-top: 2px">03</span>
               <div>
                 <span class="file-label" style="color: var(--mint)"
                   >/sage &nbsp;·&nbsp; every change (enforced by
@@ -1829,7 +1809,7 @@ irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
                 align-items: start;
               "
             >
-              <span class="step-num" style="margin-top: 2px">04</span>
+              <span class="step-num" style="margin-top: 2px">03</span>
               <div>
                 <span class="file-label" style="color: var(--cyan)"
                   >/sage-docs &nbsp;·&nbsp; on demand</span
@@ -1911,7 +1891,7 @@ Knowledge : [new] decisions/
               <div class="panel-head">
                 <span>/sage-learning</span>
                 <span style="color: var(--amber); font-size: 11px"
-                  >run once per repo</span
+                  >learn + research · once per repo</span
                 >
               </div>
               <div class="install-body">
@@ -1922,38 +1902,17 @@ Knowledge : [new] decisions/
 Stack     : TypeScript, Next.js 15,
             React 19, MUI, Valibot
 Domains   : frontend, api, auth, billing
-Written   :
+From code :
   [new]     frontend/rules.md
   [new]     decisions/
               usecallback-unstable-deps.md
   [updated] roles/role-frontend.md
-  [skipped] loading-and-error-pattern.md
-              — already up to date
+Research  :
+  [new]     frontend/skills/
+              server-component-boundaries.md
 Next      : flip status: approved on
             entries you want enforced
 ────────────────────────────────────────</pre
-                >
-              </div>
-            </div>
-
-            <div class="code-card">
-              <div class="panel-head">
-                <span>/sage-search-skill</span>
-                <span style="color: var(--violet); font-size: 11px"
-                  >research &amp; grow</span
-                >
-              </div>
-              <div class="install-body">
-                <pre>
-/sage-search-skill
-
-Stack: TypeScript + React + Tailwind
-Written:
-  skills/component-composition.md
-  skills/avoid-premature-abstraction.md
-  skills/server-component-boundaries.md
-6 skills added
-→ review and approve</pre
                 >
               </div>
             </div>

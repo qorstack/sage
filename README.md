@@ -87,12 +87,11 @@ Commit everything. That's the whole setup.
 
 After installing, run these commands in sequence. Each builds on the last.
 
-| #   | Command              | When                                            | What it does                                                                                                                                                                                                                                    |
-| --- | -------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `/sage-learning`     | **Once after install**                          | Scans your codebase, writes rules + decisions to `agents/sage/`. Gives Sage a baseline of your real patterns before it touches anything.                                                                                                        |
-| 2   | `/sage-search-skill` | **Once, then after stack changes**              | Searches for current best practices for your stack and writes them as skills. Run again when you adopt a new framework or library.                                                                                                              |
-| 3   | `/sage`              | **Every code change (automatic via AGENTS.md)** | Runs the full pipeline: pick role → read knowledge → assess risk → code → capture → summarize. Happens automatically — you don't call it manually, AGENTS.md enforces it.                                                                       |
-| 4   | `/sage-docs`         | **On demand**                                   | Turns any spec, README, or meeting note into a plain-Markdown flow doc (`docs/<slug>.md`) — end-to-end ASCII diagram, full step-by-step, complete API spec, open questions. Use when a teammate needs to read — not when an AI needs to follow. |
+| #   | Command          | When                                            | What it does                                                                                                                                                                                                                                    |
+| --- | ---------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `/sage-learning` | **Once after install, + after big changes**     | Learns your codebase's real patterns (writes rules + decisions) **and** researches current best practices for your stack (writes skills). Gives Sage a baseline before it touches anything.                                                     |
+| 2   | `/sage`          | **Every code change (automatic via AGENTS.md)** | Runs the full pipeline: pick role → read knowledge → assess risk → code → capture → summarize. Happens automatically — you don't call it manually, AGENTS.md enforces it.                                                                       |
+| 3   | `/sage-docs`     | **On demand**                                   | Turns any spec, README, or meeting note into a plain-Markdown flow doc (`docs/<slug>.md`) — end-to-end ASCII diagram, full step-by-step, complete API spec, open questions. Use when a teammate needs to read — not when an AI needs to follow. |
 
 > **Skip step 1?** Sage still works — it just starts with no team context.
 > Run `/sage-learning` later whenever you want to seed knowledge from real code.
@@ -187,18 +186,8 @@ Next      : flip status: approved on entries you want enforced
 ──────────────────────────────────────────────────
 ```
 
-**`/sage-search-skill`** — research current best practices for this stack and write them as skills
-
-```text
-/sage-search-skill
-
-Stack detected: TypeScript + React + Tailwind
-Researched: component patterns, accessibility, performance, 2025 trends
-Written: agents/sage/frontend/skills/component-composition.md
-Written: agents/sage/frontend/skills/avoid-premature-abstraction.md
-Written: agents/sage/frontend/skills/server-component-boundaries.md
-6 skills added — review and approve
-```
+(`/sage-learning` also researches current best practices for your stack and writes
+them as skills under `agents/sage/<domain>/skills/` — one run, both halves.)
 
 **`/sage-docs`** — turn any document into a plain-Markdown flow doc
 
