@@ -140,7 +140,7 @@
   }
 
   $tmp = Join-Path $env:TEMP ('sage-' + [guid]::NewGuid().ToString('N'))
-  Write-Host 'Sage: fetching...'
+  Write-Host 'Sage: fetching latest from qorstack/sage ...'
   # git writes progress to stderr even on success; in PowerShell 5.1 that would
   # otherwise abort the script. Run it non-terminating and check the real exit code.
   $eap = $ErrorActionPreference
@@ -149,16 +149,22 @@
   $cloneOk = ($LASTEXITCODE -eq 0)
   $ErrorActionPreference = $eap
   if (-not $cloneOk) { Write-Host "Sage: git clone failed (exit $LASTEXITCODE). Check your network and try again."; return }
+  Write-Host '  + fetched'
 
   try {
     # --- protocol + Sage-owned files. Clears only what Sage owns; your knowledge
     #     (agents/sage/<domain>/, roles/, flows/, index.md), generated docs, and
     #     .sage-local.json are never touched. ---
+    Write-Host 'Sage: writing protocol + commands ...'
     Copy-Item "$tmp/AGENTS.md" './AGENTS.md' -Force
+    Write-Host '  + AGENTS.md'
     if (Test-Path 'agents/sage/commands') { Remove-Item 'agents/sage/commands' -Recurse -Force -ErrorAction SilentlyContinue }
     New-Item -ItemType Directory -Force -Path 'agents/sage' | Out-Null
     Copy-Item "$tmp/agents/sage/commands" 'agents/sage/commands' -Recurse -Force
+    $cmdCount = @(Get-ChildItem "$tmp/agents/sage/commands/*.md" -ErrorAction SilentlyContinue).Count
+    Write-Host ("  + agents/sage/commands/ ($cmdCount commands)")
     Copy-Item "$tmp/agents/sage/docs-style-template.md" 'agents/sage/docs-style-template.md' -Force
+    Write-Host '  + agents/sage/docs-style-template.md'
     # migrate old layout: remove only the old Sage assets from agents/sage/docs/, keep the folder.
     Remove-Item 'agents/sage/docs/docs-style-template.md', 'agents/sage/docs/sage-docs.css', 'agents/sage/docs/sage-docs.js' -Force -ErrorAction SilentlyContinue
 
@@ -167,6 +173,7 @@
     if (-not (Test-Path 'agents/sage/roles')) { Copy-Item "$tmp/agents/sage/roles" 'agents/sage/' -Recurse -Force }
 
     # --- install the selected tools' thin adapters ---
+    Write-Host 'Sage: wiring up adapters ...'
     $installed = @()
     foreach ($k in $picked) {
       $t = $tools[$k]
@@ -176,10 +183,25 @@
         Get-ChildItem $t.dest -Recurse -Filter 'sage*' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
         Copy-Item "$tmp/integrations/$($t.src)/*" $t.dest -Recurse -Force
       }
+      Write-Host ('  + ' + $t.name)
       $installed += $t.name
     }
 
-    Write-Host ('Sage: installed. AGENTS.md + agents/sage/ + adapters for: ' + ($installed -join ', '))
+    Write-Host ''
+    Write-Host ('Sage installed. Adapters for: ' + ($installed -join ', '))
+    Write-Host ''
+    Write-Host 'Commands now available:'
+    Write-Host '  /sage                 run before any code change (plan, test, review, capture)'
+    Write-Host '  /sage-flow            design + verify an implementation-ready flow before coding'
+    Write-Host '  /sage-unit-test       write unit tests that match this repo''s stack'
+    Write-Host '  /sage-e2e-test        drive the app end-to-end (Playwright/Cypress/k6/...) and prove the flow'
+    Write-Host '  /sage-security-review review a change for real, exploitable security holes'
+    Write-Host '  /sage-docs            turn a spec/flow into a plain-Markdown doc in docs/'
+    Write-Host '  /sage-learning        scan the codebase and capture the team''s patterns'
+    Write-Host '  /sage-search-skill    research current best practices for this stack'
+    Write-Host '  /sage-setting         change how /sage runs (mode: auto/ask, default steps)'
+    Write-Host '  /sage-update          re-run this installer to update Sage'
+    Write-Host ''
     Write-Host 'Next: run  /sage-learning  to seed knowledge from your codebase.'
   }
   finally { Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue }

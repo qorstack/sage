@@ -22,6 +22,7 @@ Don't rely on a copy here; the canonical file is authoritative.
 | `sage-learning`        | `agents/sage/commands/sage-learning.md`        | learn this codebase's patterns           |
 | `sage-search-skill`    | `agents/sage/commands/sage-search-skill.md`    | research best practices for the stack    |
 | `sage-update`          | `agents/sage/commands/sage-update.md`          | update Sage to the latest version        |
+| `sage-setting`         | `agents/sage/commands/sage-setting.md`         | change how /sage runs (mode + steps)     |
 
 The run checklist in `AGENTS.md` §0 is the dispatcher: `/sage` decides which
 commands apply, asks you to confirm, then runs the confirmed ones.

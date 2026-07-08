@@ -17,6 +17,7 @@ practice.
 | `sage-learning.md`        | Learn this codebase's patterns into `agents/sage/`                 | on demand                          |
 | `sage-search-skill.md`    | Research current best practices for this stack                     | on demand                          |
 | `sage-update.md`          | Re-run the installer to update Sage to the latest version          | on demand                          |
+| `sage-setting.md`         | View/change how `/sage` runs (mode + default steps, per machine)   | on demand                          |
 
 The run checklist (`AGENTS.md` §0) is the dispatcher: `/sage` decides which of
 these apply to the task, asks the human to confirm, then runs the confirmed ones.

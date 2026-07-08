@@ -20,62 +20,30 @@ in the §4 reply header as `Repo: <repo-root>` (omit when only one repo is open)
 
 ---
 
-## 0. Run checklist — decide, then confirm
+## 0. Run checklist — classify, then decide by mode
 
-**Guard first: if the request changes no files — a pure question, advice, or an
-explanation ("should we use pnpm?", "what does X do?") — it is NOT a code request.
-Just answer it. Do NOT show the checklist in any mode**, and never invent a
-"None / just answer" option to escape a picker you shouldn't have shown.
+**Guard first: if the request changes no files — a pure question, advice, review,
+comparison, or explanation ("should we use pnpm?", "what does X do?") — it is NOT
+a code request. Just answer it. Do NOT show the checklist in any mode**, and never
+invent a "None / just answer" option to escape a picker you shouldn't have shown.
 
-Before the §1 pipeline, Sage decides whether to show the checklist from two
-inputs: the per-machine preference in `.sage-local.json`, and — in smart mode —
-how big the task is. **Read `.sage-local.json` at the repo root first** (a
-gitignored, per-machine file holding `askMode` and the last `checklist`).
+**Read `.sage-local.json` at the repo root** (gitignored, per-machine). It holds
+`mode` (`"auto"` or `"ask"`) and the default `checklist`. Migrate the old field if
+present: `askMode: "smart"` → `mode: "auto"`, `askMode: "always"` → `mode: "ask"`
+(set `version: 2`, keep unknown fields). Create it with `mode: "auto"` if missing,
+and add it to `.gitignore`. To change these, the human runs **`/sage-setting`** —
+never ask them to hand-edit JSON.
 
-**Step A — first run: force the ask + set the mode.** If `.sage-local.json`
-**doesn't exist yet**, this is the first run on this machine: **ALWAYS show the
-checklist — never skip the first time — and ask how often to ask from now on.**
-Use **AskUserQuestion** with **two** questions:
+**Mode decides whether to prompt (code requests only):**
 
-1. multi-select — `"Which steps should this /sage run include?"` (all five toggles
-   below; the header states the task in one line).
-2. single-select — `"From now on, when should /sage ask this?"`:
-   - **Every time** → `askMode: "always"`
-   - **Only big changes** → `askMode: "smart"` (skips small one-liners like typos
-     and renames; still pops up for anything that needs a plan)
+- **`auto`** — decide the steps yourself, show the full checklist with a
+  recommended / not-recommended label + reason on each, enable the recommended
+  ones, and **proceed without waiting**.
+- **`ask`** — show the full checklist with the same labels and **wait for the
+  human** before running anything; then persist their choice as the defaults.
 
-After they answer, **create `.sage-local.json`** with their `askMode` + `checklist`
-and add `.sage-local.json` to `.gitignore` if it's missing.
-
-**Step B — later runs: obey the saved `askMode`.**
-
-- **`always`** — show the checklist on **every** code request; never skip it.
-- **`smart`** — gauge the task first. Show the checklist for **substantial** work;
-  for **trivial** work, skip it with one line `Checklist · skipped (trivial:
-<why>)` and just do it (role + a glance at risk still apply; `automate-test`
-  still runs if something is runnable).
-
-**Trivial** = no logic/behaviour change and no real decision (a typo, rename,
-copy/comment tweak, log line, formatting pass, explicit one-line edit, or just
-answering). **Substantial** = touches logic, control flow, an API, a schema,
-money/auth/PII, more than one file, a new feature, or a bug that needs
-investigation. When unsure, treat it as substantial.
-
-**Override — plan-worthy work always pops the checklist.** Even in smart mode, if
-the task genuinely warrants a plan — a new feature, multi-file or cross-repo work,
-anything touching money/auth/PII, or real uncertainty — **always show the checklist
-and recommend `plan-flow`.** Never let a plan-worthy task slip through as
-"trivial". (To change how often it asks otherwise, edit `askMode` in
-`.sage-local.json`, or just tell Sage.)
-
-**When the checklist shows, it is MANDATORY — don't skip it then.** Present it and
-wait for the human before running anything — as mandatory as the language question
-in `/sage-docs`. In Claude Code use **AskUserQuestion** (multi-select); in other
-tools print the list and wait. Sage never silently launches — or silently skips —
-a sub-command once the checklist is due. Each toggle maps to a command whose full
-body lives in `agents/sage/commands/`. If the environment truly cannot prompt
-(headless run), say so, apply the saved/recommended defaults, and state which you
-enabled.
+Headless (cannot prompt) behaves like `auto` and states that prompting was
+unavailable.
 
 **Always-on — this is Sage itself, never a checkbox:**
 
@@ -98,48 +66,44 @@ enabled.
 | `e2e-test`          | `/sage-e2e-test`        | drive the flow end-to-end (browser/load) and prove it — asks tool + retest policy                                            |
 | `security-review`   | `/sage-security-review` | review sensitive changes (auth, payment, PII, secrets) for exploitable holes                                                 |
 
-**The picker is LOCKED — identical on every run and every machine; do NOT
-improvise it.** When the checklist shows, `AskUserQuestion` (`multiSelect: true`)
-lists **exactly these five options, in this order, every time** — never add one
-(no "None", no "just answer"), never drop one, never reorder or rename:
+**The picker is LOCKED — identical on every run, every machine, every tool; do NOT
+improvise it.** Show **exactly these five, in this order, always** — never add one
+(no "None", no "just answer"), drop one, reorder, or rename:
 **`auto-switch-model` · `plan-flow` · `unit-test` · `e2e-test` ·
-`security-review`**.
+`security-review`**. In Claude Code use `AskUserQuestion` (multi-select); where
+there is no structured picker, print a numbered Markdown list and accept a reply
+like `1,3,5`.
 
-(The dialog appends its own "Other" — leave it; add no escapes of your own.)
-**Pre-check honestly: the checked state MUST match the reason.** Check an option
-only when it genuinely applies to this task; leave the rest unchecked with a
-one-line reason. **Never check a step whose reason is "not applicable" or
-"only if…"** — if it doesn't apply, it stays unchecked.
+**Recommend honestly — the label MUST match the reason.** Mark each step
+`recommended` or `not recommended` from the task's signals (logic → `unit-test`; a
+cross-boundary flow → `e2e-test`; auth/money/PII/secrets → `security-review`; a
+feature / multi-file / real uncertainty → `plan-flow`). **Never recommend a step
+whose reason is "not applicable" or "only if…".** In `auto`, enable the
+recommended set and proceed; in `ask`, start from the saved `checklist`, present
+it, and let the human decide (then persist). The full signal → recommendation
+rules live in `agents/sage/commands/sage.md`.
 
-**Defaults are remembered per machine.** Read `.sage-local.json` at the repo root
-— a **gitignored, per-machine** file holding the last confirmed selection on this
-machine. Use it as the starting defaults, then adjust for the current task's
-obvious fit. **After the human confirms, write their selection back to
-`.sage-local.json`** (create the file, and add `.sage-local.json` to `.gitignore`,
-if either is missing) so the next run defaults to what they last chose here — not
-shared with the team, never committed. Sage only ever _proposes_ a set; the human
-decides.
-
-`.sage-local.json` — per-machine memory (gitignored), valid JSON. `askMode` is
-`"always"` or `"smart"`; `checklist` is the last confirmed selection:
+`.sage-local.json` shape (gitignored; `mode` is `"auto"` or `"ask"`; change it via
+`/sage-setting`):
 
 ```json
 {
-  "askMode": "always",
+  "version": 2,
+  "mode": "auto",
   "checklist": {
     "auto-switch-model": true,
     "plan-flow": true,
     "unit-test": true,
     "e2e-test": false,
-    "security-review": true
+    "security-review": false
   }
 }
 ```
 
-Open the run by echoing the confirmed checklist on one line:
+Open the run by echoing the checklist on one line:
 
 ```text
-Checklist · ✓ auto-switch-model · ✓ plan-flow → /sage-flow · ✓ unit-test → /sage-unit-test · ~~e2e-test~~ (no UI) · ~~security-review~~ (not sensitive)  ·  core: automate-test + update-docs → /sage-docs
+Checklist · mode:auto · ✓ auto-switch-model · ✓ plan-flow → /sage-flow · ✓ unit-test → /sage-unit-test · ~~e2e-test~~ (no UI flow) · ~~security-review~~ (not sensitive)  ·  core: automate-test + update-docs → /sage-docs
 ```
 
 **`plan-flow` runs `/sage-flow`, which is two tasks in this order — never just

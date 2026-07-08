@@ -168,20 +168,25 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 TMP="$(mktemp -d)"
-echo "Sage: fetching..."
+printf 'Sage: fetching latest from qorstack/sage ...\n'
 if ! git clone --depth 1 --quiet "$REPO" "$TMP" >/dev/null 2>&1; then
   echo "Sage: git clone failed. Check your network and try again."
   exit 1
 fi
+printf '  \342\234\223 fetched\n'
 
 # --- protocol + Sage-owned files. Clears only what Sage owns; your knowledge
 #     (agents/sage/<domain>/, roles/, flows/, index.md), generated docs, and
 #     .sage-local.json are never touched. ---
+printf 'Sage: writing protocol + commands ...\n'
 cp "$TMP/AGENTS.md" ./AGENTS.md
+printf '  \342\234\223 AGENTS.md\n'
 rm -rf agents/sage/commands                       # 100% Sage-owned; clears any old/renamed command
 mkdir -p agents/sage
 cp -r "$TMP/agents/sage/commands" agents/sage/commands
+printf '  \342\234\223 agents/sage/commands/ (%s commands)\n' "$(ls "$TMP/agents/sage/commands"/*.md 2>/dev/null | grep -c . )"
 cp "$TMP/agents/sage/docs-style-template.md" agents/sage/docs-style-template.md
+printf '  \342\234\223 agents/sage/docs-style-template.md\n'
 # migrate old layout: the style-guide used to sit in agents/sage/docs/ next to
 # generated docs — remove only the old Sage assets there, never the folder itself.
 rm -f agents/sage/docs/docs-style-template.md agents/sage/docs/sage-docs.css agents/sage/docs/sage-docs.js
@@ -191,6 +196,7 @@ rm -f agents/sage/docs/docs-style-template.md agents/sage/docs/sage-docs.css age
 [ -d agents/sage/roles ] || cp -r "$TMP/agents/sage/roles" agents/sage/roles
 
 # --- install the selected tools' thin adapters ---
+printf 'Sage: wiring up adapters ...\n'
 installed=""
 for k in $picked; do
   if [ "$k" = gemini ]; then
@@ -201,8 +207,25 @@ for k in $picked; do
     find "$src" -name 'sage*' -type f -delete 2>/dev/null || true # drop renamed/removed adapters
     cp -r "$TMP/integrations/$src/." "$src/"
   fi
+  printf '  \342\234\223 %s\n' "$(key_name "$k")"
   installed="$installed $(key_name "$k"),"
 done
 
-echo "Sage: installed. AGENTS.md + agents/sage/ + adapters for:${installed%,}"
-echo "Next: run  /sage-learning  to seed knowledge from your codebase."
+cat <<EOF
+
+Sage installed. Adapters for:${installed%,}
+
+Commands now available:
+  /sage                 run before any code change (plan, test, review, capture)
+  /sage-flow            design + verify an implementation-ready flow before coding
+  /sage-unit-test       write unit tests that match this repo's stack
+  /sage-e2e-test        drive the app end-to-end (Playwright/Cypress/k6/…) and prove the flow
+  /sage-security-review review a change for real, exploitable security holes
+  /sage-docs            turn a spec/flow into a plain-Markdown doc in docs/
+  /sage-learning        scan the codebase and capture the team's patterns
+  /sage-search-skill    research current best practices for this stack
+  /sage-setting         change how /sage runs (mode: auto/ask, default steps)
+  /sage-update          re-run this installer to update Sage
+
+Next: run  /sage-learning  to seed knowledge from your codebase.
+EOF
