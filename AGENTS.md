@@ -217,18 +217,19 @@ Do these in order. Do not skip. Do not assume you already know the answer.
    work into phases:
    - Identify which tasks have no dependency on each other → mark `[parallel]`
    - Identify which must wait for a prior result → mark `[sequential]`
-   - Assign an effort tier to each task. **The session model + effort is both the
-     default and the hard ceiling** — pick the highest tier the task needs but
-     **NEVER above what the session is set to**, on either dimension. You may go
-     BELOW it for trivial tasks. If the session is `@ low`, every task is `low`,
-     even complex ones; "standard implementation" or "complex logic" is not a
-     reason to raise above the session level. Tier meanings: `low` (mechanical —
-     reading, simple edits) · `medium` (standard implementation) · `high`
-     (complex logic, critical decisions) — but ignore any tier above the session
-     effort. Default model floor is `sonnet`, but use `haiku @ low` for trivial
-     fully-specified tasks with no decisions (translation/rewording, adding a log
-     line, an explicit one-line edit) to save tokens; use `sonnet` for anything
-     touching logic or behavior.
+   - Assign a **reasoning tier** to each task — provider-neutral, so this works on
+     any agent (Claude, Codex, an IDE model, or an unknown provider): `fast`
+     (mechanical, fully-specified edits — no judgment) · `standard` (normal
+     implementation, tests, moderate logic) · `deep` (architecture, flow design,
+     root cause, security, schema, high risk). **The current session model +
+     effort is both the default and the hard ceiling** — pick the tier the task
+     needs but **NEVER exceed what the session is set to**, on either dimension;
+     you may go BELOW it for trivial work. If the environment doesn't expose the
+     model/effort, write `current agent @ effort:unavailable` and don't claim
+     model switching. A provider maps the tiers to whatever it has (e.g.
+     Claude-style: `fast`→haiku/low, `standard`→sonnet, `deep`→opus/ceiling), but
+     the session ceiling always wins. Never raise a hard tier above the session
+     level just because a task is "complex".
    - **Never downgrade flow design.** `plan-flow` / `/sage-flow` is the
      highest-reasoning step there is — it always runs at the **full session model
      - effort** (the ceiling), never lowered. `auto-switch-model` may drop other
@@ -254,15 +255,24 @@ If verdict is `ask` or `reject`, **do not write code** until the human responds.
    flow, run `/sage-docs` to update it so the doc never drifts from the code.
    Skip only when the change touches no documented flow, and say so.
 3. **Capture knowledge** in `agents/sage/` **in the repo** — never in local
-   memory, never in a scratch file. Every run must produce one of:
-   - **New entry:** `agents/sage/<domain>/decisions/<slug>.md` — write the
-     **pattern** (a rule that applies next time), not the implementation detail
-     (what this specific file did). Format: §2. Set `status: proposed`,
+   memory, never in a scratch file. **First analyse the whole run** — the
+   decisions in the conversation, the files you created/changed, the corrections
+   the human gave, the constraints you hit — then **extract EVERY distinct,
+   transferable pattern**, not a single "summary of the fix". One run often yields
+   **more than one** (an architecture call + a naming convention + a library
+   gotcha are three separate learnings). For each:
+   - **New entry — one idea per file** (never merge unrelated patterns): write
+     `agents/sage/<domain>/decisions/<slug>.md` with the **pattern** (a rule that
+     applies next time), not the implementation detail (what this file did). Put
+     each in the domain it belongs to — a frontend pattern and a payment pattern
+     go to different `<domain>/` folders. Format: §2. `status: proposed`,
      `source: ai`.
    - **Updated entry:** an existing entry was stale — edit it in place.
-   - **Explicit nothing:** existing rules fully covered this case. State it:
+   - **Explicit nothing:** only when nothing at all transfers. State it:
      _"No new knowledge — `<file>` covers this."_ Silence is not allowed.
-     See §3 for the full capture protocol, including how to judge quality.
+     Write the **rule** ("always / never / prefer …"), never "fixed X in Y". Skip
+     the genuinely one-off; capture everything that a teammate could reuse. See §3
+     for how to judge quality.
 
 4. **Close with the mandatory summary block** (§4b). A response without it is
    incomplete — the human cannot see what changed, what was learned, or how the
@@ -357,6 +367,14 @@ in a scratch file. When the dev states a rule, correction, preference, or
 "always / never do X", you keep the team's central knowledge up to date so
 every future agent benefits.
 
+**Analyse the whole run first, then split by topic.** Review the conversation,
+the files you created/changed, and the corrections you got, and **list every
+distinct, transferable pattern** in it. A real run usually produces **several**
+separate learnings (an architecture decision, a naming convention, a library
+gotcha) — capture **each as its own file**, in its own domain. Do **not** collapse
+them into one "summary of what I fixed"; that is not knowledge. Then, for each
+pattern:
+
 1. **Judge it first — you're a senior, not a scribe.** Is this a sound, general
    pattern worth encoding?
    - Good general pattern → capture it. Write the **pattern** (a rule that
@@ -370,9 +388,11 @@ every future agent benefits.
 2. **Diff before writing.** Check `agents/sage/<domain>/` for an existing entry.
    Matches reality → do nothing. Stale → edit that one file in place. (Never
    create a near-duplicate.)
-3. **Write a new entry** at `agents/sage/<domain>/decisions/<slug>.md` (format
-   in §2): `status: proposed`, `source: ai`, a sensible `enforcement`
-   (`block` = must/never · `warn` = prefer · `advise` = consider) + `applies_to`.
+3. **Write a new entry per distinct pattern** at
+   `agents/sage/<domain>/decisions/<slug>.md` (format in §2): `status: proposed`,
+   `source: ai`, a sensible `enforcement` (`block` = must/never · `warn` = prefer
+   · `advise` = consider) + `applies_to`. Two unrelated patterns = two files,
+   never one merged entry.
 4. **Tell the dev** one line: _"Captured as proposed in
    `agents/sage/billing/decisions/use-ledger-service.md` — set
    `status: approved` to make it binding."_ They ratify by editing the field (or

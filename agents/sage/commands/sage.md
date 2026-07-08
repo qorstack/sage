@@ -1,410 +1,605 @@
 # /sage — Sage cognition pipeline
 
-Run before any non-trivial code change. Steps 1–3 run **before** you write code.
-Steps 4–5 run **after**. All are mandatory — never skip, never abbreviate.
+Use `/sage` before any non-trivial code-changing task. The pipeline is designed to work across interactive agents, CLI agents, IDE agents, and headless automation. It must not depend on a single provider, model family, UI picker, or proprietary prompt widget.
+
+For code-changing tasks, Steps 1-5 are mandatory. For pure questions, advice, explanations, reviews, translations, or planning with no file changes, answer directly without running `/sage`.
+
+---
+
+## Core principles
+
+1. **Do not treat questions as code requests.** If no files will change, do not show a checklist and do not invent an escape option such as "None" or "just answer".
+2. **Ask only when asking helps.** Use the checklist when it is due, but use a Markdown fallback if the environment has no structured picker.
+3. **Never exceed the current session ceiling.** Use the model, reasoning, and effort level available in the current session. Do not assume a provider-specific model name.
+4. **Prefer reusable knowledge and existing assets.** Read project rules and existing source before designing new code.
+5. **Validate every change.** Run the most relevant available checks. If a check cannot run, report exactly why.
+6. **Capture transferable knowledge.** Record patterns, conventions, and decisions, not one-off implementation notes.
+7. **Summarize with evidence.** The final summary must include changed files, validation, remaining risks, and knowledge status.
+
+---
 
 ## Step 0 — Decide whether to ask, then run the checklist
 
-**Guard (before anything): if the request changes no files — a pure question,
-advice, or an explanation ("should we use pnpm?", "what does X do?") — it is NOT a
-code request. Just answer it. Do NOT show the checklist in any mode**, and never
-invent a "None / just answer" option to escape a picker you shouldn't have shown.
+### Step 0 guard — classify the request first
 
-**Step 0a — read the per-machine preference.** Read `.sage-local.json` at the repo
-root (gitignored). It holds `askMode` (`"always"` or `"smart"`) and the last
-`checklist`.
+Before doing anything else, classify the request.
 
-- **First run — the file doesn't exist yet → ALWAYS show the checklist** (never
-  skip the first time) **and ask how often to ask from now on.** Call
-  **AskUserQuestion** with **two** questions: (1) the multi-select checklist below,
-  and (2) single-select `"From now on, when should /sage ask this?"` → **Every
-  time** (`askMode: "always"`) or **Only big changes** (`askMode: "smart"`, skips
-  small one-liners like typos/renames; still pops up for anything that needs a
-  plan). Then create `.sage-local.json` with `askMode` + `checklist`, and add it
-  to `.gitignore` if missing.
-- **`askMode: "always"`** → show the checklist on **every** run.
-- **`askMode: "smart"`** → gauge the task: **substantial** (logic, control flow,
-  API, schema, money/auth/PII, multiple files, a feature, a bug needing
-  investigation) → show the checklist; **trivial** (typo, rename, log line,
-  one-line edit, a question) → skip it with `Checklist · skipped (trivial: <why>)`
-  and just do it (role + a glance at risk still apply; `automate-test` still runs).
-  When unsure, treat it as substantial.
-  - **Override:** if the task genuinely needs a plan — a feature, multi-file or
-    cross-repo change, money/auth/PII, or real uncertainty — **always show the
-    checklist and recommend `plan-flow`**, even in smart mode. Never let a
-    plan-worthy task slip through as "trivial".
+A request is **not a code request** when it only asks for:
 
-**Step 0b — the checklist (then MANDATORY).** When it's due, present it and get the
-human's answer before proceeding — as mandatory as the language question in
-`/sage-docs`: never skip it, never assume it, never code without it.
+- an explanation;
+- advice;
+- a review with no file edits;
+- a comparison;
+- a translation or rewrite;
+- a decision recommendation;
+- a pure question such as "should we use pnpm?" or "what does this function do?".
 
-**How — use this EXACT picker, identical on every run and every machine. Do NOT
-improvise it.** Call **AskUserQuestion**, `multiSelect: true`, header
-`"Task: <task in one line>. Which /sage steps should run?"`. List **exactly these
-five options, in this order, every time** — never add one (no "None", no
-"just answer"), never drop one, never reorder or rename:
+If it is not a code request, answer directly. Do not show the checklist in any mode.
 
-1. **auto-switch-model** — auto-pick model + effort per task, within the ceiling
-2. **plan-flow** — design + verify the flow before coding (`/sage-flow`)
-3. **unit-test** — write unit tests for the changed logic (`/sage-unit-test`)
-4. **e2e-test** — drive the flow end-to-end, browser/load (`/sage-e2e-test`)
-5. **security-review** — review sensitive changes for holes (`/sage-security-review`)
+A request **is a code request** when it changes files, behavior, tests, docs, configuration, schemas, APIs, UI, infrastructure, generated assets, or repository state.
 
-(The dialog appends its own "Other" — leave it; add no escapes of your own. A pure
-question with no code never reaches here — it's trivial, so just answer it.)
+---
 
-**Pre-check honestly — the checked state MUST match the reason.** Check an option
-only when it genuinely applies to THIS task; leave the rest **unchecked** with a
-one-line reason. **Never check a step whose reason is "not applicable" or "only
-if…"** — if it doesn't apply, it stays unchecked. Start from the saved `checklist`
-in `.sage-local.json`; `auto-switch-model` defaults on unless the human pinned a
-model.
+### Step 0a — read the per-machine preference
 
-`automate-test` (run the suite) and `update-docs` (`/sage-docs`) are **core** —
-always run after code, never in the picker; just state that.
+Read `.sage-local.json` at the active repo root. The file is local-only and must be gitignored. It stores:
 
-**Remember the last choice per machine.** Use the `checklist` from
-`.sage-local.json` as the default checked/unchecked state, then adjust for this
-task's obvious fit. **After the human answers, write their selection (and
-`askMode`) back to `.sage-local.json`** — create the file and add it to
-`.gitignore` if either is missing — so next time defaults to what they last chose
-here. Shape (valid JSON; `askMode` is `"always"` or `"smart"`):
+- `askMode`: either `"always"` or `"smart"`;
+- `checklist`: the last selected step defaults;
+- optional provider or tool preferences if the team adds them later.
+
+If `.sage-local.json` does not exist, this is the first run. Show the checklist and ask how often `/sage` should ask from now on.
+
+Use this shape:
 
 ```json
 {
-  "askMode": "always",
+  "askMode": "smart",
   "checklist": {
     "auto-switch-model": true,
     "plan-flow": true,
     "unit-test": true,
     "e2e-test": false,
-    "security-review": true
+    "security-review": false
   }
 }
 ```
 
-**After they answer**, echo the confirmed line, then continue to the steps below,
-invoking each selected command at its point in the pipeline:
+Preserve any unknown fields when rewriting the file. If `.gitignore` does not include `.sage-local.json`, add it.
+
+---
+
+### Step 0b — decide whether the checklist is due
+
+Use the following rules:
+
+- `askMode: "always"` means show the checklist for every code request.
+- `askMode: "smart"` means skip only truly trivial changes.
+- Treat the task as substantial when it touches logic, control flow, API shape, schema, auth, money, PII, permissions, multiple files, infrastructure, migrations, release behavior, test strategy, or a bug that needs investigation.
+- Treat the task as trivial only when it is a fully specified typo, rename, comment, log line, import, formatting change, or literal one-line edit with no behavior decision.
+- When unsure, treat the task as substantial.
+- If the task needs a plan, always show the checklist and recommend `plan-flow`, even in smart mode.
+
+If the checklist is skipped, state the reason in one line:
 
 ```text
-Checklist · ✓ plan-flow → /sage-flow · ✓ unit-test · ~~e2e-test~~ (no UI) · ~~security-review~~ (not sensitive) · ✓ auto-switch-model · core: automate-test + update-docs
+Checklist · skipped (trivial: <reason>)
 ```
 
-If the environment has no way to prompt (a non-interactive/headless run), state
-that, apply the recommended defaults (everything that fits the task), and say
-which you enabled — never silently run nothing.
-
-## Model & effort — applies to every step
-
-### Detect the session ceiling — do this before every task
-
-**Read the actual model and effort from the current session context.** Do not
-recall from memory or assume from a previous run — the user may have changed
-it. State what you detected at the top of Step 3.
-
-The session ceiling is the **model version + effort level** the user has set
-right now (e.g. `opus 4.8 @ effort:low`, `sonnet 4.6 @ effort:medium`). You must **never exceed either
-dimension** on any sub-task, for any reason.
-
-### Floor
-
-**Default minimum is `sonnet @ low`.** Do not drop below `sonnet` — **except**
-for the haiku whitelist below.
-
-**`haiku @ low` is allowed (and preferred, to save tokens) for trivial,
-mechanical, fully-specified tasks where no reasoning or judgment is needed:**
-
-- Translation / rewording / fixing grammar or tone of existing text
-- Adding a log/print line, a comment, or a TODO at a stated location
-- A literal, explicitly-specified one-liner (rename a variable, change a
-  constant, add an import the user named)
-- Pure formatting / mechanical find-and-replace
-
-**Do NOT use haiku** when the task needs any decision: logic, control flow,
-API shape, error handling, schema, naming choices, or anything touching
-behavior. When unsure whether a task qualifies → it does not; use `sonnet`.
-Never exceed the session model (haiku is below sonnet, so it's always allowed
-direction-wise — but only for the whitelist above).
-
-### The session effort is both the default AND the hard ceiling
-
-**The session effort is the cap. You may go BELOW it for trivial sub-tasks, but
-NEVER above it — for any reason, no matter how complex the task.**
-
-- If the session is `sonnet 4.6 @ effort:low` → **every** sub-task runs at
-  `low`. A complex task does not get bumped to `medium` — it stays `low`.
-- The only direction you may move is **down** (e.g. drop a one-line file read to
-  `low` when the session is `medium`).
-- "This task is standard implementation / complex logic" is **not** a reason to
-  raise effort above the session level. The ceiling always wins.
-
-### Effort levels — meaning only, NOT a target to pick
-
-This table describes what each level _means_. It does **not** authorize raising
-effort above the session ceiling. **Ignore every row above the session effort.**
-
-| Effort   | What it means                                                     |
-| -------- | ----------------------------------------------------------------- |
-| `low`    | Simple edits, file reads, boilerplate — minimal reasoning needed  |
-| `medium` | Standard implementation, moderate complexity                      |
-| `high`   | Complex logic, architecture, root-cause, critical/risky decisions |
-| `max`    | Hardest multi-system problems — only when `high` is not enough    |
-
-### How to pick
-
-1. Note the session effort — this is the default for every task **and** the cap.
-2. For each sub-task, ask: is this trivial enough to run **below** the session
-   effort? If yes, lower it. If no, leave it **at** the session effort.
-3. Never raise above the session effort. If the session is `@ low`, the answer
-   is always `low` — even for the hardest sub-task in the plan.
-4. **Exception — never downgrade flow design.** `plan-flow` / `/sage-flow` always
-   runs at the **full session model + effort** (the ceiling), never lowered — it
-   is the highest-reasoning step. Lowering other trivial sub-tasks is fine; the
-   flow build + verify is never one of them.
-5. State the full version + effort for every task, e.g. `sonnet 4.6 @ effort:low`.
-
-State the session effort once in the Step 3 intent block, then annotate each
-task in the parallel plan with its own chosen tier (≤ session effort). Repeat in
-the final summary.
-
-> **Multi-repo workspace:** When multiple repos are open at once, anchor every
-> path in this protocol (`AGENTS.md`, `agents/sage/`, role files) to the **repo
-> root that owns the file you are editing** — find it by locating the closest
-> ancestor directory that contains `AGENTS.md`. State it once in the Step 3
-> intent block as `Repo: <repo-root>`. Never read knowledge from another repo
-> and never write knowledge outside the active repo's `agents/sage/`.
+Role selection, risk review, validation, and summary still apply to code-changing tasks even when the checklist is skipped.
 
 ---
 
-## Step 1 — Load your role(s) (do this before reading the task)
+### Step 0c — present the checklist with provider-safe fallback
 
-Pick the lens the request calls for — not just `dev`. Infer it from the request:
-`frontend`, `infra`, `security`, `qa`, `architect`, `designer`, `data`,
-`writer` … any senior expert role applies.
+Use the same five options in the same order every time.
 
-**Roles can hand off between phases.** A single task may use more than one role
-as work progresses — each phase uses the expert who owns that phase:
+1. **auto-switch-model** — pick the best available model or reasoning tier within the current session ceiling
+2. **plan-flow** — design and verify the flow before coding (`/sage-flow`)
+3. **unit-test** — write unit tests for changed logic (`/sage-unit-test`)
+4. **e2e-test** — drive the flow end-to-end through browser, API, or load checks (`/sage-e2e-test`)
+5. **security-review** — review sensitive changes for holes (`/sage-security-review`)
 
-- `architect` → plan the approach
-- `dev` → implement
-- `debugger` → root-cause and fix
-- `qa` → validate
+Do not add a sixth option. Do not add `None`. Do not add `just answer`. Pure questions never reach this step.
 
-When you enter a new phase, load that phase's role file and output the handoff:
-`Role: dev [loaded] — handoff from architect`
+#### Preferred interactive mode
 
-**To load or create any role:** open `agents/sage/roles/role-<lens>.md`.
-
-- **Found** → read it, adopt as-is. Output: `Role: <lens> [loaded]`
-  Do not re-derive. Update the file at the end if this task adds something new.
-- **Missing** → write it to disk now, before the next step. Use this format:
-
-  ```markdown
-  ---
-  role: <lens>
-  title: Senior <Lens>
-  covers: [<domain>]
-  updated: <today>
-  ---
-
-  ## Ikigai (who this role is)
-
-  - Loves — …
-  - Good at — … ← the role's expertise, stack, patterns, standards
-  - Team needs — …
-  - Worth it — …
-
-  ## How I work
-
-  - Reuse before writing; follow the domain's rules.md.
-  - Name the blast radius; stop on HIGH risk.
-  ```
-
-  Then output: `Role: <lens> [created]`
-
-Never start a phase without having output the role line for that phase.
-
----
-
-## Step 2 — Read knowledge + find assets
-
-1. Open `agents/sage/<domain>/rules.md` and any `decisions/` files whose title
-   looks relevant. **Quote the rules that apply** — show the human you checked.
-   If the domain folder is missing, note it and continue.
-
-2. Search for reusable assets (utils, hooks, components, services). When you
-   find one: **open the source file and read its exports**. Never infer an API
-   from a name or decision description. Source is always authoritative.
-
----
-
-## Step 3 — State intent + parallel plan before writing
-
-Output this block, then wait for `ask`/`reject` before continuing.
+If the environment supports a structured picker, use it. The picker must contain the exact five options above. It may also ask:
 
 ```text
-Repo    : <repo-root>  ← include only when multiple repos are open
+From now on, when should /sage ask this?
+- Every time
+- Only big changes
+```
+
+Map the answer to:
+
+- `Every time` → `askMode: "always"`
+- `Only big changes` → `askMode: "smart"`
+
+#### Markdown fallback mode
+
+If the environment does not support a structured picker but can receive text replies, show this exact Markdown fallback:
+
+```text
+Task: <task in one line>. Which /sage steps should run?
+
+Reply with numbers, for example: 1,2,3
+
+1. auto-switch-model — auto-pick model + effort per task, within the ceiling
+2. plan-flow — design + verify the flow before coding (/sage-flow)
+3. unit-test — write unit tests for the changed logic (/sage-unit-test)
+4. e2e-test — drive the flow end-to-end, browser/API/load (/sage-e2e-test)
+5. security-review — review sensitive changes for holes (/sage-security-review)
+
+Ask mode:
+A. Every time
+B. Only big changes
+```
+
+After the user answers, persist their selections to `.sage-local.json`.
+
+#### Headless mode
+
+If the environment cannot prompt, state that it is non-interactive and apply recommended defaults based on task fit. Never silently run nothing.
+
+Example:
+
+```text
+Checklist · non-interactive environment; enabled recommended defaults: auto-switch-model, plan-flow, unit-test. Skipped e2e-test because no runnable UI flow was available. Skipped security-review because the change is not sensitive.
+```
+
+Recommended defaults by task type:
+
+| Task type                           | Recommended steps                                        |
+| ----------------------------------- | -------------------------------------------------------- |
+| Trivial one-line mechanical edit    | auto-switch-model                                        |
+| Normal logic change                 | auto-switch-model, unit-test                             |
+| Multi-file feature                  | auto-switch-model, plan-flow, unit-test                  |
+| UI flow change                      | auto-switch-model, plan-flow, unit-test, e2e-test        |
+| Auth, money, PII, permissions       | auto-switch-model, plan-flow, unit-test, security-review |
+| Infrastructure or deployment change | auto-switch-model, plan-flow, security-review            |
+| Bug requiring investigation         | auto-switch-model, plan-flow, unit-test                  |
+| Security bug                        | auto-switch-model, plan-flow, unit-test, security-review |
+
+---
+
+### Step 0d — pre-check honestly
+
+Default checked state starts from `.sage-local.json`, then must be adjusted to fit the current task.
+
+Only check an option when it genuinely applies. Leave the rest unchecked with a short reason. Never check an option whose reason is "not applicable", "maybe", or "only if needed".
+
+`auto-switch-model` defaults on unless the human has pinned a model or the environment does not support model selection.
+
+---
+
+### Step 0e — echo the confirmed checklist
+
+After the user answers, echo the effective checklist in one line before continuing:
+
+```text
+Checklist · ✓ auto-switch-model · ✓ plan-flow → /sage-flow · ✓ unit-test · ~~e2e-test~~ (no UI flow) · ~~security-review~~ (not sensitive) · validation: required · docs: update only if behavior/API/setup changed
+```
+
+Validation is not a picker item. Documentation is not a picker item. They are handled by the validation and documentation rules below.
+
+Also persist the confirmed `checklist` and `askMode` back to `.sage-local.json`.
+
+---
+
+## Model and reasoning tier — applies to every step
+
+### Detect the session ceiling before each task
+
+Read the actual model, reasoning, and effort capability from the current session context when the environment exposes it. Do not recall from memory and do not assume from a previous run.
+
+The session ceiling is the maximum available model and effort level in the current session. Never exceed it.
+
+If the environment does not expose the model or effort level, write:
+
+```text
+Model   : current agent @ effort:unavailable
+```
+
+Then do not claim model switching. Use the current agent and continue.
+
+---
+
+### Provider-neutral reasoning tiers
+
+Use provider-neutral tiers internally:
+
+| Tier       | Meaning                                                                  |
+| ---------- | ------------------------------------------------------------------------ |
+| `fast`     | Mechanical edits, formatting, trivial file reads, simple rewrites        |
+| `standard` | Normal implementation, moderate reasoning, tests, small refactors        |
+| `deep`     | Architecture, flow design, root cause, security, data, schema, high risk |
+
+A provider may map these tiers to model families, effort settings, or no-op behavior.
+
+Examples:
+
+| Provider capability       | `fast` example           | `standard` example       | `deep` example          |
+| ------------------------- | ------------------------ | ------------------------ | ----------------------- |
+| Claude-style models       | Haiku/low if available   | Sonnet/current effort    | Opus or session ceiling |
+| OpenAI/Codex-style agents | current model/low effort | current model/medium cap | current model/high cap  |
+| Fixed-model IDE agent     | current model            | current model            | current model           |
+| Unknown provider          | current agent            | current agent            | current agent           |
+
+These are examples, not requirements. The current session ceiling always wins.
+
+---
+
+### Effort levels are caps, not targets
+
+If the session exposes effort levels such as `low`, `medium`, `high`, or `max`, treat the session effort as both the default and the hard ceiling.
+
+- You may go below the session effort for trivial work.
+- You may never go above the session effort.
+- A difficult task does not justify exceeding the session ceiling.
+- If effort is unavailable, do not invent it.
+
+Meaning guide:
+
+| Effort   | Meaning                                                          |
+| -------- | ---------------------------------------------------------------- |
+| `low`    | Simple edits, file reads, boilerplate, minimal reasoning         |
+| `medium` | Standard implementation and moderate complexity                  |
+| `high`   | Complex logic, root cause, architecture, risky decisions         |
+| `max`    | Hardest multi-system problems, only when available and permitted |
+
+---
+
+### How to pick a task tier
+
+1. Identify the session ceiling.
+2. Use `deep` for `plan-flow`, architecture, security, migrations, money/auth/PII, root cause, and high-risk decisions.
+3. Use `standard` for normal implementation, refactors, unit tests, and moderate logic.
+4. Use `fast` only for mechanical, fully specified edits with no judgment.
+5. Never exceed the session ceiling.
+6. If `plan-flow` is selected, run it at the full session ceiling. Do not downgrade flow design.
+
+State the detected model once in Step 3. Annotate each plan task with the selected provider-neutral tier and effort when available.
+
+---
+
+## Multi-repo workspace rule
+
+When multiple repositories are open, anchor every path to the repo root that owns the file being edited. Find it by locating the closest ancestor directory that contains `AGENTS.md`, `.git`, or the project-level config used by the workspace.
+
+State the active repo once in Step 3:
+
+```text
+Repo    : <repo-root>
+```
+
+Do not read knowledge from another repo. Do not write knowledge outside the active repo's `agents/sage/` directory.
+
+---
+
+## Step 1 — Load role lenses
+
+Pick the expert lens the task needs. Do not default to `dev` when another lens is more accurate.
+
+Common lenses:
+
+- `architect` — approach, boundaries, system design, sequencing
+- `dev` — implementation
+- `frontend` — UI, UX behavior, accessibility, state, forms
+- `backend` — APIs, persistence, jobs, integrations
+- `infra` — deployment, CI, containers, networking, observability
+- `security` — auth, permissions, secrets, PII, money, abuse cases
+- `qa` — tests, acceptance criteria, reproducibility, regression risk
+- `debugger` — root cause, logs, failure mechanism, fix verification
+- `data` — schemas, migrations, analytics, data integrity
+- `writer` — docs, naming, copy, changelogs
+
+Roles may hand off between phases. For example:
+
+```text
+Role: architect [loaded]
+Role: dev [loaded] — handoff from architect
+Role: qa [loaded] — handoff from dev
+```
+
+Before each phase, load the relevant role file at `agents/sage/roles/role-<lens>.md`. If it exists, read it and adopt it.
+
+If the file is missing, create it in the Sage role format (see `AGENTS.md` §2) — the **Ikigai** persona (Loves · Good at · Team needs · Worth it) plus a **How I work** section. Keep it small; the "Good at" list is the point.
+
+Output one line after loading or creating a role:
+
+```text
+Role: <lens> [loaded]
+```
+
+or:
+
+```text
+Role: <lens> [created]
+```
+
+---
+
+## Step 2 — Read knowledge and find reusable assets
+
+### Step 2a — read project knowledge
+
+Open the relevant domain rules at `agents/sage/<domain>/rules.md` and any relevant decision files at `agents/sage/<domain>/decisions/*.md`.
+
+Quote the specific rules that apply. Do not quote unrelated rules. Respect each rule's `enforcement` (`block` = must/never · `warn` = prefer · `advise` = consider — see `AGENTS.md` §5).
+
+If the domain folder or rules file is missing, say so and continue. Do not create `rules.md` merely because it is missing. Create or update knowledge only in Step 4 when the run produces transferable knowledge.
+
+Example:
+
+```text
+Knowledge checked:
+- agents/sage/frontend/rules.md — "Forms use the shared resolver and never bypass validation."
+- agents/sage/security/decisions/token-role-source.md — "Permissions are resolved server-side; UI state is not authoritative."
+```
+
+### Step 2b — find reusable assets
+
+Search for existing utilities, hooks, components, services, commands, validators, schemas, fixtures, or test helpers before writing new ones.
+
+When you find a reusable asset, open the source file and read its exports. Never infer an API from a name, README, or decision file. Source is authoritative.
+
+Report only the assets that matter:
+
+```text
+Assets checked:
+- src/features/orders/useOrderFilters.ts — exports `useOrderFilters` and `serializeOrderFilters`.
+- src/lib/auth/requirePermission.ts — exports `requirePermission` for server-side checks.
+```
+
+---
+
+## Step 3 — State intent and plan before writing
+
+Output the intent block before making changes.
+
+For LOW-risk small changes, show the intent and proceed without waiting. For MEDIUM or HIGH risk, multi-file features, schema/API changes, auth/money/PII, infrastructure, migrations, or meaningful uncertainty, show the intent and wait for approval.
+
+Use `Decision` as follows:
+
+- `proceed` — safe to continue without approval;
+- `warn` — continue, but clearly name a caveat;
+- `ask` — approval or missing information is needed before changing files;
+- `reject` — do not proceed because the request is unsafe or impossible.
+
+```text
+Repo    : <repo-root>  # include only when useful or in multi-repo workspaces
 Role    : <role> — <one-line task summary>
-Model   : <model> @ effort:<effort>  ← ceiling = session model + session effort
-Intent  : <what this change does>
+Model   : <model or current agent> @ effort:<effort or unavailable>
+Intent  : <what this change will do>
 Touches : <files, systems, domains affected>
 Risk    : LOW | MEDIUM | HIGH — <why in one phrase>
 Decision: proceed | warn | ask | reject
 ```
 
-Then declare the **parallel plan**. Before listing tasks, identify which can run
-at the same time (no dependency on each other) and which must be sequential.
-Annotate each task with its tier — **every tier must be ≤ the session model and
-≤ the session effort.** No task may exceed either.
+### Step 3a — declare the plan
 
-The example below assumes a high session ceiling (e.g. `opus 4.8 @ effort:high`).
-**If the session is `sonnet 4.6 @ effort:low`, every task must read
-`sonnet effort: low` — including the complex ones. Never higher.**
+Before listing tasks, identify what can run in parallel and what must be sequential. Annotate every task with its owner role, reasoning tier (`fast`, `standard`, `deep`), effort if available, and dependency if any.
 
 ```text
-Plan  (session ceiling: opus 4.8 @ effort:high)
+Plan (session ceiling: <model or current agent> @ effort:<effort or unavailable>)
 ── Phase 1 [parallel] ─────────────────────────
-  A. <task>                    sonnet  effort: low
-  B. <task>                    haiku   effort: low
+  A. Read form schema and existing resolver        role: frontend   tier: standard   effort: <= ceiling
+  B. Read API contract and validation rules        role: backend    tier: standard   effort: <= ceiling
 ── Phase 2 [sequential] ───────────────────────
-  C. <task — depends on A+B>   opus    effort: high
+  C. Implement shared validation path              role: dev        tier: standard   depends on A+B
 ── Phase 3 [parallel] ─────────────────────────
-  D. <task>                    sonnet  effort: medium
-  E. <task>                    sonnet  effort: medium
+  D. Add unit tests for invalid submissions        role: qa         tier: standard   depends on C
+  E. Run validation and summarize                  role: qa         tier: fast       depends on C+D
 ```
 
-Execute parallel phases in a single response (all their tool calls together).
-Mark each task with 🟨 when it starts and ✅ when it completes. Each task
-reports itself when IT finishes — do not wait for all to complete:
+### Step 3b — progress reporting
+
+When executing, mark task starts and completions. Do not wait until the entire phase ends to report useful results.
 
 ```text
-── [phase 1 · parallel: A, B, C] ────────────────
-  🟨 A [sonnet/low] — <brief what>
-  … A tool calls …
-  ✅ A — <one-line result>
-  🟨 B [haiku/low] — <brief what>
-  … B tool calls …
-  ✅ B — <one-line result>
-  🟨 C [sonnet/medium] — <brief what>
-  … C tool calls …
-  ✅ C — <one-line result>
+── [phase 1 · parallel: A, B] ────────────────
+  🟨 A [frontend/standard] — Reading existing form schema.
+  ✅ A — Found shared resolver and current bypass point.
+  🟨 B [backend/standard] — Reading API contract.
+  ✅ B — API rejects unknown enum values server-side.
 ── [phase 1 → all done, proceeding to phase 2] ──
-
-── [phase 2 · sequential: D — depends on A, B] ──
-  🟨 D [opus/high] — <brief what>
-  … D tool calls …
-  ✅ D — <one-line result>
-── [phase 2 → done, proceeding to phase 3] ──────
-
-── [phase 3 · parallel: E, F] ───────────────────
-  🟨 E [sonnet/medium] — <brief what>
-  … E tool calls …
-  ✅ E — <one-line result>
-  🟨 F [sonnet/medium] — <brief what>
-  … F tool calls …
-  ✅ F — <one-line result>
-── [phase 3 → all done] ─────────────────────────
 ```
 
-If a task fails, report it immediately and pause:
-`❌ B — <reason>. Pausing — waiting for input before continuing.`
-Never silently continue past a failure.
+If a task fails, report it immediately and pause when the failure affects correctness:
+
+```text
+❌ B — Could not find the API contract. Pausing because changing validation without the contract may break submissions.
+```
+
+For non-blocking failures, continue only if the remaining path is still safe and say why.
 
 ---
 
-## [write the code]
+## Write the code
+
+When writing code:
+
+- keep changes scoped to the stated intent;
+- reuse existing assets first;
+- follow project naming and folder conventions;
+- avoid unrelated cleanup;
+- avoid broad rewrites unless the plan approved them;
+- add tests when `unit-test` or `e2e-test` applies;
+- update docs only when behavior, setup, API, public usage, or team decisions changed.
 
 ---
 
-## Step 4 — Capture knowledge (mandatory, every run)
+## Validation and documentation rules
 
-Knowledge always goes to `agents/sage/` **in the repo** — never to local memory,
-never to a scratch file. After writing, record what you learned. Every run must
-output exactly one of:
+Validation is mandatory, but the exact command depends on the repo. Run the most relevant available checks: unit tests for changed logic; e2e tests for changed user flows; typecheck for typed codebases; lint for style/static errors; build for integration errors; migration dry-run or schema validation for database changes; a manual browser/API check when automation is unavailable.
 
-**A — New knowledge.** Create `agents/sage/<domain>/decisions/<slug>.md`.
-Write the **pattern**, not the implementation:
+If a check is unavailable or cannot run, state the exact reason.
 
-- Good: "Team uses CSS custom properties for all color tokens"
-- Bad: "ecommerce-landing.md uses `--bg: #0f0f0f`"
+```text
+Validation:
+- `pnpm test -- user-form` — passed.
+- `pnpm typecheck` — passed.
+- `pnpm e2e` — skipped because no browser environment is available in this agent.
+```
 
-Write it so a new team member with no context can apply it next time.
-Use this shape: what the pattern is · why · Do / Avoid.
-Set `enforcement: advise`, `source: ai`, `status: proposed`.
+Documentation is required only when the change affects external behavior, setup or deployment, API contracts, public user flows, configuration, team decisions, or reusable patterns. If docs do not need updates, say why:
 
-**B — Updated knowledge.** An existing entry was relevant; note if it was
-accurate or stale. Update in place.
-
-**C — No new knowledge.** Existing rules fully covered this.
-State it explicitly: `No new knowledge — <file> covers this case.`
-
-One-line entries count. What's not allowed is silence.
+```text
+Docs: skipped because the change is internal refactoring with no behavior, setup, or API change.
+```
 
 ---
 
-## Step 5 — Summary (mandatory, every run)
+## Step 4 — Capture knowledge
 
-**A response without this block is incomplete.** Output as **plain markdown**
-(no code fence) the block that matches your role. Write in **full sentences**
-— a field that fits in five words is too abbreviated. Use bullet points for
-multi-step content (Mechanism, Fix, Decisions).
+Knowledge always goes to `agents/sage/` inside the active repo. Never store project knowledge in local memory, a scratch file, or another repo.
 
-**When role = debugger / fixing a bug:**
+First analyze the whole run, then split by topic. Review the conversation, files created or changed, validation results, and corrections from the user. Capture **every distinct transferable pattern** — a real run may produce more than one:
+
+- an architecture boundary;
+- a naming convention;
+- a validation rule;
+- a library gotcha;
+- a testing pattern;
+- a security rule.
+
+**Do not reduce multiple patterns into one vague summary.** Every run must output one of:
+
+**A — New knowledge (one file per idea).** Create `agents/sage/<domain>/decisions/<slug>.md` (frontmatter format in `AGENTS.md` §2). Write the **pattern**, not the implementation:
+
+- Good: "Forms must use the shared resolver so client and server validation stay aligned."
+- Bad: "Fixed `CreateUserForm.tsx` by adding `valibotResolver`."
+
+Two unrelated patterns must become two files, in the correct domains. Set `status: proposed`, `source: ai`, and a sensible `enforcement`.
+
+**B — Updated knowledge.** Update the existing file in place when it was relevant but incomplete, stale, or corrected by this run.
+
+**C — No new knowledge.** Only when nothing transfers beyond the current implementation. State it: `Knowledge · [none] agents/sage/<domain>/rules.md — Existing rules fully covered this case.` Silence is not allowed.
+
+---
+
+## Step 5 — Summary
+
+A response without this block is incomplete for code-changing tasks. Output the block as plain Markdown, not inside a code fence. Use complete sentences; include concrete files, commands, and evidence.
+
+### Summary for debugger or bug-fix work
 
 ```markdown
 ── Sage ──────────────────────────────────────────
 **Role** · debugger — <task in one line>
-**Model** · <model> @ effort:<effort>
+**Model** · <model or current agent> @ effort:<effort or unavailable>
 **Domain** · <domain> | **Risk** · <LOW | MEDIUM | HIGH>
 
 **Root cause**
-Explain the specific condition, code path, or wrong assumption that caused the
-failure. Name the exact function/variable responsible.
+Explain the specific condition, code path, or wrong assumption that caused the failure. Name the exact function, variable, config, query, or dependency responsible.
 
 **Mechanism**
 
 - <trigger: what initiated the failure>
-- <propagation: how it spread to the surface>
-- <symptom: what the user or log observed>
+- <propagation: how it moved through the system>
+- <symptom: what the user, log, test, or monitor observed>
+
+**Changed**
+
+- `<file>` — <what changed and why>
 
 **Fix**
 
-- <what changed>
-- <why it addresses the root cause>
+- <why the change addresses the root cause>
 - <trade-offs or caveats the team should know>
 
 **Validated**
-State the concrete evidence you observed — network tab, log output, test result,
-manual check. "Looks correct" is not validation.
+
+- `<command or check>` — <passed, failed, or skipped with exact reason>
 
 **Slipped**
-Explain why this wasn't caught earlier — missing test, non-obvious API behaviour,
-misleading naming, or an assumption that turned out wrong.
+Explain why this was not caught earlier — missing test, non-obvious API behavior, misleading naming, weak monitoring, or a wrong assumption.
 
-**Knowledge** · [new] `<path>` — <pattern title>
+**Remaining**
+
+- <known limitation, follow-up, or "None">
+
+**Knowledge** · [new | updated | none] `<path>` — <pattern title or reason>
 ──────────────────────────────────────────────────
 ```
 
-**When role = dev / architect / frontend / any build task:**
+### Summary for dev, architect, frontend, backend, infra, data, writer, or build work
 
 ```markdown
 ── Sage ──────────────────────────────────────────
 **Role** · <role> — <task in one line>
-**Model** · <model> @ effort:<effort>
+**Model** · <model or current agent> @ effort:<effort or unavailable>
 **Domain** · <domain> | **Risk** · <LOW | MEDIUM | HIGH>
 
-**Done**
-Describe what was built or changed — sections, files, and their purpose.
+**Changed**
+
+- `<file>` — <what changed and why>
 
 **Decisions**
 
 - <key choice and why>
-- <alternatives considered and ruled out>
+- <alternative considered and why it was not used>
 
 **Validated**
-Describe how you confirmed it works — what you ran, what you checked, what the
-output looked like.
 
-**Knowledge** · [new | updated | none] `<path>` — <pattern or reason>
+- `<command or check>` — <passed, failed, or skipped with exact reason>
+
+**Docs**
+
+- <updated path, or skipped with exact reason>
+
+**Remaining**
+
+- <known limitation, follow-up, or "None">
+
+**Knowledge** · [new | updated | none] `<path>` — <pattern title or reason>
 ──────────────────────────────────────────────────
 ```
+
+---
+
+## Stop conditions
+
+Stop and ask before changing files when:
+
+- risk is HIGH and the user has not explicitly approved;
+- the request could delete or overwrite user data;
+- the change affects auth, money, PII, security boundaries, or production infrastructure and the intent is ambiguous;
+- required source files or contracts are missing;
+- validation cannot be performed and the change is risky;
+- the user asks for something unsafe or outside allowed capabilities.
+
+Do not stop for trivial missing preferences when a safe best effort is possible. Make the best safe assumption, state it, and continue.
+
+---
+
+## Common anti-patterns
+
+Avoid these:
+
+- Showing the checklist for a pure question.
+- Depending only on a proprietary picker that some tools cannot render — always have the Markdown fallback.
+- Saying "AskUserQuestion" when the environment does not have that tool.
+- Claiming Claude-specific models in a Codex or unknown-provider environment.
+- Raising effort above the session ceiling; downgrading `plan-flow` below it.
+- Treating validation as optional, or ending with "looks good" instead of concrete evidence.
+- Running broad unrelated cleanup, or updating docs for every tiny internal edit.
+- Writing one vague knowledge file for multiple unrelated decisions.
+
+---
+
+## Minimal completion checklist
+
+Before the final response, confirm internally:
+
+- the request was classified correctly; pure questions skipped the checklist;
+- code requests used the picker, Markdown fallback, or headless defaults;
+- `.sage-local.json` was read or created and is gitignored;
+- role files were loaded or created; relevant rules and assets were checked;
+- intent, risk, and plan were stated; the plan used provider-neutral tiers within the ceiling;
+- changes stayed in scope; validation ran or was skipped with an exact reason;
+- docs were updated or skipped with an exact reason;
+- Step 4 knowledge was new, updated, or explicitly none (split by topic);
+- Step 5 summary included Changed, Decisions or Fix, Validated, Docs, Remaining, and Knowledge.
