@@ -1,7 +1,7 @@
 #!/bin/sh
 # Sage installer — one command, any repo. Sets up (or updates) Sage:
 #
-#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
+#   bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"
 #
 # Lets you pick which AI tools to wire up with a checkbox picker:
 #   press 1-7 to toggle a row (instant, no Enter needed)

@@ -1,5 +1,5 @@
 # Sage installer — one command, any repo. Sets up (or updates) Sage:
-#   irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
+#   irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex
 #
 # It shows a checkbox picker of AI tools (Up/Down move, Space toggle, A all,
 # Enter confirm), fetches the protocol + commands, and drops the adapters you

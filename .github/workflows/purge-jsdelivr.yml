@@ -1,0 +1,29 @@
+name: Purge jsDelivr cache on release
+
+# The install one-liners fetch the bootstrap files via jsDelivr's `@latest`
+# alias (cdn.jsdelivr.net/gh/qorstack/sage@latest/...). jsDelivr resolves
+# `@latest` to the newest tag but caches that resolution for up to ~12h, so a
+# fresh tag wouldn't reach users until the cache expires. Purging the `@latest`
+# URLs on every tag push forces an immediate re-resolve to the new version.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: purge-jsdelivr
+  cancel-in-progress: true
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Purge @latest bootstrap files
+        run: |
+          for f in install.sh install.ps1 AGENTS.md; do
+            echo "Purging $f ..."
+            curl -fsS "https://purge.jsdelivr.net/gh/qorstack/sage@latest/$f" && echo
+          done

@@ -6,7 +6,7 @@ Knowledge is passive; cognition must be enforced. Instead of a service to deploy
 
 ## Install
 
-- Copy the protocol to your repo root: `curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/AGENTS.md -o AGENTS.md`
+- Copy the protocol to your repo root: `curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/AGENTS.md -o AGENTS.md`
 - Optional starter knowledge: copy the `agents/` folder from the repo (or let it fill in as the agent captures rules).
 - Commit both. Every agent that reads AGENTS.md now follows the protocol.
 

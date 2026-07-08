@@ -31,11 +31,11 @@ non-interactively:
 
 - **Windows (PowerShell tool):**
   ```powershell
-  $env:SAGE_TOOLS='<tools>'; irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
+  $env:SAGE_TOOLS='<tools>'; irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex
   ```
 - **macOS / Linux (Bash tool):**
   ```bash
-  SAGE_TOOLS='<tools>' bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
+  SAGE_TOOLS='<tools>' bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"
   ```
 
 **4. Report the installer's one-line result** (which adapters it wrote) and stop.

@@ -37,13 +37,13 @@ protocol + commands, and drops the adapters you pick. Re-run any time to update.
 **Bash — macOS, Linux, or Windows git-bash/WSL:**
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"
+bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"
 ```
 
 **PowerShell — Windows:**
 
 ```powershell
-irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex
+irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex
 ```
 
 It never overwrites your own knowledge under `agents/sage/<domain>/` — only

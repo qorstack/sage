@@ -1372,11 +1372,11 @@
             <div class="cmd-box">
               <span class="cmd-prompt">$</span>
               <code class="cmd-text"
-                >bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"</code
+                >bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"</code
               >
               <button
                 class="copy"
-                data-copy='bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"'
+                data-copy='bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"'
               >
                 Copy
               </button>
@@ -1684,13 +1684,13 @@ Because this is high risk, I will wait for confirmation before editing code.</pr
                     <span>Bash — macOS / Linux / git-bash</span>
                     <button
                       class="copy"
-                      data-copy="bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)&quot;"
+                      data-copy="bash -c &quot;$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)&quot;"
                     >
                       Copy
                     </button>
                   </div>
                   <pre>
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"</pre
+bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"</pre
                   >
                 </div>
 
@@ -1700,13 +1700,13 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/insta
                     <span>PowerShell — Windows</span>
                     <button
                       class="copy"
-                      data-copy="irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex"
+                      data-copy="irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex"
                     >
                       Copy
                     </button>
                   </div>
                   <pre>
-irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex</pre
+irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex</pre
                   >
                 </div>
 
@@ -2080,11 +2080,11 @@ Reuse payments/idempotency.py; never roll your own.</pre
         var CMD = {
           bash: {
             prompt: "$",
-            text: 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/qorstack/sage/main/install.sh)"',
+            text: 'bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"',
           },
           pwsh: {
             prompt: "PS>",
-            text: "irm https://raw.githubusercontent.com/qorstack/sage/main/install.ps1 | iex",
+            text: "irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex",
           },
         };
         var promptEl = widget.querySelector(".cmd-prompt");
