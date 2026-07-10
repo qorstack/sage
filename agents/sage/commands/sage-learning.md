@@ -17,8 +17,8 @@ one idea per file.
 ## Phase 1 — Learn from THIS codebase
 
 **Role: `codebase-analyst`** — open `agents/sage/roles/role-codebase-analyst.md`;
-if missing, create it (Ikigai: loves understanding how teams actually build;
-good at reading source, extracting real conventions, spotting reusable assets).
+if missing, create it (expertise: reading source, extracting real conventions,
+spotting reusable assets; pitfall: inventing conventions the code doesn't follow).
 Output `Role: codebase-analyst [loaded|created]`.
 
 1. **Map the repo.** Identify the domains (e.g. `billing`, `search`), the stack
@@ -40,7 +40,7 @@ Output `Role: codebase-analyst [loaded|created]`.
 4. **Write it to `agents/sage/`:** per-domain `rules.md` (conventions + reusable
    assets), `decisions/<slug>.md` for notable patterns (`enforcement: advise`
    unless clearly a must, `source: ai`, `status: proposed`), and enrich each
-   `roles/role-<lens>.md` → its `Good at` with the stack/patterns you found.
+   `roles/role-<lens>.md` → its **Expertise** with the stack/patterns you found.
 
    Write the **pattern**, not the implementation:
    - Good: "Team uses Zod for all API response validation."
@@ -51,9 +51,9 @@ Output `Role: codebase-analyst [loaded|created]`.
 ## Phase 2 — Research best practices for the stack
 
 **Role: `researcher`** (handoff) — open `agents/sage/roles/role-researcher.md`;
-if missing, create it (Ikigai: loves finding what the community learned so the
-team doesn't have to; good at evaluating sources, distilling opinionated guidance
-from noise, matching patterns to a specific stack). Output
+if missing, create it (expertise: evaluating sources, distilling opinionated
+guidance from noise, matching patterns to a specific stack; pitfall: cargo-culting
+advice that doesn't fit this stack). Output
 `Role: researcher [loaded|created] — handoff from codebase-analyst`.
 
 1. **Use the stack + domains** detected in Phase 1 (plus the existing

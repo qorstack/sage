@@ -6,6 +6,14 @@ Use `/sage` before any non-trivial code-changing task. This command is designed 
 
 For code-changing tasks, Steps 1-5 are mandatory. For pure questions, advice, explanations, reviews, translations, or planning with no file changes, answer directly without running `/sage`.
 
+> **Source of truth — read this before editing.** `AGENTS.md` owns the protocol:
+> role selection (§1–§2), the risk header (§4), knowledge capture (§3),
+> enforcement (§5), and the summary block (§4b). This command file owns only what
+> `AGENTS.md` does **not**: the checklist mechanics (config, signals,
+> recommendation engine) and the stack/validation tables. Where the two overlap,
+> **`AGENTS.md` wins — point to it, don't restate it here** (restating is what
+> makes the two drift).
+
 ---
 
 ## Command modes
@@ -58,17 +66,7 @@ Config storage rules:
 
 ## Core principles
 
-1. **Classify before acting.** Do not treat a question as a code request.
-2. **Show all five choices whenever a checklist is shown.** Do not hide choices just because they are not recommended.
-3. **Recommend, do not remove.** Each checklist item must be labeled as recommended or not recommended with a reason.
-4. **Use `auto` for no-prompt execution.** In `auto` mode, decide the steps yourself and continue.
-5. **Use `ask` for explicit human choice.** In `ask` mode, ask every time for code-changing tasks.
-6. **Never exceed the current session ceiling.** Use only the model, reasoning, and effort level available in the current session.
-7. **Stay language-agnostic.** Detect the repo's stack from files, commands, manifests, build tools, and tests.
-8. **Reuse before writing.** Read project rules and existing source before designing new code.
-9. **Validate every change.** Run the most relevant checks for the detected stack. If a check cannot run, report exactly why.
-10. **Capture transferable knowledge.** Record patterns, conventions, and decisions, not one-off implementation notes.
-11. **Summarize with evidence.** The final summary must include changed files, validation, docs status, remaining risks, and knowledge status.
+The operating principles are `AGENTS.md`'s pipeline (§0–§5) applied to this command: classify before acting · show all five choices with honest recommendations · never exceed the session ceiling · stay language-agnostic (detect the stack from real files) · reuse before writing · validate every change or say why you can't · capture only transferable knowledge · summarize with evidence. The steps below are the operational detail; `AGENTS.md` is authoritative wherever they overlap.
 
 ---
 
@@ -134,7 +132,7 @@ When unsure, choose the safer recommendation.
 
 These are the only checklist choices. Always show all five when a checklist is shown.
 
-1. **auto-switch-model** — pick the best available model or reasoning tier within the current session ceiling
+1. **auto-switch-model** — right-size reasoning: pick the effort/reasoning tier within the ceiling, and push a down-shiftable sub-task to a smaller, cheaper sub-agent to save tokens (only when the task is big enough to beat the sub-agent's overhead). Never above the session model/effort — a hard cost ceiling so nothing burns tokens unbudgeted; does not change the running session model
 2. **plan-flow** — design and verify the flow before coding (`/sage-flow`)
 3. **unit-test** — write or update focused tests for changed logic (`/sage-unit-test`)
 4. **e2e-test** — verify behavior end-to-end through UI, API, CLI, integration, browser, mobile, desktop, or load checks (`/sage-e2e-test`)
@@ -190,9 +188,9 @@ If the environment is headless and cannot ask, behave like `auto` mode and state
 
 ## Model and reasoning tier
 
-Read the actual model, reasoning, and effort capability from the current session context when the environment exposes it. Do not recall from memory or assume from a previous run. The session ceiling is the maximum available model and effort in the current session — never exceed it. If the environment does not expose the model/effort, write `Model : current agent @ effort:unavailable`, do not claim model switching, and continue.
+Follow the model/effort discipline in **`AGENTS.md` §1.4**: read the real session model/effort (never recall from memory); it is the hard ceiling on both **capability and cost**; you cannot raise the running session's model, so "switching" means picking the effort tier and pushing a down-shiftable sub-task to a smaller, cheaper sub-agent — only downward, never above the ceiling, never a switch you can't perform, and only when the task beats the sub-agent's overhead. If the environment hides the model/effort, write `Model : current agent @ effort:unavailable` and don't claim switching.
 
-Use provider-neutral tiers internally:
+Map the provider-neutral tiers as:
 
 | Tier       | Meaning                                                                              |
 | ---------- | ------------------------------------------------------------------------------------ |
@@ -244,32 +242,7 @@ Pick the expert lens the task needs; do not default to `dev`. Roles may hand off
 
 `architect` · `fullstack` · `frontend` · `backend` · `mobile` · `desktop` · `cli` · `database` · `data` · `ml` · `infra` · `devops` · `security` · `qa` · `debugger` · `performance` · `writer` — or any lens the task implies.
 
-Before each phase, load `agents/sage/roles/role-<lens>.md`. If it exists, read and adopt it. If missing, create a small role file in the Sage **Ikigai** format:
-
-```markdown
----
-role: <lens>
-title: Senior <Lens>
-covers: [<domains>]
-updated: <today>
----
-
-## Ikigai
-
-- Loves — <what this role optimizes for>
-- Good at — <specific expertise, stack, patterns, and failure modes>
-- Team needs — <how this role protects the project>
-- Worth it — <why this role matters>
-
-## How I work
-
-- Reuse existing rules and assets before writing new code.
-- Name the blast radius before changing behavior.
-- Validate with the closest reliable check for this stack.
-- Stop on unclear high-risk changes.
-```
-
-Output `Role: <lens> [loaded]` or `Role: <lens> [created]`, and on handoff `Role: <next> [loaded] — handoff from <prev>`.
+Before each phase, load `agents/sage/roles/role-<lens>.md`; if missing, create it in the **`AGENTS.md` §2 role format** (Expertise + Pitfalls + How I work — concrete, not a motivational bio). Output `Role: <lens> [loaded|created]`, and on handoff `Role: <next> [loaded] — handoff from <prev>`.
 
 ---
 
@@ -284,6 +257,8 @@ Select the role(s) from the detected signals and stack, load or create the role 
 **Step 2a — project knowledge.** Open `agents/sage/<domain>/rules.md` and relevant `agents/sage/<domain>/decisions/*.md`. Quote only the rules that apply, and respect each rule's `enforcement` (`block` = must/never · `warn` = strong preference · `advise` = guidance — see `AGENTS.md` §5). If the domain folder or rules file is missing, say so and continue; create knowledge only in Step 4.
 
 **Step 2b — reusable assets.** Search for existing utilities, hooks, components, services, commands, validators, schemas, fixtures, generated clients, migrations, test helpers, CI jobs, deploy scripts, and runbooks before writing new ones. When you find one, **open the source file and read its exports / public API / command behavior** — never infer from a name, README, or decision file. Report only the assets that matter.
+
+**Keep these scans out of main context.** When the knowledge folder or reuse surface is large, run Steps 2a–2b in a **sub-agent** (Explore / Task) and take back only the findings — the rules that apply and the exports you'll reuse, not the raw file dumps. You pay for the conclusion, not every file, and independent scans run in parallel. For a small repo, read inline — a sub-agent isn't worth the overhead.
 
 ---
 
@@ -302,6 +277,8 @@ Decision: proceed | warn | ask | reject
 ```
 
 `proceed` = safe to continue · `warn` = continue but name a caveat · `ask` = need approval/info before changing files · `reject` = unsafe or impossible.
+
+**Foggy request? Grill before you plan.** When the ask is ambiguous, has two defensible designs, or hides an unstated trade-off, run **`/sage-grill`** (`agents/sage/commands/sage-grill.md`) first — it interrogates the request into agreed decisions one question at a time (facts you look up yourself; only real decisions go to the human), then hands a sharp request to `plan-flow`. Skip it when the request is already clear, and say so.
 
 **Step 3a — plan.** Identify parallel vs sequential work; annotate each task with owner role, tier (`fast`/`standard`/`deep`), effort if available, dependency, and expected validation.
 
@@ -361,7 +338,7 @@ If a check is unavailable or cannot run, state the exact reason. Documentation i
 
 Knowledge always goes to `agents/sage/` inside the active repo. Never store project knowledge in local memory, a scratch file, or another repo.
 
-First analyze the whole run, then split by topic. Review the conversation, files created/changed, validation results, and corrections. Capture **every distinct transferable pattern** — a real run may produce more than one (architecture boundary, naming convention, validation rule, library gotcha, testing pattern, security rule, migration pattern, frontend/backend contract rule, deployment rule, performance constraint). **Do not reduce multiple patterns into one vague summary.** Every run outputs one of:
+**Gate first — don't burn the analysis when there's nothing to learn.** Run the extraction below only when the change actually produced something transferable: a design decision, a human correction, a stated "always / never", a non-obvious gotcha. A mechanical edit or typo produces nothing — output one line, `Knowledge · [none] <file> — nothing transferable this run`, and skip the rest. Otherwise analyze the whole run, then split by topic. Review the conversation, files created/changed, validation results, and corrections, and capture **every distinct transferable pattern that clears the noise bar** (`AGENTS.md` §3: hard to reverse, non-obvious, or a genuine trade-off) — a real run may produce more than one (architecture boundary, naming convention, validation rule, library gotcha, testing pattern, security rule, migration pattern, deployment rule, performance constraint). **Do not reduce multiple patterns into one vague summary, and do not capture obvious defaults.** Every run outputs one of:
 
 - **A — New knowledge (one file per idea):** `agents/sage/<domain>/decisions/<slug>.md` (frontmatter format in `AGENTS.md` §2). Write the **pattern**, not the implementation. Good: "Forms must use the shared resolver so client and server validation stay aligned." Bad: "Fixed CreateUserForm.tsx by adding valibotResolver." Two unrelated patterns = two files, in the correct domains. `status: proposed`, `source: ai`, sensible `enforcement`.
 - **B — Updated knowledge:** update the existing file in place when it was relevant but incomplete, stale, or corrected by this run.
@@ -371,81 +348,15 @@ First analyze the whole run, then split by topic. Review the conversation, files
 
 ## Step 5 — Summary
 
-A response without this block is incomplete for code-changing tasks. Output as plain Markdown (no code fence). Use complete sentences; include concrete files, commands, and evidence.
+Close with the summary block defined in **`AGENTS.md` §4b** (the debugger vs. build/implementation template), **scaled to risk** — a LOW-risk or mechanical change gets a two-line recap (`Done` + `Validated`), not the full block. Do not redraw the template here; §4b is the single source.
 
-**Debugger / bug fix:**
+Beyond §4b's fields, this command always adds these rows to the block (complete sentences, concrete files/commands):
 
-```markdown
-── Sage ──────────────────────────────────────────
-**Role** · debugger — <task in one line>
-**Model** · <model or current agent> @ effort:<effort or unavailable>
-**Domain** · <domain> | **Risk** · <LOW | MEDIUM | HIGH>
-
-**Root cause**
-The specific condition, code path, wrong assumption, config, query, or dependency that caused the failure.
-
-**Mechanism**
-
-- <trigger> · <propagation> · <symptom>
-
-**Changed**
-
-- `<file>` — <what changed and why>
-
-**Fix**
-
-- <why it addresses the root cause> · <trade-offs>
-
-**Validated**
-
-- `<command or check>` — <passed | failed | skipped with exact reason>
-
-**Docs**
-
-- <updated path, or skipped with exact reason>
-
-**Slipped**
-Why it was not caught earlier.
-
-**Remaining**
-
-- <known limitation, follow-up, or "None">
-
-**Knowledge** · [new | updated | none] `<path>` — <pattern title or reason>
-──────────────────────────────────────────────────
-```
-
-**Build / implementation (dev, architect, frontend, backend, fullstack, mobile, desktop, cli, database, data, ml, infra, devops, security, qa, performance, writer):**
-
-```markdown
-── Sage ──────────────────────────────────────────
-**Role** · <role> — <task in one line>
-**Model** · <model or current agent> @ effort:<effort or unavailable>
-**Domain** · <domain> | **Risk** · <LOW | MEDIUM | HIGH>
-
-**Changed**
-
-- `<file>` — <what changed and why>
-
-**Decisions**
-
-- <key choice and why> · <alternative ruled out>
-
-**Validated**
-
-- `<command or check>` — <passed | failed | skipped with exact reason>
-
-**Docs**
-
-- <updated path, or skipped with exact reason>
-
-**Remaining**
-
-- <known limitation, follow-up, or "None">
-
-**Knowledge** · [new | updated | none] `<path>` — <pattern title or reason>
-──────────────────────────────────────────────────
-```
+- **Model** · `<model or current agent> @ effort:<effort or unavailable>`
+- **Changed** · `<file>` — what changed and why (one row per file)
+- **Validated** · the exact command/check → passed | failed | skipped with the reason; never "looks correct"
+- **Docs** · updated path, or skipped with the exact reason
+- **Remaining** · known limitation, follow-up, or "None"
 
 ---
 

@@ -9,6 +9,7 @@ practice.
 | Command                   | What it does                                                       | Invoked by                         |
 | ------------------------- | ------------------------------------------------------------------ | ---------------------------------- |
 | `sage.md`                 | The cognition pipeline — role, knowledge, risk, capture, summary   | automatically, before any change   |
+| `sage-grill.md`           | Interrogate a foggy request into agreed decisions (no code)        | on demand, before `plan-flow`      |
 | `sage-flow.md`            | Build + verify an implementation-ready flow → `agents/sage/flows/` | checklist toggle `plan-flow`       |
 | `sage-unit-test.md`       | Write unit tests that match the repo's stack                       | checklist toggle `unit-test`       |
 | `sage-e2e-test.md`        | Drive the app end-to-end (Playwright/k6/…) and prove the flow      | checklist toggle `e2e-test`        |

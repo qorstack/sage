@@ -4,6 +4,36 @@ All notable changes to Sage. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+### Added — cognition upgrades
+
+- **`/sage-grill`** — a new command that interrogates a foggy request into agreed
+  decisions one question at a time (facts you look up yourself; only real
+  decisions go to the human) before `/sage-flow`. The grilling technique is
+  adapted from [Matt Pocock's skills](https://github.com/mattpocock/skills)
+  (`grilling`, MIT), folded into Sage's pipeline rather than shipped standalone.
+- **Large-effort decision-map** in `/sage-flow` — when an effort is too big for
+  one pass, chart the open decisions (sharp ones only) before building; plus an
+  explicit `Out of scope` list and "flow produces decisions, not deliverables".
+- **Sub-agent offload** for the read-heavy scans (knowledge + reuse) — run them in
+  a sub-agent and take back only the findings, keeping main context lean.
+
+### Changed — honesty, token cost, and less drift
+
+- **Ikigai removed from the reply header**; role files now use **Expertise +
+  Pitfalls + How I work** (concrete strengths and blind spots, not a bio).
+- **`auto-switch-model` reframed honestly** — the session model + effort is a hard
+  ceiling on **cost**, not just capability. You cannot change the running session
+  model; "switching" means picking the effort tier and pushing a down-shiftable
+  sub-task to a smaller/cheaper sub-agent — only downward, never a switch you
+  can't perform.
+- **Knowledge capture is trigger-gated + noise-barred** — skip the analysis when a
+  run produced nothing transferable; capture only what is hard to reverse,
+  non-obvious, or a genuine trade-off. Summary block **scales to risk**; knowledge
+  reading is **index-first**. All to cut both knowledge rot and token cost.
+- **Deduped `AGENTS.md` ↔ `commands/sage.md`** — `AGENTS.md` owns the protocol;
+  the command file keeps only its operational tables and points to `AGENTS.md`
+  where they overlap (a source-of-truth note now guards against future drift).
+
 ### Changed — pivot to a single-file protocol
 
 - **Sage is now a single `AGENTS.md` cognition protocol** plus a Markdown
