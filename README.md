@@ -100,6 +100,17 @@ After installing, run these commands in sequence. Each builds on the last.
 and — once you confirm — runs the right specialist command itself, so you don't
 have to remember them:
 
+Before that checklist, Sage routes the request by how much decision fog remains:
+
+| Route | When | Sage runs |
+| --- | --- | --- |
+| `clear-single-session` | intent, terms, and scope are settled | flow/build normally |
+| `foggy-single-session` | human decisions remain but fit one session | `/sage-grill` |
+| `large-multi-session` | research/decisions exceed one session | `/sage-wayfinder` |
+
+Grill and Wayfinder are always-on guards, not checklist choices. Turning
+`plan-flow` off never authorizes coding past unresolved product decisions.
+
 | Checklist item    | Runs                    | For                                      |
 | ----------------- | ----------------------- | ---------------------------------------- |
 | `plan-flow`       | `/sage-flow`            | design the flow before coding            |
@@ -141,6 +152,31 @@ driver-to-control table, gates, and worked examples.
 ## Commands
 
 The lifecycle commands you run directly:
+
+**`/sage-grill`** — resolve a foggy request that fits one session
+
+It looks up facts itself, asks genuine decisions one at a time, stress-tests
+material answers with concrete scenarios, updates
+`agents/sage/<domain>/context.md` as terms settle, and checkpoints multi-decision
+sessions before the first question. It exits `requirements-clear`; `/sage-flow`
+must consume that handoff without repeating resolved product questions.
+
+**`/sage-wayfinder`** — plan an effort too foggy for one session
+
+It creates a durable destination/map/ticket frontier under
+`agents/sage/wayfinders/` by default, or uses a repo-configured issue tracker.
+Tickets are `research`, `prototype`, `grilling`, or `task`; each declares
+blocking and claim state. When no fog or tickets remain, Wayfinder synthesizes a
+spec and hands it to `/sage-flow`.
+
+See [`docs/request-routing-wayfinder.md`](docs/request-routing-wayfinder.md) for
+the complete routing, checkpoint, map/ticket, and handoff contracts.
+
+**`/sage-flow`** — design implementation from clear requirements
+
+It owns system/API/state/error/security decisions. It does not coordinate
+multi-session fog and does not re-ask product decisions resolved by Grill or
+Wayfinder unless new code/schema evidence contradicts them.
 
 **`/sage`** — run the full cognition pipeline before any code change
 

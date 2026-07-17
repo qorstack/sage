@@ -56,6 +56,8 @@ place and every agent stays in step.
 | Command                 | What it does                                                           |
 | ----------------------- | ---------------------------------------------------------------------- |
 | `/sage`                 | Run the cognition pipeline + run checklist before any code change      |
+| `/sage-grill`           | Resolve single-session fog, glossary, and checkpoint decisions         |
+| `/sage-wayfinder`       | Map multi-session fog as durable decision tickets                      |
 | `/sage-flow`            | Turn a feature/journey into an implementation-ready business flow      |
 | `/sage-unit-test`       | Write unit tests that match how this repo already tests                |
 | `/sage-e2e-test`        | Drive the app end-to-end (Playwright/k6/…) and prove the flow          |
@@ -65,8 +67,8 @@ place and every agent stays in step.
 | `/sage-update`          | Update Sage in this repo to the latest version (re-runs the installer) |
 | `/sage-setting`         | View/change how `/sage` runs (mode: auto/ask, default steps)           |
 
-`/sage` is the one you use most — its §0 checklist decides which of the others to
-run, asks you to confirm, then runs them for you.
+`/sage` is the one you use most — its §0 route guard sends fog to Grill or
+Wayfinder, then its checklist decides which build/validation specialists apply.
 
 > Don't see your agent? Most modern agents support either `AGENTS.md` or a
 > rules/instructions file — point it at `AGENTS.md` the same way.

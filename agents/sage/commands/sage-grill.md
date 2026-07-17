@@ -1,171 +1,189 @@
-# /sage-grill — interrogate a foggy request into agreed decisions
+# /sage-grill — resolve single-session fog and preserve the decisions
 
-Take a request that is **not yet clear enough to build** — an ambiguous feature,
-a vague "make it better", a design with unstated trade-offs — and turn it into a
-small set of **decisions the human has actually agreed to**, by grilling one
-question at a time. This is the step that stops Sage from confidently building the
-wrong thing: most failures are not bad code, they are unspecified requirements.
+Turn a `foggy-single-session` request into `requirements-clear`: product intent,
+canonical terminology, scope, and trade-offs the human has actually confirmed.
+Ask one decision at a time, ground facts in the repo, maintain the domain glossary
+inline, and checkpoint multi-decision sessions so alignment survives the chat.
 
-**This skill produces decisions, not deliverables.** It writes no product code.
-It ends when the way is clear — when nothing is left to decide before `/sage-flow`
-or implementation can start.
-
-> **Invoked before design.** Sage runs `/sage-grill` **before `/sage-flow`** when
-> the request is foggy (an ambiguous ask, two defensible designs, a risky
-> assumption, an overloaded term). It is on-demand, not a locked checklist item —
-> the five-choice picker in `AGENTS.md` §0 stays exactly five. When the request is
-> already sharp, skip straight to the flow and say so.
->
-> **Shape & prose** follow the shared style-guide
-> [`agents/sage/docs-style-template.md`](agents/sage/docs-style-template.md).
+**Produces decisions, not product code.** It stops before design or
+implementation. It is an always-on routing guard independent of `plan-flow`, not
+a sixth checklist item. If the effort is larger than one session, hand it to
+`/sage-wayfinder` instead of forcing this command to hold the whole map.
 
 ---
 
-## Model & effort — read the session ceiling first
+## Model & effort
 
-Grilling is a **deep** reasoning step — it decides the shape of everything built
-after it. Run it at the **full session model + effort** (the ceiling); never
-downgrade it, never exceed the ceiling. If the environment does not expose the
-model/effort, write `Model : current agent @ effort:unavailable` and continue.
-
----
-
-## Step 1 — Load role + ground yourself in reality
-
-Load the senior lens the request implies (`architect` for design questions, the
-domain role otherwise) per `AGENTS.md` §1.1 — output the `Role:` line. Then read
-the relevant `agents/sage/<domain>/rules.md` and `decisions/` so you grill from
-what the team already decided, not from a blank slate.
-
-**Before you ask the human anything, look first.** Open the real source, schema,
-and config for the area in question. A question you can answer from the code is
-not a question — it is research you skipped.
+Run at the full session model + effort ceiling. Grilling decides the shape of
+everything downstream; never downgrade it or exceed the session ceiling. If the
+environment hides model/effort, state `current agent @ effort:unavailable`.
 
 ---
 
-## Step 2 — Separate facts from decisions
+## Step 1 — Load the lens and domain model
 
-This is the rule that makes grilling sharp:
+Load the request's senior lens per `AGENTS.md` §1.1. Read, in order:
 
-- **Facts** — anything discoverable in the code, schema, docs, or git: does this
-  export exist, what does this table allow, how does the current flow behave.
-  **Look these up yourself. Never ask the human a fact.**
-- **Decisions** — the calls that are genuinely the human's: product intent,
-  trade-offs between two valid designs, scope, priorities, risk appetite. **These,
-  and only these, become questions.**
+1. `agents/sage/<domain>/index.md`
+2. `agents/sage/<domain>/context.md` when present
+3. `rules.md` and relevant `decisions/*.md`
+4. real source, schema, config, docs, and git facts for the request
 
-List the open decisions as a **decision tree** — which ones depend on which. You
-will walk it top-down, resolving prerequisites first.
+A question answerable from the environment is research skipped, not a human
+decision. When the human's description conflicts with code/schema, surface both:
+`code currently does X; the requested domain behavior says Y` — then ask which
+behavior should become authoritative. Never silently bend one to match the other.
 
-**Only list a decision when its question is already sharp enough to phrase
-precisely.** Fog you cannot yet phrase stays as a single `not-yet-specified`
-note — resolving the sharp questions usually sharpens it into a real question
-later. Never invent a decision you cannot yet state.
-
----
-
-## Step 3 — Grill: one question at a time
-
-Walk the decision tree and put each decision to the human **one at a time** — a
-wall of questions is confusing and gets skimmed.
-
-For **each** question:
-
-1. Ask the single most-blocking open decision, phrased precisely.
-2. **Propose your recommended answer** and one line of why — you are a senior
-   giving a steer, not a blank survey.
-3. **Sharpen fuzzy terms on the spot.** If a word is overloaded ("account →
-   Customer or User?", "sync → real-time or eventual?"), pin the meaning before
-   building on it.
-4. **Wait for the reply.** Do not ask the next question, and do not start
-   designing, until this one is answered.
-
-Record each answer as it lands. When a decision changes the scope, update the
-`Out of scope` list — say explicitly what this request will **not** do.
-
-**A HITL decision is never answered by the agent.** If a decision is truly the
-human's, you may recommend, but you do not decide it for them and move on.
+`context.md` is a glossary only. Challenge fuzzy/conflicting language against it
+and use the exact format in `AGENTS.md` §2. Do not put implementation details,
+decision rationale, or temporary notes there.
 
 ---
 
-## Step 4 — Stop when the way is clear
+## Step 2 — Build the decision tree and confirm the route
 
-Grilling is done when every sharp decision is resolved and the human has
-confirmed a **shared understanding** — not before. If new fog surfaced that is
-too big to resolve here, hand it to `/sage-flow`'s decision-map mode (a large
-effort charted as decisions) rather than forcing an answer.
+Separate:
 
-Do not enact anything. The next step (`/sage-flow` or implementation) begins only
-after the human confirms.
+- **Facts** — discoverable from code/schema/docs/git/tools. Look them up.
+- **Decisions** — product intent, scope, priorities, canonical terms, risk
+  appetite, and trade-offs between valid outcomes. Only these become questions.
 
----
+List sharp decisions in dependency order. Fog that cannot yet be phrased stays
+`not-yet-specified`; never invent a fake ticket/question. If the tree, research,
+or prototypes cannot reasonably fit this session, output
+`Route: large-multi-session` and hand the request to `/sage-wayfinder`.
 
-## Step 5 — (Optional) write the agreed decisions to a spec
-
-For a feature big enough that the decisions should outlive the chat, write them
-to `agents/sage/flows/<slug>-spec.md` so `/sage-flow` and implementation inherit
-them. Synthesize only what was agreed — do **not** re-interview. Sections:
-
-1. **Problem** — the challenge in the human's words.
-2. **Solution** — the agreed user-facing approach.
-3. **Decisions** — each resolved decision + the reason it went that way.
-4. **Out of scope** — what was explicitly ruled out (never silently graduates
-   back in).
-5. **Open / deferred** — decisions pushed to the flow step, if any.
+Otherwise output `Route: foggy-single-session` and continue.
 
 ---
 
-## Step 6 — Capture knowledge (mandatory)
+## Step 3 — Start the durable checkpoint before questioning
 
-Grilling often surfaces a durable team decision (a product rule, a naming
-convention, a trade-off the team keeps making). Capture the **pattern** per
-`AGENTS.md` §3 — but clear the noise bar: only what is hard to reverse,
-non-obvious, or a genuine trade-off. Otherwise state `No new knowledge`.
+Create `agents/sage/flows/<slug>-spec.md` **before the first question** when any
+condition is true:
+
+- more than one sharp decision is open;
+- the conversation may cross a session/context boundary;
+- multiple systems/repos or people depend on the answers;
+- the human asks for a durable artifact.
+
+Use this shape:
+
+```markdown
+# <Request> — decision spec
+
+Status: grilling
+Last updated: <ISO-8601>
+Route: foggy-single-session
+
+## Problem
+## Success outcome
+## Decisions
+## Out of scope
+## Still open
+## Not yet specified
+## Terms changed
+## Evidence / source pointers
+```
+
+After **every** human answer, update `Decisions`, `Still open`, `Out of scope`,
+`Terms changed`, and `Last updated` before asking the next question. Store full
+rationale once in the spec; summaries link to it instead of copying it. A single
+small decision may remain chat-only, but write a spec at the end if it should
+outlive the conversation.
 
 ---
 
-## Step 7 — Summary (mandatory — a response without this is incomplete)
+## Step 4 — Grill one decision and stress-test it
 
-Output as plain markdown (no code fence):
+For each decision:
+
+1. Ask the single most-blocking question precisely.
+2. Recommend one answer and give one concise reason.
+3. Wait. A HITL decision is never answered by the agent.
+4. Sharpen overloaded terms before building on them.
+5. For a **material decision** — one that changes user behavior, domain
+   relationships, data/trust ownership, scope, or a hard-to-reverse trade-off —
+   test the proposed answer with at least one concrete boundary/counterexample:
+   retry, partial failure, permission mismatch, empty/expired state, conflicting
+   term, or another scenario specific to the domain.
+6. If the scenario breaks the answer, reopen/refine it; do not mark it decided.
+7. Record the answer/checkpoint before continuing.
+
+When a canonical term is resolved, update
+`agents/sage/<domain>/context.md` **immediately** and add/list it in the domain
+index. Do not batch glossary writes until the end.
+
+---
+
+## Step 5 — Exit with a contract, not more questions
+
+Exit only as `requirements-clear`, after the human confirms shared understanding.
+The handoff must contain:
+
+- product intent and success outcome;
+- canonical terms used by the request;
+- scope and explicit out-of-scope;
+- resolved product/domain trade-offs;
+- no open HITL decision that changes implementation shape.
+
+`/sage-flow` owns newly discovered implementation decisions: system boundaries,
+APIs, state, failure paths, security, concurrency, and rollout. It must not ask a
+resolved product question again unless new code/schema evidence contradicts it;
+then it reopens the named decision and cites the evidence.
+
+If fog grows beyond this session at any point, checkpoint current state and hand
+off to `/sage-wayfinder`; `/sage-flow` accepts only a clear, implementation-ready
+handoff.
+
+---
+
+## Step 6 — Capture glossary and durable decisions correctly
+
+- Canonical vocabulary → `agents/sage/<domain>/context.md` immediately.
+- Request-specific agreement → checkpoint spec.
+- Reusable rule/pattern → knowledge capture per `AGENTS.md` §3.
+- ADR-like `decisions/<slug>.md` from grilling → write only when **all three** are
+  true: hard to reverse, surprising without context, and chosen through a real
+  trade-off. Otherwise the spec/glossary is enough.
+
+Update the domain index whenever `context.md` or a decision is added.
+
+---
+
+## Step 7 — Summary
 
 ```markdown
 ── Sage Grill ────────────────────────────────────
-**Role** · <lens> — <request in one line>
+**Role** · <lens> — <request>
 **Model** · <model> @ effort:<effort>
-**Domain** · <domain> | **Initial risk** · <LOW | MEDIUM | HIGH> · confidence:<low|medium|high>
-
-**Risk drivers**
-
-- <affected asset → decision/failure mode that must be resolved>
-
-**Required controls handed off**
-
-- <driver → control/evidence that /sage-flow or implementation must own>
+**Route** · foggy-single-session → requirements-clear
+**Domain** · <domain> | **Initial risk** · <LOW|MEDIUM|HIGH> · confidence:<level>
 
 **Decided**
 
-- <decision> → <agreed answer> (recommended: <yes/changed by human>)
+- <decision → answer; scenario used to validate material decisions>
+
+**Terms updated**
+
+- <term → `agents/sage/<domain>/context.md`, or "none">
 
 **Out of scope**
 
-- <what this will deliberately not do>
+- <explicit boundary>
 
-**Still open**
-
-- <decisions deferred to /sage-flow, or "None — ready to build">
-
-**Spec** · <`agents/sage/flows/<slug>-spec.md`, or "not written — small change">
-
-**Knowledge** · [new | updated | none] `<path>` — <pattern or reason>
+**Still open** · None — requirements-clear
+**Checkpoint** · <spec path | not written — single small decision>
+**Required controls handed off** · <driver → control/evidence>
+**Knowledge** · [new | updated | none] `<path>` — <reason>
 ──────────────────────────────────────────────────
 ```
 
-Then stop. The human confirms before `/sage-flow` or implementation begins.
+Stop. The next command consumes this handoff; it does not restart the interview.
 
 ---
 
-_The one-question-at-a-time grilling technique — facts you look up yourself vs.
-decisions you put to the human, each with a recommended answer — is adapted from
-[Matt Pocock's skills](https://github.com/mattpocock/skills) (`grilling`, MIT).
-Sage folds it into its own pipeline (role → knowledge → grill → flow → capture)
-rather than shipping it as a standalone command._
+_The one-question-at-a-time fact/decision discipline is adapted from Matt
+Pocock's `grilling`; inline glossary and scenario stress-testing are adapted from
+`domain-modeling` (MIT). Sage adds routing, checkpoints, risk controls, and the
+explicit Grill → Flow exit contract._

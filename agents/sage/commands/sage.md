@@ -100,7 +100,19 @@ If config is missing, create the default config with `mode: "auto"`. If `.gitign
 
 ---
 
-### Step 0c — detect task signals
+### Step 0c — route the request and detect task signals
+
+Assign the preliminary route defined in `AGENTS.md` §0:
+
+| Route | Trigger | Required next step |
+| --- | --- | --- |
+| `clear-single-session` | intent, terms, scope, trade-offs settled | checklist → flow/build |
+| `foggy-single-session` | genuine decisions remain but fit one session | `/sage-grill` before design |
+| `large-multi-session` | destination still foggy beyond one session | `/sage-wayfinder` before flow |
+
+Routing is always-on and independent of `plan-flow`. Do not use file count or
+risk level as a proxy for fog. Confirm the route after reading knowledge and
+source in Step 2; facts may shrink the fog or expose a larger effort.
 
 Do not rely on a fixed "task type" table. Detect signals instead. A task may match many signals.
 
@@ -261,11 +273,17 @@ Select the role(s) from the detected signals and stack, load or create the role 
 
 ## Step 2 — Read knowledge and reusable assets
 
-**Step 2a — project knowledge.** Open `agents/sage/<domain>/rules.md` and relevant `agents/sage/<domain>/decisions/*.md`. Quote only the rules that apply, and respect each rule's `enforcement` (`block` = must/never · `warn` = strong preference · `advise` = guidance — see `AGENTS.md` §5). If the domain folder or rules file is missing, say so and continue; create knowledge only in Step 4.
+**Step 2a — project knowledge.** Open `agents/sage/<domain>/index.md`, its `context.md` glossary when present, `rules.md`, and relevant `decisions/*.md`. Quote only the rules that apply, challenge conflicting terminology, and respect each rule's `enforcement` (`block` = must/never · `warn` = strong preference · `advise` = guidance — see `AGENTS.md` §5). If the domain folder or rules file is missing, say so and continue; create knowledge only through the command that owns it or in Step 4.
 
 **Step 2b — reusable assets.** Search for existing utilities, hooks, components, services, commands, validators, schemas, fixtures, generated clients, migrations, test helpers, CI jobs, deploy scripts, and runbooks before writing new ones. When you find one, **open the source file and read its exports / public API / command behavior** — never infer from a name, README, or decision file. Report only the assets that matter.
 
 **Keep these scans out of main context.** When the knowledge folder or reuse surface is large, run Steps 2a–2b in a **sub-agent** (Explore / Task) and take back only the findings — the rules that apply and the exports you'll reuse, not the raw file dumps. You pay for the conclusion, not every file, and independent scans run in parallel. For a small repo, read inline — a sub-agent isn't worth the overhead.
+
+**Step 2c — confirm and execute the route.** State the chosen route and why. For
+`foggy-single-session`, run `/sage-grill` even when `plan-flow` is unchecked. For
+`large-multi-session`, run `/sage-wayfinder` and stop this implementation run
+until its map produces a spec-ready handoff. Continue directly only for
+`clear-single-session` or after a command returns its explicit clear exit state.
 
 ---
 
@@ -292,7 +310,12 @@ Decision: proceed | warn | ask | reject
 
 `proceed` = safe to continue · `warn` = continue but name a caveat · `ask` = need approval/info before changing files · `reject` = unsafe or impossible.
 
-**Foggy request? Grill before you plan.** When the ask is ambiguous, has two defensible designs, or hides an unstated trade-off, run **`/sage-grill`** (`agents/sage/commands/sage-grill.md`) first — it interrogates the request into agreed decisions one question at a time (facts you look up yourself; only real decisions go to the human), then hands a sharp request to `plan-flow`. Skip it when the request is already clear, and say so.
+**Consume the route handoff; do not re-interview.** `/sage-grill` owns product
+intent, canonical terminology, scope, and product trade-offs. `/sage-wayfinder`
+owns multi-session decision coordination. `/sage-flow` owns implementation
+design against real code/schema. If new code evidence contradicts a resolved
+decision, reopen that named decision with the evidence; never ask the same
+question again merely because a new command started.
 
 **Step 3a — plan.** Identify parallel vs sequential work; annotate each task with owner role, tier (`fast`/`standard`/`deep`), effort if available, dependency, and expected validation. Every required risk control must have an owning phase and expected evidence.
 

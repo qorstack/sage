@@ -9,7 +9,8 @@ practice.
 | Command                   | What it does                                                       | Invoked by                         |
 | ------------------------- | ------------------------------------------------------------------ | ---------------------------------- |
 | `sage.md`                 | The cognition pipeline — role, knowledge, risk controls, evidence  | automatically, before any change   |
-| `sage-grill.md`           | Interrogate a foggy request into agreed decisions (no code)        | on demand, before `plan-flow`      |
+| `sage-grill.md`           | Resolve single-session fog + glossary/checkpoint → clear spec      | route `foggy-single-session`       |
+| `sage-wayfinder.md`       | Map and resolve multi-session fog as durable decision tickets      | route `large-multi-session`        |
 | `sage-flow.md`            | Build + verify an implementation-ready flow → `agents/sage/flows/` | checklist toggle `plan-flow`       |
 | `sage-unit-test.md`       | Write unit tests that match the repo's stack                       | checklist toggle `unit-test`       |
 | `sage-e2e-test.md`        | Drive the app end-to-end (Playwright/k6/…) and prove the flow      | checklist toggle `e2e-test`        |
@@ -19,8 +20,9 @@ practice.
 | `sage-update.md`          | Re-run the installer to update Sage to the latest version          | on demand                          |
 | `sage-setting.md`         | View/change how `/sage` runs (mode + default steps, per machine)   | on demand                          |
 
-The run checklist (`AGENTS.md` §0) is the dispatcher: `/sage` decides which of
-these apply to the task, asks the human to confirm, then runs the confirmed ones.
+The route guard + run checklist (`AGENTS.md` §0) are the dispatcher: `/sage`
+routes fog to Grill or Wayfinder independently of checklist selection, then runs
+the applicable confirmed specialist commands after requirements are clear.
 `automate-test` (run the existing suite and report the real output) is a core
 step of `/sage` itself, not a separate command.
 

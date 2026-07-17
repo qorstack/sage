@@ -16,6 +16,9 @@ unknown.
 > Sage runs this command itself before writing code — the human does not call it
 > manually. `/sage-flow` is the **build** half of `plan-flow`; the **verify** half
 > lives in Step 4 below.
+> It accepts only `clear-single-session` requests or a spec-ready handoff from
+> `/sage-grill` or `/sage-wayfinder`. It is not the storage/coordination layer
+> for unresolved multi-session fog.
 >
 > **Shape & prose** follow the shared style-guide
 > [`agents/sage/docs-style-template.md`](agents/sage/docs-style-template.md)
@@ -59,6 +62,10 @@ domain role when you reach that system's section and output the handoff line.
 Before writing a single step, discover what already exists. Source is
 authoritative — never infer an API, table, or contract from a name.
 
+If `agents/sage/flows/<slug>-spec.md` exists, read it first. Treat its resolved
+product intent, canonical terms, scope, out-of-scope, and trade-offs as the input
+contract; do not re-interview them.
+
 1. **Identify the systems/actors.** Website/app, each backend service, each
    external provider, queues, cron, the user roles. Draw the trust boundary:
    who owns money/ids/secrets, who is allowed to compute what.
@@ -70,7 +77,10 @@ authoritative — never infer an API, table, or contract from a name.
    already exists (reuse), exists but must change, or missing (build new).
 4. **Surface the conflicts early.** Ambiguity, missing business rules, a step
    that contradicts another (e.g. "don't call the API yet" vs "show the price").
-   Ask one focused question only when the answer changes the design.
+   Ask one focused question only when the answer changes the design. If code or
+   schema contradicts a resolved Grill/Wayfinder decision, name that decision
+   and the new evidence, then reopen it explicitly. Do not ask it again as if it
+   were never decided.
 
 If a domain folder under `agents/sage/` exists for a system, read its `rules.md`
 and relevant `decisions/` and quote what applies.
@@ -177,6 +187,12 @@ required control must appear in the flow's edge cases, security/concurrency, or
 build checklist with the system that will produce its evidence. A flow with an
 unowned critical control or a validation gap is not implementation-ready; keep
 the resulting risk open rather than hiding it in prose.
+
+**Exit contract:** Flow grilling owns newly discovered implementation decisions
+(system boundaries, APIs, state, failure paths, security, rollout). Product
+intent, terminology, scope, and trade-offs resolved upstream stay closed unless
+contradictory code/schema evidence is cited. End with `design-clear` only when
+all implementation-shaping questions are resolved; otherwise stop and wait.
 
 ---
 

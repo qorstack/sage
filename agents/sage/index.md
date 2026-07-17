@@ -15,8 +15,10 @@ agents/sage/
   commands/<name>.md        # canonical command bodies — the tool adapters point here
   docs-style-template.md    # the /sage-docs + /sage-flow markdown style-guide
   flows/<slug>-flow.md      # implementation-ready flow docs from /sage-flow
+  wayfinders/<slug>/        # durable map + decision tickets for multi-session fog
   roles/role-<lens>.md      # reusable senior personas (ikigai roles) — see AGENTS.md §2
   <domain>/                 # e.g. billing, search, your own domains
+    context.md              # canonical glossary, created lazily
     rules.md                # the domain's standing rules
     decisions/<slug>.md     # one team decision per file
 ```

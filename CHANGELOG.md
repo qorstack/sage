@@ -6,6 +6,15 @@ All notable changes to Sage. Format: [Keep a Changelog](https://keepachangelog.c
 
 ### Added — cognition upgrades
 
+- **Three-route dispatcher** — every code request is classified as
+  `clear-single-session`, `foggy-single-session`, or `large-multi-session` before
+  design; Grill/Wayfinder guards are independent of the locked checklist.
+- **`/sage-wayfinder`** — local-first durable maps and decision tickets with
+  destination, fog, out-of-scope, frontier, blocking, claim, HITL/AFK types, and
+  spec handoff; configured issue trackers remain optional backends.
+- **Grill-with-docs behavior** — `/sage-grill` now updates domain context inline,
+  checkpoints multi-decision sessions before questioning, stress-tests material
+  decisions with scenarios, and has an explicit no-repeat handoff to Flow.
 - **Operational risk controls** — Sage now identifies concrete risk drivers,
   assigns mandatory driver-specific controls, records validation evidence, and
   reports residual risk. `mode:auto` no longer has any ambiguous path around a

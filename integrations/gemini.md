@@ -14,6 +14,8 @@ Don't rely on a copy here; the canonical file is authoritative.
 | Command                | Run this file                                  | When                                      |
 | ---------------------- | ---------------------------------------------- | ----------------------------------------- |
 | `sage`                 | `agents/sage/commands/sage.md`                 | before any non-trivial code change        |
+| `sage-grill`           | `agents/sage/commands/sage-grill.md`           | resolve single-session request fog        |
+| `sage-wayfinder`       | `agents/sage/commands/sage-wayfinder.md`       | map work too foggy for one session        |
 | `sage-flow`            | `agents/sage/commands/sage-flow.md`            | design a feature/journey before coding    |
 | `sage-unit-test`       | `agents/sage/commands/sage-unit-test.md`       | write unit tests for a target             |
 | `sage-e2e-test`        | `agents/sage/commands/sage-e2e-test.md`        | drive the app end-to-end and prove it     |

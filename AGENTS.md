@@ -27,6 +27,24 @@ comparison, or explanation ("should we use pnpm?", "what does X do?") — it is 
 a code request. Just answer it. Do NOT show the checklist in any mode**, and never
 invent a "None / just answer" option to escape a picker you shouldn't have shown.
 
+**Route every code request before design.** Assign one route from the request and
+available facts, then confirm it after the role/knowledge/reuse scan (§1.1–§1.3):
+
+- **`clear-single-session`** — product intent, canonical terms, scope, and
+  trade-offs are settled enough to design or implement without guessing.
+- **`foggy-single-session`** — one or more genuine human decisions change the
+  outcome, but the decision tree can reasonably be resolved in this session.
+  Run **`/sage-grill`** before design.
+- **`large-multi-session`** — the destination is surrounded by fog that needs
+  more than one session of research, prototypes, grilling, or manual tasks. Run
+  **`/sage-wayfinder`**; do not force a full flow from incomplete decisions.
+
+Routing is Sage itself, never a checklist item. It is independent of
+`plan-flow`: turning that toggle off never authorizes coding past unresolved
+product/domain decisions. Re-route when new facts change the amount of fog. A
+large/multi-file implementation may still be `clear-single-session`; size alone
+does not make it Wayfinder work.
+
 **Read `.sage-local.json` at the repo root** (gitignored, per-machine). It holds
 `mode` (`"auto"` or `"ask"`) and the default `checklist`. Migrate the old field if
 present: `askMode: "smart"` → `mode: "auto"`, `askMode: "always"` → `mode: "ask"`
@@ -47,7 +65,7 @@ unavailable.
 
 **Always-on — this is Sage itself, never a checkbox:**
 
-- pick the role/lens (§1.1) · read the domain knowledge (§1.2) · reuse-scan
+- route clear/foggy/large (§0) · pick the role/lens (§1.1) · read the domain knowledge (§1.2) · reuse-scan
   before writing (§1.3) · risk drivers + required controls + verdict (§1.4/§4) ·
   residual risk after validation (§4) · capture knowledge (§3)
 - **automate-test** — after implementing, run the repo's real test / build / lint
@@ -118,13 +136,10 @@ the first:**
    not an accident. A flow produces **decisions, not deliverables**: it is done
    when nothing is left to decide before someone writes the code.
 
-   **Too big for one pass?** When the effort is more than one session can hold and
-   the route is still foggy, don't force a full flow — chart a **decision map**
-   first (via `TodoWrite`): list each open decision as its own item, but only when
-   the question is already **sharp enough to phrase precisely**. Fog you can't yet
-   phrase stays as a single `not-yet-specified` item, not a fake decision. Resolve
-   the sharp ones one at a time; resolving one often sharpens the next. Never
-   pre-invent decisions you can't yet state.
+   **Large multi-session route?** Do not start `/sage-flow`. Run
+   **`/sage-wayfinder`** first and return only after its map is complete and its
+   spec handoff is ready. `/sage-flow` consumes clear requirements; it is not a
+   storage or coordination layer for unresolved multi-session fog.
 2. **Verify the flow by grilling it — "should it really be this way?"** Before
    writing any code, review the flow you just built as a skeptic, not its author.
    Check each step against the real code/schema, hunt the weak points (wrong trust
@@ -146,10 +161,10 @@ the first:**
      only half done.
 
    **When the request itself is foggy** — ambiguous before there's even a flow to
-   verify — run **`/sage-grill`** first (full procedure in
-   [`commands/sage-grill.md`](agents/sage/commands/sage-grill.md)): it turns an
-   unclear ask into agreed decisions using the same one-at-a-time grilling, then
-   hands a sharp request to `/sage-flow`.
+   verify — use the §0 route. `/sage-grill` resolves single-session product
+   intent, terminology, scope, and trade-offs; `/sage-wayfinder` coordinates
+   multi-session fog. Only their clear/spec-ready exit hands work to
+   `/sage-flow`.
 
 **Write in full — summarize only at the close.** Write plans, flows, and analysis
 **complete** while you work; do not pre-summarize or truncate them to save space,
@@ -195,7 +210,8 @@ Do these in order. Do not skip. Do not assume you already know the answer.
    **Never start a phase without outputting its role line.**
 
 2. **Read the knowledge — index first, then only what's relevant.** Open the
-   domain's `index.md`, read `rules.md`, and open only the `decisions/*.md` the
+   domain's `index.md`, read `context.md` when it exists, read `rules.md`, and
+   open only the `decisions/*.md` the
    index flags as relevant — don't slurp the whole folder as it grows. **Quote
    the rules that apply** so the human sees you checked. If the domain folder
    doesn't exist, say so and proceed on judgment — then capture what you learn
@@ -214,6 +230,12 @@ Do these in order. Do not skip. Do not assume you already know the answer.
    dumps**. You pay for the conclusion, not every file, so the main context stays
    lean, and independent scans (different domains) run in parallel. For a small
    repo, just read inline — a sub-agent isn't worth the overhead.
+
+   **Confirm the route now.** The code/schema scan may prove an apparent decision
+   is a fact, expose a new product decision, or show the effort exceeds one
+   session. State `Route: clear-single-session | foggy-single-session |
+   large-multi-session` with one reason. Run `/sage-grill` or `/sage-wayfinder`
+   before continuing whenever the route requires it.
 4. **Assess impact & risk, assign controls, then declare a parallel plan.** Risk
    is operational state, not a label for the header. Start from repository facts
    and name each concrete **driver** that applies: destructive/data loss,
@@ -350,10 +372,30 @@ agents/sage/
   index.md                              # what this tree is (auto-readable)
   <domain>/
     index.md                            # table of contents for the domain
+    context.md                          # canonical glossary (lazy; no implementation detail)
     rules.md                            # the domain's cognition rules (editable)
     decisions/<slug>.md                 # one team decision per file
     skills/<slug>.md                    # reusable how-to / playbook
 ```
+
+### Domain context — glossary only (`agents/sage/<domain>/context.md`)
+
+Create this file lazily when the first canonical term is agreed. It is a shared
+language, not a spec, scratch pad, rule, or implementation decision. One term:
+
+```markdown
+## <Canonical term>
+
+**Definition:** <what it means in this domain>
+**Invariants:** <semantic truths that remain valid across examples>
+**Includes:** <examples that belong>
+**Excludes:** <nearby concepts/non-examples>
+**Related:** <other canonical terms>
+```
+
+During `/sage-grill` or `/sage-wayfinder`, challenge terms against this glossary
+and update the entry immediately after the human resolves it. Implementation
+details stay in flow/spec docs; durable trade-offs stay in `decisions/`.
 
 Every entry file is **YAML frontmatter + Markdown body**:
 

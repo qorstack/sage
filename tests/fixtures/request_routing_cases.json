@@ -1,0 +1,44 @@
+[
+  {
+    "id": "mechanical-typo",
+    "prompt": "แก้ typo ใน README จาก teh เป็น the",
+    "expected_route": "clear-single-session",
+    "invariants": ["do-not-grill", "no-wayfinder"]
+  },
+  {
+    "id": "foggy-onboarding",
+    "prompt": "ทำ onboarding ให้ดีขึ้น",
+    "expected_route": "foggy-single-session",
+    "invariants": ["run-sage-grill", "ask-one-decision", "recommend-answer"]
+  },
+  {
+    "id": "large-erp",
+    "prompt": "สร้าง ERP ใหม่ที่ครอบคลุมหลาย repo และหลายทีม",
+    "expected_route": "large-multi-session",
+    "invariants": ["run-sage-wayfinder", "name-destination", "chart-frontier"]
+  },
+  {
+    "id": "clear-from-approved-spec",
+    "prompt": "Implement the attached approved spec; all product decisions are resolved.",
+    "expected_route": "clear-single-session",
+    "invariants": ["consume-spec", "do-not-reinterview"]
+  },
+  {
+    "id": "fact-not-human-question",
+    "prompt": "Add export support, but first determine whether the schema already has export_status.",
+    "expected_route": "clear-single-session",
+    "invariants": ["look-up-fact", "do-not-ask-fact"]
+  },
+  {
+    "id": "hitl-not-self-answered",
+    "prompt": "Decide whether account means Customer or User in the new billing flow.",
+    "expected_route": "foggy-single-session",
+    "invariants": ["human-answers-hitl", "update-context-inline"]
+  },
+  {
+    "id": "flow-does-not-repeat-grill",
+    "prompt": "Continue to flow design from a requirements-clear Sage Grill spec.",
+    "expected_route": "clear-single-session",
+    "invariants": ["consume-grill-handoff", "reopen-only-with-new-evidence"]
+  }
+]

@@ -192,6 +192,8 @@
     Write-Host ''
     Write-Host 'Commands now available:'
     Write-Host '  /sage                 run before any code change (plan, test, review, capture)'
+    Write-Host '  /sage-grill           resolve single-session fog + glossary/checkpoint decisions'
+    Write-Host '  /sage-wayfinder       map multi-session fog as durable decision tickets'
     Write-Host '  /sage-flow            design + verify an implementation-ready flow before coding'
     Write-Host '  /sage-unit-test       write unit tests that match this repo''s stack'
     Write-Host '  /sage-e2e-test        drive the app end-to-end (Playwright/Cypress/k6/...) and prove the flow'
