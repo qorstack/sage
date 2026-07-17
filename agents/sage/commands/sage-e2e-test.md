@@ -90,7 +90,9 @@ Flow    : <source: agents/sage/flows/<slug>-flow.md | reconstructed>
 Journey : <entry → steps → exit being driven>
 Retest  : <retries on fail: N> · <save as spec | one-off>
 Env     : <base URL · account/seed · mocked externals>
-Risk    : LOW | MEDIUM | HIGH — <why>
+Risk    : LOW | MEDIUM | HIGH · confidence:<low|medium|high> — <why>
+Drivers : <risk driver exercised by this journey>
+Evidence: <required control → assertion/artifact, or "ordinary journey coverage">
 Decision: proceed | ask | reject
 ```
 
@@ -126,6 +128,10 @@ Decision: proceed | ask | reject
    fails, stop and report.
 4. If asked to save it, commit the spec in the repo's e2e location using its
    conventions; if one-off, say so and leave nothing behind.
+5. Map every parent-run required control this E2E owns to a concrete assertion,
+   trace, screenshot, response, or load threshold. Do not use a happy-path pass
+   as evidence for a retry, permission, rollback, or partial-failure control that
+   the journey never exercised.
 
 ---
 
@@ -148,7 +154,7 @@ Output as plain markdown (no code fence):
 ── Sage E2E Test ─────────────────────────────────
 **Role** · qa — e2e for <flow>
 **Model** · <model> @ effort:<effort>
-**Tool** · <playwright | k6 | …> | **Risk** · <LOW|MEDIUM|HIGH>
+**Tool** · <playwright | k6 | …> | **Initial risk** · <LOW|MEDIUM|HIGH>
 
 **Journey driven**
 The steps walked, entry → exit, and which edge cases were covered.
@@ -160,6 +166,11 @@ The exact command and the real result (e.g. `playwright test checkout — 9 pass
 **Result**
 Pass / fail per exit, and — on failure — whether it was a test bug or a real
 flow defect, and what you did (retry policy applied, or stopped and reported).
+
+**Control evidence**
+Map each parent-run risk driver to its exact assertion/artifact, or state the gap.
+
+**Residual risk** · <LOW|MEDIUM|HIGH> — <what the E2E evidence reduced or left open>
 
 **Saved** · [committed spec `<path>` | one-off, nothing left behind]
 

@@ -8,7 +8,7 @@ practice.
 
 | Command                   | What it does                                                       | Invoked by                         |
 | ------------------------- | ------------------------------------------------------------------ | ---------------------------------- |
-| `sage.md`                 | The cognition pipeline — role, knowledge, risk, capture, summary   | automatically, before any change   |
+| `sage.md`                 | The cognition pipeline — role, knowledge, risk controls, evidence  | automatically, before any change   |
 | `sage-grill.md`           | Interrogate a foggy request into agreed decisions (no code)        | on demand, before `plan-flow`      |
 | `sage-flow.md`            | Build + verify an implementation-ready flow → `agents/sage/flows/` | checklist toggle `plan-flow`       |
 | `sage-unit-test.md`       | Write unit tests that match the repo's stack                       | checklist toggle `unit-test`       |
@@ -23,3 +23,7 @@ The run checklist (`AGENTS.md` §0) is the dispatcher: `/sage` decides which of
 these apply to the task, asks the human to confirm, then runs the confirmed ones.
 `automate-test` (run the existing suite and report the real output) is a core
 step of `/sage` itself, not a separate command.
+
+Risk policy has one source of truth: `AGENTS.md` §1.4 and §4. Commands may add
+domain-specific evidence, but may not loosen its HIGH-risk gate or replace
+driver-specific controls with a generic risk label.

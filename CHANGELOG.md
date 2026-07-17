@@ -6,6 +6,10 @@ All notable changes to Sage. Format: [Keep a Changelog](https://keepachangelog.c
 
 ### Added — cognition upgrades
 
+- **Operational risk controls** — Sage now identifies concrete risk drivers,
+  assigns mandatory driver-specific controls, records validation evidence, and
+  reports residual risk. `mode:auto` no longer has any ambiguous path around a
+  HIGH-risk, destructive, HITL, or matched-`block` gate.
 - **`/sage-grill`** — a new command that interrogates a foggy request into agreed
   decisions one question at a time (facts you look up yourself; only real
   decisions go to the human) before `/sage-flow`. The grilling technique is

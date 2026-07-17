@@ -78,7 +78,9 @@ Role    : security — review of <target>
 Model   : <model> @ effort:<effort>  ← session ceiling
 Scope   : <files/endpoints/flow reviewed>
 Sinks   : <untrusted-input → dangerous-sink paths found>
-Risk    : LOW | MEDIUM | HIGH — <why>
+Risk    : LOW | MEDIUM | HIGH · confidence:<low|medium|high> — <why>
+Drivers : <auth|money|PII|secrets|trust-boundary driver → failure mode>
+Evidence: <parent required control → review/test/artifact>
 Decision: proceed | ask | reject
 ```
 
@@ -105,6 +107,11 @@ matching the repo's patterns — reuse the existing validator/sanitizer/auth
 helper, don't roll your own). If asked to fix, apply the fix and re-verify; if a
 `block` domain rule is violated, the verdict is `reject` until it's resolved.
 
+Return each confirmed finding to the parent run as a risk driver or an increase
+in likelihood/exposure. Return each verified absence/guard as evidence for the
+specific required control it covers. “No exploitable findings” is not evidence
+for non-security controls such as migration rollback or public compatibility.
+
 ---
 
 ## Step 6 — Capture knowledge (mandatory)
@@ -126,7 +133,7 @@ Output as plain markdown (no code fence):
 ── Sage Security Review ──────────────────────────
 **Role** · security — review of <target>
 **Model** · <model> @ effort:<effort>
-**Scope** · <what was reviewed> | **Risk** · <LOW|MEDIUM|HIGH>
+**Scope** · <what was reviewed> | **Initial risk** · <LOW|MEDIUM|HIGH>
 
 **Findings**
 One block per confirmed finding: **[severity]** `<class>` at `<file:line>` —
@@ -136,6 +143,11 @@ valid, complete result — say it plainly when true.
 **Verified**
 How you confirmed each (traced input→sink; checked no upstream guard) — not
 "looks insecure".
+
+**Control evidence**
+Map each parent-run security driver to the exact guard/test/finding, or state the gap.
+
+**Residual risk** · <LOW|MEDIUM|HIGH> — <what the review evidence reduced or left open>
 
 **Fixed** · [applied `<paths>` and re-verified | reported only, awaiting decision]
 

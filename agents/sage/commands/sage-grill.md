@@ -132,7 +132,15 @@ Output as plain markdown (no code fence):
 ── Sage Grill ────────────────────────────────────
 **Role** · <lens> — <request in one line>
 **Model** · <model> @ effort:<effort>
-**Domain** · <domain> | **Risk** · <LOW | MEDIUM | HIGH>
+**Domain** · <domain> | **Initial risk** · <LOW | MEDIUM | HIGH> · confidence:<low|medium|high>
+
+**Risk drivers**
+
+- <affected asset → decision/failure mode that must be resolved>
+
+**Required controls handed off**
+
+- <driver → control/evidence that /sage-flow or implementation must own>
 
 **Decided**
 

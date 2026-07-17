@@ -25,6 +25,9 @@ agents/sage/
 `integrations/` are thin pointers to it, so editing a command in one place
 updates every agent.
 
+`flows/risk-controls-flow.md` defines the current end-to-end contract for turning
+risk drivers into required controls, validation evidence, and residual risk.
+
 `roles/` is Sage's library of senior personas — each one an **ikigai role** that
 knows what it's good at. Sage creates them as topics come up and reuses them
 after (`roles/role-dev.md` ships as a starter example).
@@ -52,3 +55,4 @@ Edit a file, commit, done — the agent follows your team's version.
 ## Domains
 
 - [frontend](frontend/) - static pages, UI, responsive layout, and landing-page design.
+- [protocol](protocol/) - Sage cognition policy, risk controls, and cross-command contracts.

@@ -89,7 +89,9 @@ Systems : <website / service-A / payment-service / gateway / …>
 Reuse   : <what already exists>
 Build   : <what's missing / must change>
 Unknowns: <open questions that block design>
-Risk    : LOW | MEDIUM | HIGH — <why>
+Risk    : LOW | MEDIUM | HIGH · confidence:<low|medium|high> — <why>
+Drivers : <affected asset → concrete failure mode>
+Controls: <required control the flow must design + later evidence>
 Decision: proceed | ask | reject
 ```
 
@@ -170,6 +172,12 @@ trust boundary, a missed error path, a step that contradicts a rule, a simpler
 route), make sure every uncertainty is in §13 Open Questions, and **ask the human
 the risky/ambiguous ones now** — do not code past a doubt.
 
+Also apply the driver-control matrix in `AGENTS.md` §1.4. Every applicable
+required control must appear in the flow's edge cases, security/concurrency, or
+build checklist with the system that will produce its evidence. A flow with an
+unowned critical control or a validation gap is not implementation-ready; keep
+the resulting risk open rather than hiding it in prose.
+
 ---
 
 ## Step 5 — Capture knowledge (mandatory)
@@ -197,7 +205,7 @@ Output as plain markdown (no code fence):
 ── Sage Flow ─────────────────────────────────────
 **Role** · architect — <flow in one line>
 **Model** · <model> @ effort:<effort>
-**Systems** · <list> | **Repos** · <list> | **Risk** · <LOW|MEDIUM|HIGH>
+**Systems** · <list> | **Repos** · <list> | **Initial risk** · <LOW|MEDIUM|HIGH>
 
 **Flow doc** · `agents/sage/flows/<slug>-flow.md`
 
@@ -217,6 +225,12 @@ system that owns each critical decision.
 **Open questions**
 
 - <the decisions still blocking implementation>
+
+**Required controls**
+
+- <driver → control → owner/evidence planned>
+
+**Residual design risk** · <LOW|MEDIUM|HIGH> — <what verification resolved or left open>
 
 **Knowledge** · [new | updated | none] `<path>` — <pattern title>
 ──────────────────────────────────────────────────

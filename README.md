@@ -112,6 +112,30 @@ Sage auto-checks what fits the task and auto-unchecks what doesn't (with a
 reason) — you confirm, it runs. Every command's full body lives once in
 `agents/sage/commands/`; the per-tool files just point at it.
 
+### Risk changes what Sage does
+
+Risk is not just a `LOW | MEDIUM | HIGH` label. Before changing files, Sage
+names the concrete drivers (for example data loss, migration, authorization,
+money, public contracts, infrastructure, retries, or missing validation), rates
+its confidence, and assigns required controls to each driver. The level chooses
+the gate; the driver chooses the control:
+
+| Example driver | Required evidence |
+| --- | --- |
+| Schema migration | backup + dry-run + rollback/forward-fix + integrity check |
+| Authorization | ownership/IDOR checks + negative permission tests |
+| Payment retry | idempotency + atomicity + reconciliation tests |
+| Public contract | consumer search + compatibility test + rollout/version plan |
+| Production infrastructure | plan/diff + staged rollout + health/rollback evidence |
+
+`mode:auto` skips only checklist confirmation. It never approves a HIGH-risk
+change, a destructive target, a genuine human decision, or an override of a
+matched `block` rule. After validation, Sage reports **residual risk** and may
+lower the initial level only when actual evidence supports it.
+
+See [`docs/risk-controls.md`](docs/risk-controls.md) for the complete lifecycle,
+driver-to-control table, gates, and worked examples.
+
 ---
 
 ## Commands
@@ -122,9 +146,10 @@ The lifecycle commands you run directly:
 
 Before writing, the agent establishes its role, selects the appropriate model
 and effort tier for the task (never exceeding the session ceiling), reads team
-knowledge, and states intent + risk. After writing, it captures what it learned
-and closes with a summary that includes the model + effort used. Every field is
-mandatory — a response without the summary block is considered incomplete.
+knowledge, and states intent + risk drivers + required controls. After writing,
+it captures what it learned and closes with validation evidence, residual risk,
+and the model + effort used. Every field is mandatory — a response without the
+summary block is considered incomplete.
 
 ```text
 /sage fix infinite API loop on the material create page
@@ -133,7 +158,9 @@ Role    : debugger — root-causing repeated GET /usage-plans calls
 Model   : sonnet 4.6 @ effort:medium
 Intent  : stop useCallback from recreating on every render
 Touches : src/views/apps/boq/request/BoqUsagePlanSection.tsx
-Risk    : LOW — dependency array fix, no logic change
+Risk    : LOW · confidence:high — dependency array fix, no external side effect
+Drivers : none beyond ordinary regression risk
+Controls: focused regression check → network call count
 Decision: proceed
 
 ... [fix applied] ...
@@ -141,7 +168,7 @@ Decision: proceed
 ── Sage ──────────────────────────────────────────
 Role      : debugger — fix infinite API loop in BoqUsagePlanSection
 Model     : sonnet 4.6 @ effort:medium
-Domain    : frontend  |  Risk: LOW
+Domain    : frontend  |  Initial risk: LOW · confidence:high
 
 Root cause: useLoadingScreen() returns a new object literal { start, stop } on
             every render because it does not wrap its return value in useMemo.
@@ -158,6 +185,8 @@ Fix       : Removed loadingScreen and handleError from the dep array, keeping
 
 Validated : Network tab after fix shows one GET /usage-plans on load, one more
             when materialId changes. The repeat loop is gone.
+
+Residual  : LOW — the focused call-count evidence covers the identified driver.
 
 Slipped   : useLoadingScreen's API looks stable (named methods) but returns a
             plain object literal without useMemo — non-obvious without reading

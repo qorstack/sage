@@ -94,7 +94,9 @@ Stack   : <framework + runner> (detected)
 Target  : <file:symbol> — <what it does>
 Cases   : <n happy> + <n boundary> + <n error> + <n side-effect>
 Mocks   : <deps to stub: network/db/clock/random/…>
-Risk    : LOW | MEDIUM | HIGH
+Risk    : LOW | MEDIUM | HIGH · confidence:<low|medium|high>
+Drivers : <risk driver whose behavior these tests control>
+Evidence: <required control → test case/command, or "ordinary behavior coverage">
 Decision: proceed | ask | reject
 ```
 
@@ -134,6 +136,10 @@ Never claim the tests pass without evidence.
 4. Confirm the tests actually exercise the target (they fail if you break the
    target) — mutation-check the critical assertion mentally, or briefly, when
    correctness is high-risk.
+5. When the parent run declares a required control in `AGENTS.md` §1.4, report
+   exactly which test and assertion supplies its evidence. A passing unrelated
+   suite is not evidence for authorization, idempotency, rollback, compatibility,
+   or another driver-specific control.
 
 ---
 
@@ -160,7 +166,7 @@ Output as plain markdown (no code fence):
 ── Sage Unit Test ────────────────────────────────
 **Role** · qa — unit tests for <target>
 **Model** · <model> @ effort:<effort>
-**Stack** · <framework + runner> | **Risk** · <LOW|MEDIUM|HIGH>
+**Stack** · <framework + runner> | **Initial risk** · <LOW|MEDIUM|HIGH>
 
 **Written**
 List the test files created/updated and how many cases each holds, grouped by
@@ -173,6 +179,11 @@ State which behaviours are now covered and which are deliberately out of scope
 **Ran**
 The exact command run and the real result (e.g. `pnpm test path — 14 passed`).
 If anything failed, say what and what you did about it.
+
+**Control evidence**
+Map each parent-run risk driver to the exact passing assertion, or state the gap.
+
+**Residual risk** · <LOW|MEDIUM|HIGH> — <what the test evidence reduced or left open>
 
 **Bugs found**
 Any real defects the tests surfaced in the target (or "none").

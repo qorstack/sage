@@ -152,11 +152,18 @@ For each of the five choices, produce a status (`recommended` or `not recommende
 - **e2e-test** — recommend when the change affects an observable flow across boundaries (frontend/mobile/desktop journey, API request/response, CLI behavior, migration applied through the app, auth/session, checkout/payment, upload/download, queue/job, deploy/infra workflow, performance path, generated client/server contract). Not for isolated pure logic with adequate unit coverage and no external flow.
 - **security-review** — recommend when the change touches or may expose authn/authz, roles/permissions, sessions/cookies/JWT/OAuth/API keys, secrets/env, PII/money/billing, uploads/downloads/paths/deserialization/UGC, SQL/NoSQL/shell/template/SSRF, dependency upgrades, infra/CI/containers/networking/CORS/CSP, logging of sensitive data, or public APIs/webhooks. Not for isolated mechanical edits, pure styling, or docs-only with no sensitive content.
 
+Checklist recommendations and risk controls are related but not interchangeable.
+The checklist selects applicable specialist workflows; the driver table in
+`AGENTS.md` §1.4 assigns core controls that remain required even when no
+specialist applies or the human disables one. Never turn every HIGH risk into a
+security review, and never treat an unchecked specialist as removal of a core
+control.
+
 ---
 
 ### Step 0f — selection behavior by mode
 
-**Mode `auto`:** detect signals → show the full checklist with `recommended`/`not recommended` labels → enable all recommended choices → do not ask → continue.
+**Mode `auto`:** detect signals → show the full checklist with `recommended`/`not recommended` labels → enable all recommended choices → do not ask about the checklist → continue. This mode never bypasses a HIGH-risk gate, genuine HITL decision, destructive approval, or matched `block` rule.
 
 ```text
 Checklist · mode:auto
@@ -264,7 +271,12 @@ Select the role(s) from the detected signals and stack, load or create the role 
 
 ## Step 3 — State intent and plan before writing
 
-Output the intent block before making changes. For LOW-risk small changes, show intent and proceed. For MEDIUM/HIGH risk, multi-file features, schema/API changes, auth/money/PII, infrastructure, migrations, or meaningful uncertainty, show intent and wait for approval unless the user requested autonomous execution.
+Apply the complete risk policy and driver-control matrix in **`AGENTS.md` §1.4**;
+do not reproduce or loosen it here. Output the intent block before making changes.
+LOW may proceed when bounded. MEDIUM may `warn` and proceed only when reversible
+and fully controlled; unresolved scope/contract/rollback decisions use `ask`.
+HIGH always uses `ask` before file changes — neither `mode:auto` nor a general
+autonomous request is an approval for a named HIGH-risk target/effect.
 
 ```text
 Repo    : <repo-root>
@@ -272,7 +284,9 @@ Role    : <role> — <one-line task summary>
 Model   : <model or current agent> @ effort:<effort or unavailable>
 Intent  : <what this change will do>
 Touches : <files, systems, domains affected>
-Risk    : LOW | MEDIUM | HIGH — <why in one phrase>
+Risk    : LOW | MEDIUM | HIGH · confidence:<low|medium|high> — <why>
+Drivers : <affected asset → concrete failure mode>
+Controls: <required control → planned command/evidence>
 Decision: proceed | warn | ask | reject
 ```
 
@@ -280,7 +294,7 @@ Decision: proceed | warn | ask | reject
 
 **Foggy request? Grill before you plan.** When the ask is ambiguous, has two defensible designs, or hides an unstated trade-off, run **`/sage-grill`** (`agents/sage/commands/sage-grill.md`) first — it interrogates the request into agreed decisions one question at a time (facts you look up yourself; only real decisions go to the human), then hands a sharp request to `plan-flow`. Skip it when the request is already clear, and say so.
 
-**Step 3a — plan.** Identify parallel vs sequential work; annotate each task with owner role, tier (`fast`/`standard`/`deep`), effort if available, dependency, and expected validation.
+**Step 3a — plan.** Identify parallel vs sequential work; annotate each task with owner role, tier (`fast`/`standard`/`deep`), effort if available, dependency, and expected validation. Every required risk control must have an owning phase and expected evidence.
 
 ```text
 Plan (session ceiling: <model or current agent> @ effort:<effort or unavailable>)
@@ -294,7 +308,7 @@ Plan (session ceiling: <model or current agent> @ effort:<effort or unavailable>
   E. Run migration dry-run and type checks   role: qa        tier: standard   depends on C
 ```
 
-**Step 3b — progress.** Mark task starts/completions as they happen; report results without waiting for the whole phase. On a failure that affects correctness, report immediately and pause. For non-blocking failures, continue only if the remaining path is safe and say why.
+**Step 3b — progress.** Mark task starts/completions as they happen; report results without waiting for the whole phase. On a failure that affects correctness, report immediately and pause. For non-blocking failures, continue only if the remaining path is safe and say why. A new driver, wider target, or destructive effect invalidates the old assessment: stop the affected phase, reassess, add controls, and renew approval if the envelope changed.
 
 ---
 
@@ -306,7 +320,7 @@ Keep changes scoped to the intent; reuse existing assets first; follow project n
 
 ## Universal validation rules
 
-Validation is mandatory, but exact commands depend on the detected stack. Prefer commands already defined in the repo. Run the closest relevant checks:
+Validation is mandatory, but exact commands depend on the detected stack. Prefer commands already defined in the repo. Run the closest relevant checks **plus every applicable required control declared under `AGENTS.md` §1.4**:
 
 | Stack or area         | Common validation commands                                                          |
 | --------------------- | ----------------------------------------------------------------------------------- |
@@ -330,7 +344,13 @@ Validation is mandatory, but exact commands depend on the detected stack. Prefer
 | Performance           | benchmark, profiler, load test, bundle analyzer, query plan                         |
 | Docs                  | doc build, markdown lint, examples compile, generated docs diff                     |
 
-If a check is unavailable or cannot run, state the exact reason. Documentation is required only when the change affects external behavior, setup, deployment, API contracts, public flows, configuration, team decisions, or reusable patterns; otherwise say why docs were skipped.
+If a check or required control is unavailable, state the exact missing evidence
+and consequence; do not mark it passed. Use the actual evidence to reassess
+residual risk, lowering the initial level only when likelihood/exposure fell or
+reversibility improved. Documentation is required only when the change affects
+external behavior, setup, deployment, API contracts, public flows,
+configuration, team decisions, or reusable patterns; otherwise say why docs
+were skipped.
 
 ---
 
@@ -355,6 +375,7 @@ Beyond §4b's fields, this command always adds these rows to the block (complete
 - **Model** · `<model or current agent> @ effort:<effort or unavailable>`
 - **Changed** · `<file>` — what changed and why (one row per file)
 - **Validated** · the exact command/check → passed | failed | skipped with the reason; never "looks correct"
+- **Residual risk** · `<LOW | MEDIUM | HIGH>` — evidence that reduced it, or the control gap that remains
 - **Docs** · updated path, or skipped with the exact reason
 - **Remaining** · known limitation, follow-up, or "None"
 
@@ -362,16 +383,23 @@ Beyond §4b's fields, this command always adds these rows to the block (complete
 
 ## Stop conditions
 
-Stop and ask before changing files when: risk is HIGH and the user has not approved autonomous execution; the request could delete or overwrite user data; the change affects auth/money/PII/security boundaries/production infra and the intent is ambiguous; required source files, contracts, schemas, or migration history are missing; validation cannot be performed and the change is risky; or the user asks for something unsafe. Do not stop for trivial missing preferences when a safe best effort is possible — state the assumption and continue.
+Use `AGENTS.md` §1.4 and §4 as the single source for risk gates. In particular,
+stop before file changes for every HIGH assessment and obtain explicit approval
+for its named target/effect; `mode:auto` or a general autonomous request is not
+that approval. Also stop for destructive/overwrite scope, ambiguous sensitive
+boundaries, missing contracts/schemas/migration history that could hide HIGH
+impact, failed critical controls, or unsafe requests. Do not stop for trivial
+preferences when a bounded LOW/MEDIUM best effort is available — state the
+assumption and continue.
 
 ---
 
 ## Common anti-patterns
 
-Avoid: showing the checklist for a pure question; hiding choices instead of labeling them; depending only on a proprietary picker some tools cannot render; using old mode names `smart`/`always` in new config; saying "AskUserQuestion" when the environment lacks it; assuming JavaScript/TypeScript/web without reading repo indicators; claiming provider-specific models in an unknown-provider environment; raising effort above the session ceiling or downgrading `plan-flow` below it; treating validation as optional or ending with "looks good"; broad unrelated cleanup; updating docs for every tiny edit; writing one vague knowledge file for multiple decisions.
+Avoid: showing the checklist for a pure question; hiding choices instead of labeling them; depending only on a proprietary picker some tools cannot render; using old mode names `smart`/`always` in new config; saying "AskUserQuestion" when the environment lacks it; assuming JavaScript/TypeScript/web without reading repo indicators; claiming provider-specific models in an unknown-provider environment; raising effort above the session ceiling or downgrading `plan-flow` below it; treating risk as a header-only label; deriving every control from LOW/MEDIUM/HIGH instead of the driver; treating `mode:auto` as HIGH-risk approval; lowering residual risk without evidence; treating validation as optional or ending with "looks good"; broad unrelated cleanup; updating docs for every tiny edit; writing one vague knowledge file for multiple decisions.
 
 ---
 
 ## Minimal completion checklist
 
-Before the final response, confirm internally: the request was classified correctly; pure questions skipped the checklist; code requests read/created `.sage-local.json` (old `askMode` migrated to `mode`); mode was `auto` or `ask`; all five choices stayed visible with a recommendation label + reason; role files were loaded/created; rules and assets were checked; the repo stack was detected from real files; intent, risk, and plan were stated with provider-neutral tiers within the ceiling; changes stayed in scope; validation ran or was skipped with an exact reason; docs updated or skipped with a reason; Step 4 knowledge was new/updated/none, split by topic; Step 5 summary included Changed, Decisions or Fix, Validated, Docs, Remaining, and Knowledge.
+Before the final response, confirm internally: the request was classified correctly; pure questions skipped the checklist; code requests read/created `.sage-local.json` (old `askMode` migrated to `mode`); mode was `auto` or `ask`; all five choices stayed visible with a recommendation label + reason; role files were loaded/created; rules and assets were checked; the repo stack was detected from real files; risk drivers, confidence, required controls, verdict, and plan were stated with provider-neutral tiers within the ceiling; controls had owners and evidence; changes stayed in scope; validation ran or a gap was reported with its consequence; residual risk followed from evidence; docs updated or skipped with a reason; Step 4 knowledge was new/updated/none, split by topic; Step 5 summary included Changed, Decisions or Fix, Validated, Residual risk, Docs, Remaining, and Knowledge.

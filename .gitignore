@@ -3,6 +3,7 @@
 .venv/
 .DS_Store
 node_modules/
+.sage-local.json
 # leftover build / cache (no longer used — kept ignored so they never reappear)
 .pytest_cache/
 .ruff_cache/
