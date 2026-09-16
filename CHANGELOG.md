@@ -4,6 +4,20 @@ All notable changes to Sage. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-09-16
+
+### Added
+
+- A plain-language landing page guide now shows how `/sage` routes clear,
+  unclear, and multi-session work, plus the full Grill → Flow → Ticket → Build
+  → Review journey.
+
+### Changed
+
+- Redesigned the landing page as an engineering decision ledger, with a visible
+  Sage decision trace, clearer installation flow, responsive layouts, keyboard
+  focus states, and reduced-motion support.
+
 ## [1.6.0] — 2026-09-08
 
 ### Added

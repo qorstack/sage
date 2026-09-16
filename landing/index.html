@@ -3,43 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#050505" />
-    <meta name="sage-version" content="v1.6.0" />
-    <link rel="icon" href="logo.png" type="image/png" />
-    <title>Sage - Make AI agents think before they code</title>
+    <meta name="theme-color" content="#0a36c9" />
+    <meta name="sage-version" content="v1.7.0" />
     <meta
       name="description"
-      content="Sage is a plain Markdown cognition protocol for AI coding agents. It makes agents read team knowledge, assess risk, reuse existing code, and stop on unsafe changes before they write code."
+      content="Sage is a Markdown cognition protocol that makes AI coding agents read team knowledge, assess risk, reuse existing code, and validate their work."
     />
+    <title>Sage — Make AI agents think before they code</title>
 
-    <link rel="icon" type="image/png" href="logo.png" />
+    <link rel="icon" href="logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="logo.png" />
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
     <style>
       :root {
-        --bg: #050505;
-        --ink: #f7f4ed;
-        --text: #d7d0c2;
-        --muted: #8f897d;
-        --line: rgba(247, 244, 237, 0.14);
-        --panel: rgba(20, 20, 18, 0.82);
-        --panel-strong: #171714;
-        --red: #ff5a49;
-        --amber: #f0c45c;
-        --mint: #68d99b;
-        --cyan: #71d7ff;
-        --violet: #a98cff;
-        --max: 1180px;
-        --mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
-        --sans:
-          "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --paper: #f3f7ff;
+        --paper-strong: #ffffff;
+        --ink: #10162b;
+        --ink-soft: #4c5875;
+        --blue: #0a36c9;
+        --blue-dark: #08268d;
+        --orange: #ff5c35;
+        --green: #147d64;
+        --line: #b8c7eb;
+        --line-strong: #6e86c0;
+        --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+        --sans: "IBM Plex Sans", Arial, sans-serif;
+        --max: 1200px;
       }
 
       * {
@@ -48,303 +43,170 @@
 
       html {
         scroll-behavior: smooth;
-        width: 100%;
-        max-width: 100%;
-        overflow-x: clip;
       }
 
       body {
         margin: 0;
-        min-width: 0;
-        background:
-          radial-gradient(
-            circle at 16% 12%,
-            rgba(255, 90, 73, 0.18),
-            transparent 28rem
-          ),
-          radial-gradient(
-            circle at 86% 20%,
-            rgba(113, 215, 255, 0.12),
-            transparent 30rem
-          ),
-          linear-gradient(180deg, #080807 0%, #050505 42%, #0b0a08 100%);
-        color: var(--text);
+        min-width: 320px;
+        background: var(--paper);
+        color: var(--ink);
         font-family: var(--sans);
-        line-height: 1.5;
+        line-height: 1.55;
         -webkit-font-smoothing: antialiased;
-        overflow-x: clip;
-      }
-
-      nav,
-      header,
-      main,
-      section,
-      footer {
-        max-width: 100vw;
-        overflow-x: clip;
       }
 
       body::before {
         content: "";
         position: fixed;
         inset: 0;
-        pointer-events: none;
         z-index: -1;
+        pointer-events: none;
         background-image:
-          linear-gradient(rgba(247, 244, 237, 0.035) 1px, transparent 1px),
-          linear-gradient(
-            90deg,
-            rgba(247, 244, 237, 0.035) 1px,
-            transparent 1px
-          );
-        background-size: 64px 64px;
-        mask-image: linear-gradient(180deg, black 0%, transparent 78%);
+          linear-gradient(rgba(10, 54, 201, 0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(10, 54, 201, 0.055) 1px, transparent 1px);
+        background-size: 24px 24px;
       }
 
       a {
         color: inherit;
-        text-decoration: none;
       }
 
-      img,
-      svg {
-        max-width: 100%;
-      }
-
-      button,
-      input {
+      button {
         font: inherit;
       }
 
+      code,
+      pre {
+        font-family: var(--mono);
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--orange);
+        outline-offset: 3px;
+      }
+
+      .skip-link {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 100;
+        padding: 10px 14px;
+        background: var(--ink);
+        color: white;
+        transform: translateY(-160%);
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
       .wrap {
-        width: min(100% - 40px, var(--max));
+        width: min(calc(100% - 40px), var(--max));
         margin: 0 auto;
       }
 
-      .mono,
-      .eyebrow,
-      .nav-link,
-      .btn,
-      .copy,
-      .stat-label,
-      .tag,
-      .kicker,
-      .step-num,
-      .file-label {
-        font-family: var(--mono);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        color: var(--amber);
-        font-size: 12px;
-        font-weight: 700;
-      }
-
-      .eyebrow::before {
-        content: "";
-        width: 34px;
-        height: 1px;
-        background: currentColor;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 48px;
-        padding: 0 22px;
-        border: 1px solid rgba(247, 244, 237, 0.22);
-        border-radius: 8px;
-        color: var(--ink);
-        background: rgba(247, 244, 237, 0.06);
-        font-size: 12px;
-        font-weight: 800;
-        transition:
-          transform 0.2s ease,
-          border-color 0.2s ease,
-          background 0.2s ease;
-        white-space: normal;
-        text-align: center;
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-        border-color: rgba(247, 244, 237, 0.52);
-        background: rgba(247, 244, 237, 0.12);
-      }
-
-      .btn.primary {
-        background: var(--red);
-        border-color: var(--red);
-        color: #120a08;
-      }
-
-      .btn.primary:hover {
-        background: #ff725f;
-      }
-
-      nav {
+      .site-nav {
         position: sticky;
         top: 0;
-        z-index: 20;
-        border-bottom: 1px solid var(--line);
-        background: rgba(5, 5, 5, 0.76);
-        backdrop-filter: blur(16px);
+        z-index: 50;
+        border-bottom: 2px solid var(--blue);
+        background: rgba(243, 247, 255, 0.94);
+        backdrop-filter: blur(14px);
       }
 
       .nav-inner {
         display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        grid-template-columns: auto 1fr auto;
         align-items: center;
-        min-height: 66px;
-        gap: 20px;
+        min-height: 70px;
+        gap: 28px;
       }
 
-      .nav-left,
-      .nav-right {
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        color: var(--ink);
+        font-size: 20px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .brand img {
+        width: 38px;
+        height: 38px;
+        border: 2px solid var(--ink);
+      }
+
+      .nav-links,
+      .nav-actions {
         display: flex;
         align-items: center;
         gap: 22px;
       }
 
-      .nav-right {
-        justify-content: flex-end;
-        justify-self: end;
-      }
-
-      .nav-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 700;
-      }
-
-      .nav-link:hover {
-        color: var(--ink);
-      }
-
-      .github-link svg {
-        width: 17px;
-        height: 17px;
-        fill: currentColor;
-        flex: none;
-      }
-
-      .mobile-github {
-        display: none;
-      }
-
-      .bmc-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #FFDD00;
-        color: #000;
-        font-size: 11px;
-        font-weight: 700;
-        font-family: var(--sans);
-        letter-spacing: 0.04em;
-        padding: 5px 12px;
-        border-radius: 999px;
+      .nav-links a,
+      .nav-actions a {
+        font-size: 14px;
+        font-weight: 600;
         text-decoration: none;
-        white-space: nowrap;
-        transition: opacity 0.15s;
-        flex-shrink: 0;
       }
-      .bmc-btn:hover { opacity: 0.85; color: #000; text-decoration: none; }
 
-      .brand {
+      .nav-links a:hover,
+      .nav-actions a:hover {
+        text-decoration: underline;
+        text-underline-offset: 5px;
+      }
+
+      .nav-actions {
+        justify-content: flex-end;
+      }
+
+      .version {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 12px;
-        color: var(--ink);
-        font-weight: 900;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-      }
-
-      .brand img {
-        width: 32px;
-        height: 32px;
-      }
-
-      .version-badge {
-        display: inline-flex;
-        align-items: center;
-        min-height: 24px;
-        padding: 0 8px;
-        border: 1px solid rgba(113, 215, 255, 0.34);
-        border-radius: 999px;
-        background: rgba(113, 215, 255, 0.08);
-        color: var(--cyan);
+        min-height: 28px;
+        padding: 0 9px;
+        border: 1px solid var(--blue);
+        background: var(--paper-strong);
+        color: var(--blue);
         font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        line-height: 1;
-        text-transform: none;
-        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .coffee {
+        color: var(--blue-dark);
       }
 
       .hero {
-        position: relative;
-        min-height: calc(100vh - 66px);
-        padding: 56px 0 48px;
-        display: flex;
+        border-bottom: 2px solid var(--blue);
+        padding: clamp(72px, 9vw, 132px) 0 64px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.94fr) minmax(420px, 1.06fr);
+        gap: clamp(42px, 8vw, 112px);
         align-items: center;
       }
 
-      .hero::after {
+      .release-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 28px;
+        color: var(--blue);
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .release-note::before {
         content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 1px;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          var(--line),
-          transparent
-        );
-      }
-
-      .hero-shell {
-        position: relative;
-        isolation: isolate;
-        overflow: clip;
-      }
-
-      .hero-shell::before {
-        content: "";
-        position: absolute;
-        inset: clamp(10px, 4vw, 54px) 0 auto auto;
-        width: min(72vw, 900px);
-        aspect-ratio: 2.36 / 1;
-        background: url("logo-full.png") center / contain no-repeat;
-        opacity: 0.18;
-        filter: saturate(0.85) drop-shadow(0 38px 80px rgba(0, 0, 0, 0.48));
-        mask-image: linear-gradient(
-          90deg,
-          transparent 0%,
-          rgba(0, 0, 0, 0.55) 24%,
-          black 48%
-        );
-        z-index: -1;
-      }
-
-      .hero-copy {
-        max-width: 900px;
-        min-width: 0;
+        width: 26px;
+        height: 3px;
+        background: var(--orange);
       }
 
       h1,
@@ -355,1976 +217,1172 @@
       }
 
       h1 {
-        margin-bottom: 20px;
-        color: var(--ink);
-        font-size: clamp(48px, 7.7vw, 98px);
+        max-width: 680px;
+        margin-bottom: 26px;
+        font-size: clamp(54px, 7vw, 96px);
         line-height: 0.94;
-        letter-spacing: 0;
-        font-weight: 900;
+        letter-spacing: -0.055em;
+        font-weight: 700;
         text-wrap: balance;
-        overflow-wrap: anywhere;
       }
 
-      .hero h1 .accent {
-        color: var(--red);
+      .hero-copy > p {
+        max-width: 620px;
+        margin-bottom: 0;
+        color: var(--ink-soft);
+        font-size: clamp(18px, 2vw, 23px);
+        line-height: 1.48;
       }
 
-      .mobile-line {
-        display: none;
-      }
-
-      .mobile-tail {
-        display: none;
-      }
-
-      .lead {
-        max-width: 720px;
-        color: var(--text);
-        font-size: clamp(18px, 2.3vw, 25px);
-        line-height: 1.45;
-        font-weight: 600;
-      }
-
-      .principles-strip {
+      .actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 24px;
-      }
-
-      .principles-strip span {
-        display: inline-flex;
-        align-items: center;
-        min-height: 34px;
-        padding: 0 12px;
-        border: 1px solid rgba(247, 244, 237, 0.16);
-        border-radius: 8px;
-        background: rgba(247, 244, 237, 0.05);
-        color: var(--ink);
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .principles-strip span:first-child {
-        border-color: rgba(255, 90, 73, 0.42);
-        background: rgba(255, 90, 73, 0.12);
-        color: #ffccc6;
-      }
-
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
+        gap: 12px;
         margin-top: 34px;
       }
 
-      .proof-strip {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
-        gap: 18px;
-        margin-top: 58px;
-        align-items: stretch;
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50px;
+        padding: 0 20px;
+        border: 2px solid var(--ink);
+        background: transparent;
+        color: var(--ink);
+        font-weight: 700;
+        text-decoration: none;
       }
 
-      .verdict {
-        min-width: 0;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: linear-gradient(
-          180deg,
-          rgba(23, 23, 20, 0.88),
-          rgba(10, 10, 9, 0.9)
-        );
-        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
-        overflow: hidden;
+      .button.primary {
+        border-color: var(--orange);
+        background: var(--orange);
+        color: #181006;
       }
 
-      .panel-head {
+      .button:hover {
+        box-shadow: 5px 5px 0 var(--ink);
+        transform: translate(-2px, -2px);
+      }
+
+      .trace {
+        position: relative;
+        border: 2px solid var(--blue);
+        background: var(--paper-strong);
+        box-shadow: 14px 14px 0 rgba(10, 54, 201, 0.14);
+      }
+
+      .trace-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 14px;
-        min-width: 0;
-        min-height: 48px;
+        gap: 18px;
+        min-height: 50px;
         padding: 0 16px;
-        border-bottom: 1px solid var(--line);
-        color: var(--muted);
+        border-bottom: 2px solid var(--blue);
+        background: var(--blue);
+        color: white;
         font-family: var(--mono);
         font-size: 12px;
       }
 
-      .panel-head span {
-        min-width: 0;
-        overflow-wrap: anywhere;
+      .trace-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
       }
 
-      .dots {
-        display: flex;
-        gap: 7px;
-      }
-
-      .dots span {
+      .trace-live::before {
+        content: "";
         width: 8px;
         height: 8px;
-        border-radius: 999px;
-        background: var(--muted);
-      }
-
-      .dots span:nth-child(1) {
-        background: var(--red);
-      }
-
-      .dots span:nth-child(2) {
-        background: var(--amber);
-      }
-
-      .dots span:nth-child(3) {
-        background: var(--mint);
-      }
-
-      .verdict-body {
-        padding: clamp(18px, 3vw, 28px);
+        background: #62e0b8;
+        border-radius: 50%;
       }
 
       .request {
-        display: inline-flex;
-        width: fit-content;
-        max-width: 100%;
-        padding: 11px 13px;
-        border: 1px solid rgba(113, 215, 255, 0.28);
-        border-radius: 8px;
-        color: var(--cyan);
-        background: rgba(113, 215, 255, 0.07);
+        padding: 22px 22px 18px;
+        border-bottom: 1px solid var(--line);
+        color: var(--ink);
         font-family: var(--mono);
-        font-size: 13px;
-        overflow-wrap: anywhere;
+        font-size: 14px;
       }
 
-      .sage-header {
-        margin: 18px 0 0;
+      .request span {
+        color: var(--blue);
+        font-weight: 600;
+      }
+
+      .trace-list {
+        margin: 0;
         padding: 0;
         list-style: none;
+      }
+
+      .trace-list li {
         display: grid;
-        gap: 10px;
+        grid-template-columns: 26px 120px 1fr;
+        gap: 12px;
+        align-items: baseline;
+        padding: 14px 22px;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
       }
 
-      .sage-header li {
-        display: grid;
-        grid-template-columns: 92px 1fr;
-        gap: 14px;
-        color: var(--text);
-        font-size: 15px;
+      .trace-list li::before {
+        content: "✓";
+        color: var(--green);
+        font-family: var(--mono);
+        font-weight: 600;
       }
 
-      .sage-header span {
-        min-width: 0;
-        overflow-wrap: anywhere;
-      }
-
-      .sage-header b {
-        color: var(--ink);
-      }
-
-      .sage-header .key {
-        color: var(--muted);
+      .trace-list strong {
         font-family: var(--mono);
         font-size: 12px;
-        text-transform: uppercase;
-      }
-
-      .decision {
-        color: var(--amber);
-      }
-
-      .agent-answer {
-        margin-top: 18px;
-        border-top: 1px solid var(--line);
-        padding-top: 18px;
-      }
-
-      .agent-answer pre {
-        border-color: rgba(247, 244, 237, 0.08);
-        background: rgba(5, 5, 5, 0.42);
-        white-space: pre-wrap;
-      }
-
-      .knowledge-files {
-        display: grid;
-        gap: 8px;
-        margin-top: 14px;
-      }
-
-      .knowledge-files span {
-        display: block;
-        color: var(--cyan);
-        font-family: var(--mono);
-        font-size: 11px;
-        overflow-wrap: anywhere;
-      }
-
-      .flow {
-        min-width: 0;
-        display: grid;
-        gap: 10px;
-        padding: 18px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(247, 244, 237, 0.035);
-      }
-
-      .flow-step {
-        min-width: 0;
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        gap: 12px;
-        align-items: center;
-        min-height: 42px;
-        padding: 0 12px;
-        border: 1px solid rgba(247, 244, 237, 0.1);
-        border-radius: 8px;
-        color: var(--ink);
-        background: rgba(5, 5, 5, 0.3);
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      .flow-step i {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: var(--mint);
-        box-shadow: 0 0 0 5px rgba(104, 217, 155, 0.1);
-      }
-
-      .flow-step .tag {
-        color: var(--muted);
-        font-size: 10px;
-        overflow-wrap: anywhere;
-      }
-
-      .hero-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1px;
-        margin-top: 18px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        overflow: hidden;
-        background: var(--line);
-      }
-
-      .stat {
-        min-height: 112px;
-        padding: 18px;
-        background: rgba(12, 12, 10, 0.86);
-      }
-
-      .stat strong {
-        display: block;
-        color: var(--ink);
-        font-size: clamp(24px, 4vw, 38px);
-        line-height: 1;
-        letter-spacing: 0;
-        margin-bottom: 10px;
-      }
-
-      .stat-label {
-        color: var(--muted);
-        font-size: 10px;
-        line-height: 1.45;
-      }
-
-      section {
-        padding: clamp(76px, 10vw, 130px) 0;
-        border-top: 1px solid var(--line);
-      }
-
-      .section-head {
-        display: grid;
-        grid-template-columns: minmax(0, 0.88fr) minmax(280px, 0.62fr);
-        gap: 38px;
-        align-items: end;
-        margin-bottom: 44px;
-      }
-
-      h2 {
-        margin: 12px 0 0;
-        color: var(--ink);
-        font-size: clamp(36px, 6vw, 70px);
-        line-height: 0.98;
-        letter-spacing: 0;
-        font-weight: 900;
-        text-wrap: balance;
-      }
-
-      .section-head p {
-        color: var(--text);
-        font-size: 18px;
         font-weight: 600;
-        overflow-wrap: anywhere;
       }
 
-      .grid-3,
-      .grid-2 {
-        display: grid;
-        gap: 18px;
+      .trace-list span {
+        color: var(--ink-soft);
       }
 
-      .grid-3 {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .grid-2 {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .card,
-      .install,
-      .code-card,
-      .memo {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(20, 20, 18, 0.72);
-      }
-
-      .card {
-        min-height: 260px;
-        padding: 26px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-
-      .card .num {
-        color: var(--red);
-        font-family: var(--mono);
-        font-size: 13px;
-        font-weight: 700;
-      }
-
-      .card h3,
-      .memo h3 {
-        color: var(--ink);
-        font-size: 24px;
-        line-height: 1.08;
-        margin: 22px 0 12px;
-        letter-spacing: 0;
-      }
-
-      .card p,
-      .memo p {
-        margin: 0;
-        color: var(--text);
-        font-size: 16px;
-      }
-
-      .compare {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 18px;
-      }
-
-      .compare-column {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        overflow: hidden;
-      }
-
-      .compare-title {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        min-height: 58px;
-        padding: 0 18px;
-        border-bottom: 1px solid var(--line);
-        color: var(--ink);
-        font-weight: 900;
-      }
-
-      .compare-title span {
-        color: var(--muted);
-        font-family: var(--mono);
-        font-size: 11px;
-        text-transform: uppercase;
-      }
-
-      .row {
-        display: grid;
-        grid-template-columns: 28px 1fr;
-        gap: 14px;
-        padding: 20px 18px;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .row:last-child {
-        border-bottom: 0;
-      }
-
-      .row .mark {
-        color: var(--red);
-        font-family: var(--mono);
-        font-weight: 900;
-      }
-
-      .compare-column.good .row .mark {
-        color: var(--mint);
-      }
-
-      .row b {
-        color: var(--ink);
-      }
-
-      .install-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 0.78fr) minmax(320px, 1fr);
-        gap: 26px;
-        align-items: start;
-      }
-
-      .install {
-        overflow: hidden;
-      }
-
-      .install-body {
-        padding: 8px 22px 24px;
-      }
-
-      .step {
-        padding: 22px 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .step:last-child {
-        border-bottom: 0;
-      }
-
-      .step-head {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        color: var(--ink);
-        font-weight: 800;
-        margin-bottom: 14px;
-      }
-
-      .step-num {
-        color: var(--muted);
-        font-size: 11px;
-      }
-
-      .copy {
-        margin-left: auto;
-        min-height: 34px;
-        padding: 0 12px;
-        border: 1px solid rgba(247, 244, 237, 0.2);
-        border-radius: 8px;
-        background: transparent;
-        color: var(--muted);
-        cursor: pointer;
-        font-size: 10px;
-        font-weight: 800;
-      }
-
-      .copy:hover {
-        color: var(--ink);
-        border-color: rgba(247, 244, 237, 0.5);
-      }
-
-      /* Hero install — OS switch */
-      .hero-install {
-        margin: 26px 0 6px;
-        max-width: 820px;
-      }
-      .os-switch {
-        display: inline-flex;
-        gap: 4px;
-        padding: 4px;
-        margin-bottom: 10px;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(247, 244, 237, 0.12);
-        border-radius: 10px;
-      }
-      .os-tab {
-        appearance: none;
-        border: 0;
-        background: transparent;
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        padding: 8px 16px;
-        border-radius: 7px;
-        cursor: pointer;
-        transition:
-          background 0.15s,
-          color 0.15s;
-      }
-      .os-tab.is-active {
-        background: var(--mint, #6ee7a0);
-        color: #07120c;
-      }
-      .os-tab:not(.is-active):hover {
-        color: var(--ink);
-      }
-      .cmd-box {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: rgba(0, 0, 0, 0.45);
-        border: 1px solid rgba(247, 244, 237, 0.14);
-        border-radius: 12px;
-        padding: 15px 15px 15px 17px;
-        font-family: "JetBrains Mono", ui-monospace, monospace;
-        font-size: 13px;
-        line-height: 1.55;
-      }
-      .cmd-prompt {
-        color: var(--mint, #6ee7a0);
-        font-weight: 700;
-        user-select: none;
-      }
-      .cmd-text {
-        flex: 1;
-        min-width: 0;
-        color: var(--ink);
-        white-space: nowrap;
-        overflow-x: auto;
-        scrollbar-width: none;
-      }
-      .cmd-text::-webkit-scrollbar {
-        display: none;
-      }
-      .cmd-box .copy {
-        margin-left: 0;
-        flex-shrink: 0;
-      }
-      .cmd-note {
-        margin: 10px 2px 0;
-        font-size: 12.5px;
-        color: var(--muted);
-      }
-      .cmd-note code {
-        color: var(--ink);
-      }
-
-      pre {
-        max-width: 100%;
-        margin: 0;
-        overflow-x: auto;
-        border: 1px solid rgba(247, 244, 237, 0.1);
-        border-radius: 8px;
-        background: #060605;
-        color: var(--ink);
-        padding: 15px;
-        font-family: var(--mono);
-        font-size: 13px;
-        line-height: 1.7;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        word-break: break-word;
-      }
-
-      code {
-        font-family: var(--mono);
-        color: var(--ink);
-      }
-
-      .file-stack {
-        display: grid;
-        gap: 10px;
-      }
-
-      .file {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 16px;
-        background: rgba(247, 244, 237, 0.04);
-      }
-
-      .file-label {
-        display: block;
-        color: var(--cyan);
-        font-size: 11px;
-        margin-bottom: 10px;
-      }
-
-      .file p {
-        margin: 0;
-        color: var(--text);
-      }
-
-      .usage-intro {
-        display: grid;
-        grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
-        gap: 18px;
-        align-items: stretch;
-        margin-bottom: 18px;
-      }
-
-      .usage-copy,
-      .usage-prompt,
-      .route-card,
-      .command-meaning,
-      .journey {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(20, 20, 18, 0.72);
-      }
-
-      .usage-copy,
-      .usage-prompt {
-        padding: clamp(22px, 3vw, 32px);
-      }
-
-      .usage-copy h3 {
-        margin: 0 0 12px;
-        color: var(--ink);
-        font-size: 25px;
-      }
-
-      .usage-copy p,
-      .usage-prompt p {
-        margin: 0;
-        font-size: 16px;
-      }
-
-      .usage-prompt {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        border-color: rgba(104, 217, 155, 0.3);
-        background: linear-gradient(
-          135deg,
-          rgba(104, 217, 155, 0.09),
-          rgba(20, 20, 18, 0.72)
-        );
-      }
-
-      .usage-prompt pre {
-        margin-top: 14px;
-        border-color: rgba(104, 217, 155, 0.22);
-        color: var(--mint);
-      }
-
-      .route-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-      }
-
-      .route-card {
-        position: relative;
-        min-height: 190px;
-        padding: 22px;
-        overflow: hidden;
-      }
-
-      .route-card::before {
-        content: "";
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 3px;
-        background: var(--mint);
-      }
-
-      .route-card:nth-child(2)::before {
-        background: var(--amber);
-      }
-
-      .route-card:nth-child(3)::before {
-        background: var(--violet);
-      }
-
-      .route-condition {
-        display: block;
-        margin-bottom: 20px;
-        color: var(--muted);
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .route-card strong {
-        display: block;
-        margin-bottom: 9px;
-        color: var(--ink);
-        font-size: 21px;
-      }
-
-      .route-card p {
-        margin: 0;
-        font-size: 15px;
-      }
-
-      .command-meanings {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-top: 18px;
-      }
-
-      .command-meaning {
+      .verdict {
         display: grid;
         grid-template-columns: auto 1fr;
         gap: 14px;
-        align-items: start;
-        padding: 17px;
+        align-items: center;
+        padding: 20px 22px;
+        background: #e5f8f2;
+        color: var(--green);
+        font-weight: 600;
       }
 
-      .command-meaning code {
-        color: var(--cyan);
-        font-size: 13px;
-        font-weight: 700;
+      .verdict b {
+        padding: 5px 8px;
+        border: 1px solid var(--green);
+        font-family: var(--mono);
+        font-size: 11px;
       }
 
-      .command-meaning p {
-        margin: 0;
-        color: var(--text);
+      .fact-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-bottom: 2px solid var(--blue);
+        background: var(--paper-strong);
+      }
+
+      .fact {
+        padding: 20px 22px;
+        border-right: 1px solid var(--line);
+      }
+
+      .fact:last-child {
+        border-right: 0;
+      }
+
+      .fact strong {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--blue);
+        font-size: 17px;
+      }
+
+      .fact span {
+        color: var(--ink-soft);
         font-size: 14px;
       }
 
-      .journey {
-        margin-top: 18px;
-        padding: 22px;
+      section {
+        padding: clamp(72px, 9vw, 120px) 0;
+        border-bottom: 2px solid var(--blue);
       }
 
-      .journey-title {
-        display: block;
-        margin-bottom: 15px;
-        color: var(--muted);
+      .section-heading {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.58fr);
+        gap: 42px;
+        align-items: end;
+        margin-bottom: 54px;
+      }
+
+      .section-heading h2,
+      .closing h2 {
+        max-width: 820px;
+        margin-bottom: 0;
+        font-size: clamp(42px, 6vw, 76px);
+        line-height: 0.98;
+        letter-spacing: -0.045em;
+        text-wrap: balance;
+      }
+
+      .section-heading p {
+        margin-bottom: 0;
+        color: var(--ink-soft);
+        font-size: 18px;
+      }
+
+      .failure-ledger {
+        border-top: 2px solid var(--ink);
+      }
+
+      .failure-row {
+        display: grid;
+        grid-template-columns: 48px minmax(180px, 0.5fr) 1fr;
+        gap: 22px;
+        padding: 22px 0;
+        border-bottom: 1px solid var(--line-strong);
+        align-items: start;
+      }
+
+      .failure-row .mark {
+        color: var(--orange);
         font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .journey-flow {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--ink);
-        font-weight: 800;
-      }
-
-      .journey-flow span:not(.journey-arrow) {
-        flex: 1;
-        padding: 12px 10px;
-        border: 1px solid rgba(247, 244, 237, 0.1);
-        border-radius: 8px;
-        background: rgba(5, 5, 5, 0.3);
-        text-align: center;
-      }
-
-      .journey-arrow {
-        color: var(--red);
-        font-family: var(--mono);
-      }
-
-      .final {
-        text-align: center;
-      }
-
-      .final h2 {
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 860px;
-      }
-
-      .final p {
-        max-width: 640px;
-        margin: 20px auto 34px;
-        color: var(--text);
         font-size: 19px;
         font-weight: 600;
       }
 
+      .failure-row strong {
+        font-size: 20px;
+      }
+
+      .failure-row p {
+        max-width: 680px;
+        margin-bottom: 0;
+        color: var(--ink-soft);
+      }
+
+      .protocol {
+        background: var(--blue);
+        color: white;
+      }
+
+      .protocol .section-heading p {
+        color: #cbd8ff;
+      }
+
+      .protocol-rail {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        border: 1px solid #8fa8f7;
+      }
+
+      .protocol-step {
+        min-height: 290px;
+        padding: 22px;
+        border-right: 1px solid #8fa8f7;
+      }
+
+      .protocol-step:last-child {
+        border-right: 0;
+      }
+
+      .protocol-step .step-no {
+        display: block;
+        margin-bottom: 72px;
+        color: #aebfff;
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+
+      .protocol-step h3 {
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+
+      .protocol-step p {
+        margin-bottom: 0;
+        color: #cbd8ff;
+        font-size: 15px;
+      }
+
+      .compare-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 2px solid var(--ink);
+        background: var(--paper-strong);
+      }
+
+      .compare-column + .compare-column {
+        border-left: 2px solid var(--ink);
+      }
+
+      .compare-column h3 {
+        margin: 0;
+        padding: 18px 22px;
+        border-bottom: 2px solid var(--ink);
+        font-size: 20px;
+      }
+
+      .compare-column.with-sage h3 {
+        background: var(--blue);
+        color: white;
+      }
+
+      .compare-column ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .compare-column li {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        gap: 12px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .compare-column li:last-child {
+        border-bottom: 0;
+      }
+
+      .compare-column li::before {
+        content: "×";
+        color: var(--orange);
+        font-family: var(--mono);
+        font-weight: 600;
+      }
+
+      .compare-column.with-sage li::before {
+        content: "✓";
+        color: var(--green);
+      }
+
+      .install-grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
+        gap: 52px;
+        align-items: start;
+      }
+
+      .install-copy h2 {
+        margin-bottom: 24px;
+        font-size: clamp(42px, 5vw, 70px);
+        line-height: 0.98;
+        letter-spacing: -0.045em;
+      }
+
+      .install-copy p {
+        max-width: 520px;
+        color: var(--ink-soft);
+        font-size: 18px;
+      }
+
+      .installer {
+        border: 2px solid var(--ink);
+        background: var(--ink);
+        color: white;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #57617b;
+      }
+
+      .tab {
+        min-height: 48px;
+        padding: 0 18px;
+        border: 0;
+        border-right: 1px solid #57617b;
+        background: transparent;
+        color: #b8c2da;
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+
+      .tab[aria-selected="true"] {
+        background: var(--orange);
+        color: #181006;
+        font-weight: 600;
+      }
+
+      .command-line {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: center;
+        min-height: 148px;
+        padding: 26px;
+      }
+
+      .command-line code {
+        color: #dce4ff;
+        font-size: clamp(12px, 1.5vw, 15px);
+        overflow-wrap: anywhere;
+      }
+
+      .copy {
+        min-height: 40px;
+        padding: 0 14px;
+        border: 1px solid #96a4ca;
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .copy:hover {
+        background: white;
+        color: var(--ink);
+      }
+
+      .after-install {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        margin-top: 16px;
+        border: 1px solid var(--line-strong);
+      }
+
+      .after-install div {
+        padding: 18px;
+      }
+
+      .after-install div + div {
+        border-left: 1px solid var(--line-strong);
+      }
+
+      .after-install code {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--blue);
+        font-weight: 600;
+      }
+
+      .after-install span {
+        color: var(--ink-soft);
+        font-size: 14px;
+      }
+
+      .route-board {
+        border-top: 2px solid var(--ink);
+      }
+
+      .route-row {
+        display: grid;
+        grid-template-columns: minmax(160px, 0.42fr) minmax(180px, 0.5fr) 1fr;
+        gap: 24px;
+        padding: 22px 0;
+        border-bottom: 1px solid var(--line-strong);
+        align-items: baseline;
+      }
+
+      .route-row code {
+        color: var(--blue);
+        font-weight: 600;
+      }
+
+      .route-row strong {
+        font-size: 18px;
+      }
+
+      .route-row span {
+        color: var(--ink-soft);
+      }
+
+      .journey {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-top: 42px;
+        border: 2px solid var(--blue);
+        background: var(--paper-strong);
+      }
+
+      .journey span {
+        flex: 1;
+        padding: 17px 10px;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .journey i {
+        color: var(--orange);
+        font-family: var(--mono);
+        font-style: normal;
+      }
+
+      .workspace-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.72fr);
+        gap: 58px;
+        align-items: start;
+      }
+
+      .file-tree {
+        margin: 0;
+        padding: 28px;
+        border: 2px solid var(--ink);
+        background: var(--paper-strong);
+        color: var(--ink);
+        font-size: clamp(12px, 1.5vw, 15px);
+        line-height: 1.8;
+        overflow-x: auto;
+      }
+
+      .file-tree .folder {
+        color: var(--blue);
+        font-weight: 600;
+      }
+
+      .workspace-notes {
+        border-top: 2px solid var(--ink);
+      }
+
+      .workspace-note {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--line-strong);
+      }
+
+      .workspace-note h3 {
+        margin-bottom: 7px;
+        font-size: 19px;
+      }
+
+      .workspace-note p {
+        margin-bottom: 0;
+        color: var(--ink-soft);
+      }
+
+      .closing {
+        background: var(--orange);
+        color: #181006;
+      }
+
+      .closing-inner {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 44px;
+        align-items: end;
+      }
+
+      .closing .button {
+        background: var(--ink);
+        color: white;
+      }
+
       footer {
-        border-top: 1px solid var(--line);
-        padding: 34px 0;
-        color: var(--muted);
+        padding: 30px 0;
+        background: var(--ink);
+        color: white;
       }
 
       .footer-inner {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        gap: 22px;
+        gap: 24px;
+        align-items: center;
         flex-wrap: wrap;
-        font-size: 13px;
       }
 
-      .footer-product {
+      .footer-product,
+      .footer-links {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 16px;
         flex-wrap: wrap;
       }
 
-      .foot-links {
-        display: flex;
-        gap: 18px;
-        flex-wrap: wrap;
+      .footer-product span:first-child {
+        font-weight: 600;
       }
 
-      .foot-links a:hover {
-        color: var(--ink);
+      footer .version {
+        border-color: #8592b2;
+        background: transparent;
+        color: white;
+      }
+
+      .footer-links a {
+        color: #d6def4;
+        font-size: 14px;
+        text-decoration: none;
+      }
+
+      .footer-links a:hover {
+        color: white;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+
+      @keyframes trace-in {
+        from {
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .trace-list li,
+      .verdict {
+        animation: trace-in 0.42s both;
+      }
+
+      .trace-list li:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+
+      .trace-list li:nth-child(2) {
+        animation-delay: 0.22s;
+      }
+
+      .trace-list li:nth-child(3) {
+        animation-delay: 0.34s;
+      }
+
+      .trace-list li:nth-child(4) {
+        animation-delay: 0.46s;
+      }
+
+      .verdict {
+        animation-delay: 0.62s;
       }
 
       @media (max-width: 980px) {
-        .nav-inner {
-          grid-template-columns: auto 1fr;
-        }
-
-        .nav-left {
+        .nav-links {
           display: none;
         }
 
-        .brand {
-          justify-content: flex-start;
+        .nav-inner {
+          grid-template-columns: 1fr auto;
         }
 
-        .proof-strip,
-        .section-head,
-        .install-layout,
-        .usage-intro {
+        .hero-grid,
+        .section-heading,
+        .install-grid,
+        .workspace-grid {
           grid-template-columns: 1fr;
         }
 
-        .hero {
-          min-height: auto;
-          padding-top: 64px;
+        .hero-grid {
+          gap: 54px;
         }
 
-        .hero-shell::before {
-          inset: 18px 0 auto auto;
-          width: min(88vw, 680px);
-          opacity: 0.1;
+        .hero-copy > p {
+          max-width: 720px;
         }
 
-        .grid-3 {
-          grid-template-columns: 1fr;
-        }
-
-        .command-meanings {
+        .protocol-rail {
           grid-template-columns: repeat(2, 1fr);
+        }
+
+        .protocol-step {
+          min-height: 230px;
+          border-bottom: 1px solid #8fa8f7;
+        }
+
+        .protocol-step:nth-child(2) {
+          border-right: 0;
+        }
+
+        .protocol-step:last-child {
+          grid-column: 1 / -1;
+          border-bottom: 0;
+        }
+
+        .protocol-step .step-no {
+          margin-bottom: 44px;
         }
       }
 
-      @media (max-width: 720px) {
+      @media (max-width: 700px) {
         .wrap {
-          width: calc(100vw - 28px);
-          max-width: calc(100vw - 28px);
+          width: min(calc(100% - 28px), var(--max));
         }
 
-        .nav-inner {
-          position: relative;
-        }
-
-        .nav-inner {
-          min-height: 60px;
-        }
-
-        .nav-right .nav-link:not(.github-link) {
+        .coffee,
+        .nav-actions > a:not(.version) {
           display: none;
-        }
-
-        .nav-right {
-          gap: 10px;
-        }
-
-        .nav-right .github-link {
-          display: inline-flex;
-        }
-
-        .nav-right .github-link span {
-          display: none;
-        }
-
-        .mobile-github {
-          display: none;
-        }
-
-        .bmc-btn {
-          font-size: 10px;
-          padding: 5px 10px;
-        }
-
-        .brand span {
-          display: none;
-        }
-
-        .desktop-line {
-          display: none;
-        }
-
-        .mobile-line {
-          display: inline;
-        }
-
-        .desktop-tail {
-          display: none;
-        }
-
-        .mobile-tail {
-          display: inline;
         }
 
         .hero {
-          padding: 42px 0 34px;
+          padding-top: 58px;
         }
 
-        .lead {
-          max-width: 34ch;
-          font-size: 16.5px;
-          overflow-wrap: anywhere;
+        h1 {
+          font-size: clamp(48px, 15vw, 70px);
         }
 
-        .hero-actions .btn {
-          width: 100%;
-          padding-left: 12px;
-          padding-right: 12px;
-          font-size: 10px;
-          letter-spacing: 0.05em;
+        .trace-list li {
+          grid-template-columns: 24px 1fr;
         }
 
-        .request {
-          display: block;
-          width: 100%;
-          word-break: break-word;
-        }
-
-        .proof-strip {
-          margin-top: 38px;
-        }
-
-        .sage-header li {
-          grid-template-columns: 1fr;
-          gap: 4px;
-        }
-
-        .flow-step {
-          grid-template-columns: auto 1fr;
-        }
-
-        .flow-step .tag {
+        .trace-list li span {
           grid-column: 2;
         }
 
-        .hero-stats,
-        .compare,
-        .grid-2,
-        .route-grid,
-        .command-meanings {
+        .fact-strip,
+        .compare-grid,
+        .after-install {
           grid-template-columns: 1fr;
         }
 
-        .route-card {
+        .fact {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .fact:last-child {
+          border-bottom: 0;
+        }
+
+        .failure-row,
+        .route-row {
+          grid-template-columns: 32px 1fr;
+          gap: 12px;
+        }
+
+        .failure-row p,
+        .route-row span {
+          grid-column: 2;
+        }
+
+        .route-row code {
+          grid-column: 1 / -1;
+        }
+
+        .route-row strong,
+        .route-row span {
+          grid-column: 1 / -1;
+        }
+
+        .protocol-rail {
+          grid-template-columns: 1fr;
+        }
+
+        .protocol-step,
+        .protocol-step:nth-child(2) {
           min-height: auto;
+          border-right: 0;
+          border-bottom: 1px solid #8fa8f7;
         }
 
-        .journey-flow {
-          flex-direction: column;
-          align-items: stretch;
+        .protocol-step:last-child {
+          grid-column: auto;
         }
 
-        .journey-arrow {
-          transform: rotate(90deg);
-          align-self: center;
+        .protocol-step .step-no {
+          margin-bottom: 28px;
         }
 
-        .card {
-          min-height: auto;
+        .compare-column + .compare-column {
+          border-left: 0;
+          border-top: 2px solid var(--ink);
         }
 
-        .step-head {
-          align-items: flex-start;
-          flex-wrap: wrap;
+        .command-line {
+          grid-template-columns: 1fr;
         }
 
         .copy {
-          margin-left: 0;
+          justify-self: start;
+        }
+
+        .after-install div + div {
+          border-left: 0;
+          border-top: 1px solid var(--line-strong);
+        }
+
+        .journey {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .journey i {
+          text-align: center;
+          transform: rotate(90deg);
+        }
+
+        .closing-inner {
+          grid-template-columns: 1fr;
+          align-items: start;
         }
       }
 
-      @media (max-width: 420px) {
-        .hero-shell::before {
-          inset: 60px -4vw auto auto;
-          width: 96vw;
-          opacity: 0.08;
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
         }
 
-        h1 {
-          max-width: none;
-          font-size: 32px;
-          line-height: 1;
-        }
-
-        h2 {
-          font-size: 35px;
-        }
-
-        .lead {
-          font-size: 15.5px;
-        }
-
-        .principles-strip {
-          gap: 8px;
-        }
-
-        .principles-strip span {
-          padding: 0 9px;
-          font-size: 10px;
-          letter-spacing: 0.05em;
-        }
-
-        .panel-head {
-          align-items: flex-start;
-          flex-direction: column;
-          padding: 13px 16px;
-        }
-
-        .request,
-        pre {
-          font-size: 10.5px;
-        }
-
-        .request {
-          width: 100%;
-          white-space: normal;
-          word-break: break-word;
-        }
-
-        .sage-header {
-          gap: 14px;
-        }
-      }
-
-      @media (max-width: 360px) {
-        .wrap {
-          width: calc(100% - 20px);
-          max-width: calc(100vw - 20px);
-        }
-
-        .hero {
-          padding-top: 34px;
-        }
-
-        .eyebrow {
-          gap: 7px;
-          font-size: 9px;
-          letter-spacing: 0.06em;
-        }
-
-        .eyebrow::before {
-          width: 24px;
-        }
-
-        h1 {
-          font-size: 25px;
-        }
-
-        .lead {
-          max-width: none;
-          font-size: 14.5px;
-        }
-
-        .principles-strip {
-          gap: 7px;
-        }
-
-        .principles-strip span {
-          min-height: 30px;
-          padding: 0 8px;
-          font-size: 9px;
-          letter-spacing: 0.05em;
-        }
-
-        .btn {
-          min-height: 44px;
-          padding: 0 12px;
-          font-size: 10px;
-          letter-spacing: 0.05em;
-        }
-
-        .verdict-body,
-        .install-body {
-          padding-left: 12px;
-          padding-right: 12px;
-        }
-
-        .request,
-        pre {
-          font-size: 10.5px;
-        }
-
-        .flow {
-          padding: 12px;
-        }
-
-        .flow-step {
-          padding: 0 8px;
-          font-size: 12px;
-        }
-
-        .stat {
-          min-height: 88px;
-          padding: 14px;
-        }
-
-        .row,
-        .card,
-        .file {
-          padding-left: 14px;
-          padding-right: 14px;
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-delay: 0ms !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
         }
       }
     </style>
   </head>
   <body>
-    <nav>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <nav class="site-nav" aria-label="Primary navigation">
       <div class="wrap nav-inner">
-        <div class="nav-left">
-          <a href="#why" class="nav-link">Why</a>
-          <a href="#proof" class="nav-link">Proof</a>
-          <a href="#install" class="nav-link">Install</a>
-          <a href="#order" class="nav-link">Start</a>
-        </div>
-        <a class="brand" href="#">
+        <a class="brand" href="#top">
           <img src="logo.png" alt="" />
           <span>Sage</span>
-          <span
-            class="version-badge"
-            aria-label="Current Sage version v1.6.0"
-            >v1.6.0</span
-          >
         </a>
-        <div class="nav-right">
+        <div class="nav-links">
+          <a href="#why">Why Sage</a>
+          <a href="#protocol">Protocol</a>
+          <a href="#install">Install</a>
+          <a href="#use">How to use it</a>
+        </div>
+        <div class="nav-actions">
           <a
+            class="coffee"
             href="https://www.buymeacoffee.com/satangbuds3"
             target="_blank"
             rel="noopener"
-            class="bmc-btn"
-          >☕ Buy me a coffee</a>
-          <a href="#install" class="nav-link">Start</a>
+            >Support</a
+          >
           <a
             href="https://github.com/qorstack/sage"
             target="_blank"
             rel="noopener"
-            class="nav-link github-link"
-            aria-label="Sage on GitHub"
+            >GitHub</a
           >
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path
-                d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 6c1.02 0 2.05.14 3.01.38 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"
-              />
-            </svg>
-            <span>GitHub</span>
-          </a>
+          <span class="version" aria-label="Current Sage version v1.7.0"
+            >v1.7.0</span
+          >
         </div>
       </div>
     </nav>
 
-    <a
-      class="mobile-github"
-      href="https://github.com/qorstack/sage"
-      target="_blank"
-      rel="noopener"
-      aria-label="Sage on GitHub"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path
-          d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.21.09 1.85 1.25 1.85 1.25 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 6c1.02 0 2.05.14 3.01.38 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"
-        />
-      </svg>
-    </a>
-
-    <header class="hero">
-      <div class="wrap hero-shell">
+    <header class="hero" id="top">
+      <div class="wrap hero-grid">
         <div class="hero-copy">
-          <div class="eyebrow">Guardrails for AI coding agents</div>
-          <h1>
-            <span class="desktop-line">Your AI needs</span>
-            <span class="mobile-line">Your AI<br />needs</span>
-            <br />
-            <span class="accent">direction</span>
-            <br />
-            and grows
-            <br />
-            <span class="desktop-tail">with your team.</span>
-            <span class="mobile-tail">with your<br />team.</span>
-          </h1>
-          <p class="lead">
-            Sage gives every coding agent four questions before it touches your
-            repo: is this needed, will it last, is it safe, and did the team
-            agree? Then it reads your rules, reuses what exists, names the risk,
-            and stops when the change is unsafe.
+          <div class="release-note">A cognition protocol for coding agents</div>
+          <h1>Your coding agent should have a first thought.</h1>
+          <p>
+            Sage makes AI read your team’s decisions, inspect what already
+            exists, name the risk, and validate the result before calling the
+            work done.
           </p>
-          <div class="principles-strip" aria-label="Sage decision questions">
-            <span>Needed</span>
-            <span>Lasting</span>
-            <span>Safe</span>
-            <span>Agreed</span>
-          </div>
-          <div class="hero-install" id="install-widget">
-            <div class="os-switch" role="tablist" aria-label="Choose your shell">
-              <button
-                class="os-tab is-active"
-                data-os="bash"
-                role="tab"
-                aria-selected="true"
-              >
-                Bash
-              </button>
-              <button
-                class="os-tab"
-                data-os="pwsh"
-                role="tab"
-                aria-selected="false"
-              >
-                PowerShell
-              </button>
-            </div>
-            <div class="cmd-box">
-              <span class="cmd-prompt">$</span>
-              <code class="cmd-text"
-                >bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"</code
-              >
-              <button
-                class="copy"
-                data-copy='bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"'
-              >
-                Copy
-              </button>
-            </div>
-            <p class="cmd-note">
-              Bash — macOS, Linux, or Windows git-bash/WSL · PowerShell — Windows ·
-              asks which AI tools to wire up · re-run any time to update
-            </p>
-          </div>
-          <div class="hero-actions">
-            <a href="#install" class="btn primary">How install works</a>
-            <a href="#proof" class="btn">See AGENTS.md</a>
+          <div class="actions">
+            <a class="button primary" href="#install">Install Sage</a>
+            <a
+              class="button"
+              href="https://github.com/qorstack/sage"
+              target="_blank"
+              rel="noopener"
+              >Read the source</a
+            >
           </div>
         </div>
 
-        <div class="proof-strip" id="proof">
-          <div class="verdict">
-            <div class="panel-head">
-              <span>Sage verdict before code</span>
-              <div class="dots" aria-hidden="true">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
-            <div class="verdict-body">
-              <div class="request">
-                Request: add a "delete account" button to profile settings
-              </div>
-              <ul class="sage-header">
-                <li>
-                  <span class="key">Role</span>
-                  <span><b>backend</b> / user-settings</span>
-                </li>
-                <li>
-                  <span class="key">Risk</span>
-                  <span
-                    ><b>HIGH</b> - irreversible action, touches auth +
-                    billing</span
-                  >
-                </li>
-                <li>
-                  <span class="key">Decision</span>
-                  <span class="decision"
-                    ><b>ASK</b> - wait for human confirmation</span
-                  >
-                </li>
-              </ul>
-              <div class="agent-answer">
-                <pre>
-Role: backend — user-settings
-Risk: HIGH - irreversible data loss, touches auth and billing records.
-Decision: ask
-
-Matched rules:
-"Never hard-delete users — use soft_delete() with 30-day grace."
-"All destructive actions must write to audit_log before executing."
-
-I found users/soft_delete.py and users/audit_log.py.
-Because this is high risk, I will wait for confirmation before editing code.</pre
-                >
-                <div class="knowledge-files" aria-label="Sage knowledge files">
-                  <span>reads: agents/sage/users/rules.md</span>
-                  <span
-                    >creates if missing: agents/sage/roles/role-backend.md</span
-                  >
-                  <span
-                    >captures new rules in:
-                    agents/sage/users/decisions/*.md</span
-                  >
-                </div>
-              </div>
-            </div>
+        <div class="trace" aria-label="Example Sage decision trace">
+          <div class="trace-head">
+            <span>decision-trace.md</span>
+            <span class="trace-live">protocol active</span>
           </div>
-
-          <div>
-            <div class="flow" aria-label="Sage pipeline">
-              <div
-                style="
-                  font-family: var(--mono);
-                  font-size: 10px;
-                  color: var(--muted);
-                  text-transform: uppercase;
-                  letter-spacing: 0.08em;
-                  padding: 0 4px 2px;
-                "
-              >
-                Before code
-              </div>
-              <div class="flow-step">
-                <i></i><span>Pick role + load knowledge</span
-                ><span class="tag">agents/sage</span>
-              </div>
-              <div class="flow-step">
-                <i></i><span>Find reuse path</span
-                ><span class="tag">read exports</span>
-              </div>
-              <div class="flow-step">
-                <i></i><span>State intent + risk verdict</span
-                ><span class="tag">proceed / ask</span>
-              </div>
-              <div
-                style="
-                  font-family: var(--mono);
-                  font-size: 10px;
-                  color: var(--muted);
-                  text-transform: uppercase;
-                  letter-spacing: 0.08em;
-                  padding: 6px 4px 2px;
-                "
-              >
-                After code
-              </div>
-              <div class="flow-step">
-                <i></i><span>Capture knowledge</span
-                ><span class="tag">repo, not memory</span>
-              </div>
-              <div class="flow-step">
-                <i></i><span>Summary block</span
-                ><span class="tag">mandatory</span>
-              </div>
-            </div>
-
-            <div class="hero-stats">
-              <div class="stat">
-                <strong>1</strong>
-                <span class="stat-label"
-                  >AGENTS.md protocol committed to your repo</span
-                >
-              </div>
-              <div class="stat">
-                <strong>0</strong>
-                <span class="stat-label"
-                  >servers, daemons, databases, or vendor lock-in</span
-                >
-              </div>
-              <div class="stat">
-                <strong>4</strong>
-                <span class="stat-label"
-                  >decisions: proceed, warn, ask, reject</span
-                >
-              </div>
-            </div>
+          <div class="request">
+            <span>request /</span> add discount coupons to checkout
+          </div>
+          <ol class="trace-list">
+            <li>
+              <strong>context</strong>
+              <span>payment rules and checkout flow loaded</span>
+            </li>
+            <li>
+              <strong>reuse</strong>
+              <span>existing promotion service found</span>
+            </li>
+            <li>
+              <strong>risk</strong>
+              <span>total recalculation must stay idempotent</span>
+            </li>
+            <li>
+              <strong>evidence</strong>
+              <span>build, tests, and diff checked</span>
+            </li>
+          </ol>
+          <div class="verdict">
+            <b>PROCEED</b>
+            <span>reuse the existing boundary; preserve total invariants</span>
           </div>
         </div>
       </div>
     </header>
 
-    <main>
+    <div class="fact-strip" aria-label="Sage product facts">
+      <div class="fact">
+        <strong>Plain Markdown</strong>
+        <span>Review it in the same pull request as your code.</span>
+      </div>
+      <div class="fact">
+        <strong>Agent-agnostic</strong>
+        <span>Works with Codex, Claude Code, Cursor, Copilot, and more.</span>
+      </div>
+      <div class="fact">
+        <strong>No runtime</strong>
+        <span>No server, account, database, or hidden team memory.</span>
+      </div>
+    </div>
+
+    <main id="main">
       <section id="why">
         <div class="wrap">
-          <div class="section-head">
-            <div>
-              <div class="eyebrow">The problem</div>
-              <h2>Fast code is cheap. Wrong code is expensive.</h2>
-            </div>
+          <div class="section-heading">
+            <h2>Fast code is cheap. Wrong code is expensive.</h2>
             <p>
-              Most agents can edit files. The hard part is knowing which
-              decisions the team already made, which helpers exist, and which
-              changes should pause before touching production paths.
+              Agents can produce plausible changes in seconds. The expensive
+              failures happen before typing: missing context, invented patterns,
+              and risks nobody named.
             </p>
           </div>
 
-          <div class="grid-3">
-            <article class="card">
-              <span class="num">01</span>
-              <div>
-                <h3>It reads the rules first.</h3>
-                <p>
-                  The pipeline makes knowledge lookup mandatory instead of
-                  hoping an agent happens to open the right doc.
-                </p>
-              </div>
+          <div class="failure-ledger">
+            <div class="failure-row">
+              <span class="mark">01</span>
+              <strong>Context gets skipped</strong>
+              <p>
+                The agent solves the prompt but misses the architecture,
+                vocabulary, and decisions your team already made.
+              </p>
+            </div>
+            <div class="failure-row">
+              <span class="mark">02</span>
+              <strong>Existing code gets reinvented</strong>
+              <p>
+                A new helper looks reasonable in isolation while duplicating a
+                tested boundary that was already in the repository.
+              </p>
+            </div>
+            <div class="failure-row">
+              <span class="mark">03</span>
+              <strong>Risk stays implicit</strong>
+              <p>
+                Authorization, money, destructive operations, and public
+                contracts need explicit controls—not confident prose.
+              </p>
+            </div>
+            <div class="failure-row">
+              <span class="mark">04</span>
+              <strong>“Done” has no evidence</strong>
+              <p>
+                Sage requires the real build, test, or validation output and
+                reports the residual risk that remains.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="protocol" id="protocol">
+        <div class="wrap">
+          <div class="section-heading">
+            <h2>A repeatable thought before every change.</h2>
+            <p>
+              The protocol turns good engineering judgment into a sequence any
+              compatible coding agent can follow.
+            </p>
+          </div>
+
+          <div class="protocol-rail">
+            <article class="protocol-step">
+              <span class="step-no">01 / Read</span>
+              <h3>Load the team’s context</h3>
+              <p>Use the role, rules, and decisions relevant to this change.</p>
             </article>
-            <article class="card">
-              <span class="num">02</span>
-              <div>
-                <h3>It reuses what your team built.</h3>
-                <p>
-                  Services, helpers, components, conventions, and decisions are
-                  surfaced before new code is invented.
-                </p>
-              </div>
+            <article class="protocol-step">
+              <span class="step-no">02 / Inspect</span>
+              <h3>Find what already exists</h3>
+              <p>Read the actual exports and patterns before proposing another.</p>
             </article>
-            <article class="card">
-              <span class="num">03</span>
-              <div>
-                <h3>It blocks reckless changes.</h3>
-                <p>
-                  Block rules reject unsafe output. Ask rules stop and wait for
-                  a human before high-risk code lands.
-                </p>
-              </div>
+            <article class="protocol-step">
+              <span class="step-no">03 / Judge</span>
+              <h3>Name risk and controls</h3>
+              <p>Separate routine work from changes that need a human decision.</p>
+            </article>
+            <article class="protocol-step">
+              <span class="step-no">04 / Build</span>
+              <h3>Make the smallest coherent change</h3>
+              <p>Preserve contracts and keep the work inside the agreed scope.</p>
+            </article>
+            <article class="protocol-step">
+              <span class="step-no">05 / Prove</span>
+              <h3>Validate and remember</h3>
+              <p>Run real checks, report evidence, and capture durable knowledge.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section>
+      <section id="proof">
         <div class="wrap">
-          <div class="section-head">
-            <div>
-              <div class="eyebrow">Before and after</div>
-              <h2>The same agent. A much better first thought.</h2>
-            </div>
+          <div class="section-heading">
+            <h2>The same agent. A better first move.</h2>
             <p>
-              Sage is not another coding agent. It is the cognition layer your
-              existing agents read before they act.
+              Sage does not replace your coding agent. It gives that agent a
+              visible, reviewable operating discipline.
             </p>
           </div>
 
-          <div class="compare">
+          <div class="compare-grid">
             <div class="compare-column">
-              <div class="compare-title">
-                Agent alone <span>output-first</span>
-              </div>
-              <div class="row">
-                <span class="mark">x</span
-                ><span>Starts editing before checking team decisions.</span>
-              </div>
-              <div class="row">
-                <span class="mark">x</span
-                ><span
-                  >Misses existing services and recreates similar code.</span
-                >
-              </div>
-              <div class="row">
-                <span class="mark">x</span
-                ><span
-                  >Treats payment, auth, and data paths like normal files.</span
-                >
-              </div>
-              <div class="row">
-                <span class="mark">x</span
-                ><span
-                  >Memory stays personal, implicit, and hard to review.</span
-                >
-              </div>
+              <h3>Without Sage</h3>
+              <ul>
+                <li>Starts coding directly from the prompt</li>
+                <li>Guesses internal APIs from filenames</li>
+                <li>Treats every unknown as an implementation detail</li>
+                <li>Reports confidence instead of validation output</li>
+              </ul>
             </div>
-
-            <div class="compare-column good">
-              <div class="compare-title">
-                Agent with Sage <span>context-first</span>
-              </div>
-              <div class="row">
-                <span class="mark">+</span
-                ><span
-                  ><b>Reads approved rules</b> from plain Markdown in git.</span
-                >
-              </div>
-              <div class="row">
-                <span class="mark">+</span
-                ><span
-                  ><b>Names the reuse path</b> before creating anything
-                  new.</span
-                >
-              </div>
-              <div class="row">
-                <span class="mark">+</span
-                ><span
-                  ><b>Reports risk</b> and applies proceed / warn / ask /
-                  reject.</span
-                >
-              </div>
-              <div class="row">
-                <span class="mark">+</span
-                ><span
-                  ><b>Captures new team decisions</b> as reviewable files.</span
-                >
-              </div>
+            <div class="compare-column with-sage">
+              <h3>With Sage</h3>
+              <ul>
+                <li>Reads the relevant team context first</li>
+                <li>Inspects reusable code before adding more</li>
+                <li>Stops only for decisions that genuinely change the outcome</li>
+                <li>Closes with evidence and residual risk</li>
+              </ul>
             </div>
           </div>
         </div>
       </section>
 
       <section id="install">
-        <div class="wrap">
-          <div class="install-layout">
-            <div>
-              <div class="eyebrow">Install</div>
-              <h2>One command makes cognition enforceable.</h2>
-              <p class="lead">
-                It asks which AI tools you use (multi-select), fetches the
-                protocol and commands, and wires up the ones you pick. Re-run any
-                time to update. Your own knowledge is never overwritten.
-              </p>
-            </div>
-
-            <div class="install">
-              <div class="panel-head">
-                <span>Get started</span>
-                <span>MIT / Open Source</span>
-              </div>
-              <div class="install-body">
-                <div class="step">
-                  <div class="step-head">
-                    <span class="step-num">01</span>
-                    <span>Bash — macOS / Linux / git-bash</span>
-                    <button
-                      class="copy"
-                      data-copy="bash -c &quot;$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)&quot;"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <pre>
-bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"</pre
-                  >
-                </div>
-
-                <div class="step">
-                  <div class="step-head">
-                    <span class="step-num">02</span>
-                    <span>PowerShell — Windows</span>
-                    <button
-                      class="copy"
-                      data-copy="irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <pre>
-irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex</pre
-                  >
-                </div>
-
-                <div class="step">
-                  <div class="step-head">
-                    <span class="step-num">03</span>
-                    <span>Then seed knowledge from your code</span>
-                  </div>
-                  <p
-                    style="
-                      margin: 0 0 12px;
-                      font-size: 14px;
-                      color: var(--muted);
-                    "
-                  >
-                    Pick from Claude Code, Codex, Cursor, Copilot, Gemini,
-                    Windsurf, Cline — the installer wires up the ones you choose.
-                    Run <code>/sage-learning</code> once to capture your team's
-                    real patterns — then just use <code>/sage</code>.
-                  </p>
-                  <pre>
-/sage-learning     # scan the repo, write team knowledge to agents/sage/</pre
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="order">
-        <div class="wrap">
-          <div class="section-head">
-            <div>
-              <div class="eyebrow">How to use Sage</div>
-              <h2>Start every task with /sage.</h2>
-            </div>
+        <div class="wrap install-grid">
+          <div class="install-copy">
+            <h2>One command installs the protocol.</h2>
             <p>
-              You do not need to learn an AI workflow. Describe the result you
-              want in normal words, and Sage chooses the right path.
+              Run the installer in your repository. It adds the Sage protocol,
+              command adapters, and knowledge structure for the coding tools you
+              select.
             </p>
           </div>
 
-          <div class="usage-intro">
-            <div class="usage-copy">
-              <h3>One command is enough to begin.</h3>
-              <p>
-                After installing Sage, run <code>/sage-learning</code> once so it
-                can learn how your project already works. From then on, begin
-                each coding task with <code>/sage</code>.
-              </p>
+          <div>
+            <div class="installer" id="installer">
+              <div class="tabs" role="tablist" aria-label="Choose your operating system">
+                <button
+                  class="tab"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  data-command="bash"
+                >
+                  macOS / Linux
+                </button>
+                <button
+                  class="tab"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  data-command="pwsh"
+                >
+                  Windows
+                </button>
+              </div>
+              <div class="command-line">
+                <code id="install-command"
+                  >bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"</code
+                >
+                <button class="copy" type="button" data-copy>Copy command</button>
+              </div>
             </div>
-            <div class="usage-prompt">
-              <p>For example, type this in your AI coding tool:</p>
-              <pre>/sage add discount coupons to checkout</pre>
-            </div>
-          </div>
 
-          <div class="route-grid" aria-label="How Sage routes a request">
-            <article class="route-card">
-              <span class="route-condition">Clear and small</span>
-              <strong>Sage starts the work</strong>
-              <p>
-                If the request is specific enough, Sage reads the project,
-                checks the risk, makes the change, and validates the result.
-              </p>
-            </article>
-            <article class="route-card">
-              <span class="route-condition">Unclear, but one conversation</span>
-              <strong>Grill asks what matters</strong>
-              <p>
-                Sage asks a few useful questions so everyone agrees on what
-                should be built before code is written.
-              </p>
-            </article>
-            <article class="route-card">
-              <span class="route-condition">Large and unclear</span>
-              <strong>Wayfinder makes a map</strong>
-              <p>
-                Sage breaks research and decisions into manageable steps that
-                can continue across several work sessions.
-              </p>
-            </article>
-          </div>
-
-          <div class="command-meanings" aria-label="Plain-language command guide">
-            <div class="command-meaning">
-              <code>Grill</code>
-              <p>Clarifies what you actually want to build.</p>
-            </div>
-            <div class="command-meaning">
-              <code>Wayfinder</code>
-              <p>Explores and plans a large, uncertain project.</p>
-            </div>
-            <div class="command-meaning">
-              <code>Flow</code>
-              <p>Designs how the system should work.</p>
-            </div>
-            <div class="command-meaning">
-              <code>Ticket</code>
-              <p>Turns the design into small, buildable tasks.</p>
-            </div>
-            <div class="command-meaning">
-              <code>Sage</code>
-              <p>Writes or changes code and checks the result.</p>
-            </div>
-            <div class="command-meaning">
-              <code>Review</code>
-              <p>Checks that the finished work matches the promise.</p>
-            </div>
-          </div>
-
-          <div class="journey">
-            <span class="journey-title">A full feature might move like this</span>
-            <div class="journey-flow" aria-label="Example full feature journey">
-              <span>Idea</span><span class="journey-arrow">&rarr;</span>
-              <span>Grill</span><span class="journey-arrow">&rarr;</span>
-              <span>Flow</span><span class="journey-arrow">&rarr;</span>
-              <span>Ticket</span><span class="journey-arrow">&rarr;</span>
-              <span>Sage</span><span class="journey-arrow">&rarr;</span>
-              <span>Review</span>
+            <div class="after-install">
+              <div>
+                <code>/sage-learning</code>
+                <span>Run once to learn the project’s real patterns.</span>
+              </div>
+              <div>
+                <code>/sage your task</code>
+                <span>Then start each code change in plain language.</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="commands">
+      <section id="use">
         <div class="wrap">
-          <div class="section-head">
-            <div>
-              <div class="eyebrow">Commands</div>
-              <h2>You mostly just run /sage.</h2>
-            </div>
+          <div class="section-heading">
+            <h2>Describe the result. Sage chooses the route.</h2>
             <p>
-              Before each change, <code>/sage</code> shows a short checklist.
-              Auto mode continues without prompting; ask mode prefers native
-              checkboxes, then structured or compact fallbacks. Sage runs the
-              right specialist itself: design the flow
-              (<code>/sage-flow</code>), slice and build it
-              (<code>/sage-ticket</code>), write tests
-              (<code>/sage-unit-test</code>, <code>/sage-e2e-test</code>), review
-              the change (<code>/sage-review</code>) and its security
-              (<code>/sage-security-review</code>), refresh docs
-              (<code>/sage-docs</code>), and continues across handoffs until a
-              material gate or completion.
+              You mostly run <code>/sage</code>. The protocol decides whether to
+              begin, clarify a decision, or map a larger uncertain effort.
             </p>
           </div>
 
-          <div class="grid-3">
-            <div class="code-card">
-              <div class="panel-head">
-                <span>/sage</span>
-                <span style="color: var(--mint); font-size: 11px"
-                  >before + after every change</span
-                >
-              </div>
-              <div class="install-body">
-                <pre>
-Role    : debugger — fix infinite API loop
-Model   : sonnet 4.6 @ effort:medium
-Intent  : stop useCallback recreating every render
-Touches : BoqUsagePlanSection.tsx
-Risk    : LOW — dep array fix only
-Decision: proceed
-
-... [fix applied] ...
-
-── Sage ────────────────────────────────
-Role      : debugger — fix infinite loop
-Model     : sonnet 4.6 @ effort:medium
-Domain    : frontend  |  Risk: LOW
-Root cause: useLoadingScreen() returns a
-            new object on every render.
-            Adding it to useCallback deps
-            triggers refetch on each render.
-Mechanism : render → new ref → callback
-            recreated → useEffect fires →
-            API called → setState → repeat
-Fix       : removed unstable refs from
-            deps, kept only [materialId]
-Validated : network tab: 1 call on load,
-            0 repeated calls
-Slipped   : hook API looks stable but
-            returns {} without useMemo
-Knowledge : [new] decisions/
-              usecallback-unstable-deps.md
-────────────────────────────────────────</pre
-                >
-              </div>
+          <div class="route-board">
+            <div class="route-row">
+              <code>Clear request</code>
+              <strong>Start the work</strong>
+              <span>Read context, assess risk, implement, and validate.</span>
             </div>
-
-            <div class="code-card">
-              <div class="panel-head">
-                <span>/sage-learning</span>
-                <span style="color: var(--amber); font-size: 11px"
-                  >learn + research · once per repo</span
-                >
-              </div>
-              <div class="install-body">
-                <pre>
-/sage-learning
-
-── Sage Learning ───────────────────────
-Stack     : TypeScript, Next.js 15,
-            React 19, MUI, Valibot
-Domains   : frontend, api, auth, billing
-From code :
-  [new]     frontend/rules.md
-  [new]     decisions/
-              usecallback-unstable-deps.md
-  [updated] roles/role-frontend.md
-Research  :
-  [new]     frontend/skills/
-              server-component-boundaries.md
-Next      : flip status: approved on
-            entries you want enforced
-────────────────────────────────────────</pre
-                >
-              </div>
+            <div class="route-row">
+              <code>One-session fog</code>
+              <strong>Grill the decision</strong>
+              <span>Ask only the questions whose answers change the build.</span>
             </div>
-
-            <div class="code-card">
-              <div class="panel-head">
-                <span>/sage-docs</span>
-                <span style="color: var(--cyan); font-size: 11px"
-                  >on demand · human-readable</span
-                >
-              </div>
-              <div class="install-body">
-                <pre>
-/sage-docs [paste spec or describe doc]
-
-Language · English
-Doc type · api-flow
-Output   · docs/checkout-flow.md
-Systems  · Website, Service, Gateway
-
-Sections
-- Actors & Systems
-- End-to-end overview (ASCII flow)
-- Step-by-step + full API spec
-- Edge cases · Security
-- Open Questions
-Coverage · 7 steps · 8 endpoints
-           6 errors — all covered
-Plain Markdown — reads on GitHub,
-diffs in a PR. No HTML/CSS/JS.</pre
-                >
-              </div>
+            <div class="route-row">
+              <code>Large uncertainty</code>
+              <strong>Map the frontier</strong>
+              <span>Use Wayfinder to coordinate research and decisions across sessions.</span>
             </div>
+          </div>
+
+          <div class="journey" aria-label="Example full feature journey">
+            <span>Idea</span><i>→</i><span>Grill</span><i>→</i><span>Flow</span
+            ><i>→</i><span>Ticket</span><i>→</i><span>Build</span><i>→</i
+            ><span>Review</span>
           </div>
         </div>
       </section>
 
-      <section id="flow-workspaces">
+      <section id="workspace">
         <div class="wrap">
-          <div class="section-head">
-            <div>
-              <div class="eyebrow">Flow workspaces</div>
-              <h2>One effort. One place to look.</h2>
-            </div>
+          <div class="section-heading">
+            <h2>One effort. One place to look.</h2>
             <p>
-              Grill decisions, implementation design, build tickets, and focused
-              debug evidence now stay together. Every command reuses the same
-              flow slug, so context survives handoffs without scattering files.
+              Decisions, system design, implementation tickets, and focused
+              evidence stay together under one durable flow workspace.
             </p>
           </div>
 
-          <div class="grid-2">
-            <div class="code-card">
-              <div class="panel-head">
-                <span>agents/sage/flows/checkout/</span>
-                <span style="color: var(--mint); font-size: 11px"
-                  >new in v1.6</span
-                >
-              </div>
-              <div class="install-body">
-                <pre>
-index.md                 # start here
-spec.md                  # /sage-grill
-flow.md                  # /sage-flow
-tickets.md               # /sage-ticket
-evidence/
-  index.md               # searchable catalog
-  images/                # diagrams + mockups
-  screenshots/           # before + after
-  traces/                # only when needed
-  logs/                  # focused extracts</pre
-                >
-              </div>
-            </div>
+          <div class="workspace-grid">
+            <pre class="file-tree"><span class="folder">agents/sage/flows/checkout/</span>
+├── index.md          # start here
+├── spec.md           # clarified requirements
+├── flow.md           # end-to-end design
+├── tickets.md        # buildable outcomes
+└── <span class="folder">evidence/</span>
+    ├── index.md      # searchable catalog
+    ├── screenshots/  # smallest useful visual proof
+    ├── traces/       # focused runtime evidence
+    └── logs/         # relevant extracts</pre>
 
-            <div class="file-stack">
-              <div class="file">
-                <span class="file-label">Debug with less context</span>
-                <p>
-                  Capture the smallest useful failing state first. Reuse the
-                  saved screenshot, trace, or log before loading full browser
-                  state into the model.
-                </p>
+            <div class="workspace-notes">
+              <div class="workspace-note">
+                <h3>Context survives handoffs</h3>
+                <p>Every command reuses the same stable workspace slug.</p>
               </div>
-              <div class="file">
-                <span class="file-label">Escalate only when evidence stays ambiguous</span>
-                <p>
-                  Full-state debugging is reserved for unresolved races,
-                  auth/session interactions, cross-service failures, or focused
-                  evidence that still cannot classify the cause.
-                </p>
+              <div class="workspace-note">
+                <h3>Evidence stays focused</h3>
+                <p>Capture the smallest useful screenshot, trace, or log first.</p>
               </div>
-              <div class="file">
-                <span class="file-label">Images render inside the docs</span>
-                <p>
-                  Relevant screenshots and diagrams are cataloged once, then
-                  embedded with relative links beside the decision, flow step,
-                  ticket, or human document they support.
-                </p>
+              <div class="workspace-note">
+                <h3>Humans can review everything</h3>
+                <p>It is all Markdown, ordinary files, and normal Git history.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section>
-        <div class="wrap">
-          <div class="section-head">
-            <div>
-              <div class="eyebrow">Team memory</div>
-              <h2>Knowledge that survives the session.</h2>
-            </div>
-            <p>
-              Sage stores decisions in your repo, not in a hidden chat memory.
-              Humans review the Markdown. Git shares it with every teammate and
-              every future agent.
-            </p>
-          </div>
-
-          <div class="grid-2">
-            <div class="code-card">
-              <div class="panel-head">
-                <span
-                  >agents/sage/payment/decisions/use-idempotency-keys.md</span
-                >
-              </div>
-              <div class="install-body">
-                <pre>
----
-title: Use idempotency keys
-domain: payment
-status: approved
-enforcement: block
----
-
-All payment calls MUST pass an idempotency key.
-Reuse payments/idempotency.py; never roll your own.</pre
-                >
-              </div>
-            </div>
-
-            <div class="file-stack">
-              <div class="file">
-                <span class="file-label">Human-governed</span>
-                <p>
-                  AI can propose knowledge, but approved decisions are plain
-                  files your team can review, diff, and change.
-                </p>
-              </div>
-              <div class="file">
-                <span class="file-label">Tool-agnostic</span>
-                <p>
-                  Claude Code, Cursor, Codex, Copilot, and other agents can read
-                  the same protocol and the same rules.
-                </p>
-              </div>
-              <div class="file">
-                <span class="file-label">Strict when it matters</span>
-                <p>
-                  Block rules refuse unsafe output. Warn rules proceed with
-                  caveats. Ask rules stop for confirmation.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="final">
-        <div class="wrap">
-          <div class="eyebrow">Ship aligned code</div>
-          <h2>Make every agent inherit your team's judgment.</h2>
-          <p>
-            No server. No build. No runtime. Just a protocol, a folder of
-            Markdown commands, and your team's knowledge — one command sets it up
-            and makes cognition part of the coding workflow.
-          </p>
-          <div class="hero-actions" style="justify-content: center">
-            <a href="#install" class="btn primary">Install Sage</a>
-            <a
-              href="https://github.com/qorstack/sage"
-              target="_blank"
-              rel="noopener"
-              class="btn"
-              >View on GitHub</a
-            >
-          </div>
+      <section class="closing">
+        <div class="wrap closing-inner">
+          <h2>Make judgment part of the coding workflow.</h2>
+          <a class="button" href="#install">Install Sage</a>
         </div>
       </section>
     </main>
@@ -2332,75 +1390,46 @@ Reuse payments/idempotency.py; never roll your own.</pre
     <footer>
       <div class="wrap footer-inner">
         <div class="footer-product">
-          <span>Sage - cognitive enforcement for AI software development</span>
-          <span
-            class="version-badge"
-            aria-label="Current Sage version v1.6.0"
-            >v1.6.0</span
+          <span>Sage — cognition for AI software development</span>
+          <span class="version" aria-label="Current Sage version v1.7.0"
+            >v1.7.0</span
           >
         </div>
-        <div class="foot-links">
-          <a href="#why">Why</a>
-          <a href="#proof">Proof</a>
+        <div class="footer-links">
+          <a href="#protocol">Protocol</a>
           <a href="#install">Install</a>
-          <a
-            href="https://github.com/qorstack/sage"
-            target="_blank"
-            rel="noopener"
-            >GitHub</a
-          >
+          <a href="https://github.com/qorstack/sage">GitHub</a>
         </div>
       </div>
     </footer>
 
     <script>
-      function doCopy(button, text) {
-        if (!navigator.clipboard) return;
-        navigator.clipboard.writeText(text).then(function () {
-          var original = button.textContent;
-          button.textContent = "Copied";
-          button.style.color = "#f7f4ed";
-          setTimeout(function () {
-            button.textContent = original;
-            button.style.color = "";
-          }, 1400);
-        });
-      }
-
-      document.querySelectorAll(".copy[data-copy]").forEach(function (button) {
-        button.addEventListener("click", function () {
-          doCopy(button, button.dataset.copy);
-        });
-      });
-
-      // Hero install — Windows / macOS·Linux switch
       (function () {
-        var widget = document.getElementById("install-widget");
-        if (!widget) return;
-        var CMD = {
-          bash: {
-            prompt: "$",
-            text: 'bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"',
-          },
-          pwsh: {
-            prompt: "PS>",
-            text: "irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex",
-          },
+        var commands = {
+          bash:
+            'bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"',
+          pwsh:
+            "irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex",
         };
-        var promptEl = widget.querySelector(".cmd-prompt");
-        var textEl = widget.querySelector(".cmd-text");
-        var copyEl = widget.querySelector(".copy");
-        widget.querySelectorAll(".os-tab").forEach(function (tab) {
+        var command = document.getElementById("install-command");
+        var copy = document.querySelector("[data-copy]");
+
+        document.querySelectorAll("[data-command]").forEach(function (tab) {
           tab.addEventListener("click", function () {
-            var os = tab.dataset.os;
-            widget.querySelectorAll(".os-tab").forEach(function (t) {
-              var on = t === tab;
-              t.classList.toggle("is-active", on);
-              t.setAttribute("aria-selected", on ? "true" : "false");
+            document.querySelectorAll("[data-command]").forEach(function (item) {
+              item.setAttribute("aria-selected", item === tab ? "true" : "false");
             });
-            promptEl.textContent = CMD[os].prompt;
-            textEl.textContent = CMD[os].text;
-            copyEl.dataset.copy = CMD[os].text;
+            command.textContent = commands[tab.dataset.command];
+          });
+        });
+
+        copy.addEventListener("click", function () {
+          if (!navigator.clipboard) return;
+          navigator.clipboard.writeText(command.textContent).then(function () {
+            copy.textContent = "Copied";
+            window.setTimeout(function () {
+              copy.textContent = "Copy command";
+            }, 1400);
           });
         });
       })();

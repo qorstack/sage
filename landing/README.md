@@ -1,7 +1,8 @@
 # Sage — landing page
 
-A single self-contained `index.html` (dark monochrome, Bugatti-style typography,
-Google Fonts via CDN). No build step, no dependencies.
+A single self-contained `index.html` built as an engineering decision ledger:
+paper-blue surfaces, protocol lines, a live decision trace, and IBM Plex type
+from Google Fonts. No build step or package dependencies.
 
 ## Preview locally
 
@@ -32,5 +33,5 @@ unchanged under the `/sage/` sub-path.
 ## Editing
 
 Everything lives in `index.html` — styles are in the `<style>` block at the top.
-Brand color is the `--primary` / `--primary-bright` CSS variables; swap those to
-re-theme the whole page.
+The palette is defined by the `--paper`, `--ink`, `--blue`, `--orange`, and
+`--green` variables.
