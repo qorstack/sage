@@ -1,8 +1,9 @@
 # Sage — landing page
 
-A single self-contained `index.html` built as an engineering decision ledger:
-paper-blue surfaces, protocol lines, a live decision trace, and IBM Plex type
-from Google Fonts. No build step or package dependencies.
+A single self-contained `index.html` built as a dark engineering decision
+workspace: charcoal surfaces, restrained sage signals, protocol lines,
+a live decision trace, and IBM Plex type from Google Fonts. No build step or
+package dependencies.
 
 ## Preview locally
 
@@ -33,5 +34,5 @@ unchanged under the `/sage/` sub-path.
 ## Editing
 
 Everything lives in `index.html` — styles are in the `<style>` block at the top.
-The palette is defined by the `--paper`, `--ink`, `--blue`, `--orange`, and
-`--green` variables.
+The palette is defined by the `--paper`, `--paper-strong`, `--ink`, `--ink-soft`,
+`--accent`, `--accent-bright`, `--positive`, and line variables.

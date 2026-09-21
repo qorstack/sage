@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0a36c9" />
+    <meta name="theme-color" content="#080b10" />
     <meta name="sage-version" content="v1.7.0" />
     <meta
       name="description"
@@ -22,16 +22,16 @@
 
     <style>
       :root {
-        --paper: #f3f7ff;
-        --paper-strong: #ffffff;
-        --ink: #10162b;
-        --ink-soft: #4c5875;
-        --blue: #0a36c9;
-        --blue-dark: #08268d;
-        --orange: #ff5c35;
-        --green: #147d64;
-        --line: #b8c7eb;
-        --line-strong: #6e86c0;
+        color-scheme: dark;
+        --paper: #0b0e0c;
+        --paper-strong: #121713;
+        --ink: #edf2ed;
+        --ink-soft: #9ca69f;
+        --accent: #9fbd98;
+        --accent-bright: #c9dec4;
+        --positive: #78a989;
+        --line: #273029;
+        --line-strong: #414c44;
         --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
         --sans: "IBM Plex Sans", Arial, sans-serif;
         --max: 1200px;
@@ -62,9 +62,9 @@
         z-index: -1;
         pointer-events: none;
         background-image:
-          linear-gradient(rgba(10, 54, 201, 0.055) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(10, 54, 201, 0.055) 1px, transparent 1px);
-        background-size: 24px 24px;
+          linear-gradient(rgba(159, 189, 152, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(159, 189, 152, 0.03) 1px, transparent 1px);
+        background-size: 32px 32px;
       }
 
       a {
@@ -81,7 +81,7 @@
       }
 
       :focus-visible {
-        outline: 3px solid var(--orange);
+        outline: 3px solid var(--accent);
         outline-offset: 3px;
       }
 
@@ -91,8 +91,8 @@
         left: 10px;
         z-index: 100;
         padding: 10px 14px;
-        background: var(--ink);
-        color: white;
+        background: var(--accent);
+        color: #101510;
         transform: translateY(-160%);
       }
 
@@ -109,8 +109,8 @@
         position: sticky;
         top: 0;
         z-index: 50;
-        border-bottom: 2px solid var(--blue);
-        background: rgba(243, 247, 255, 0.94);
+        border-bottom: 1px solid rgba(159, 189, 152, 0.2);
+        background: rgba(11, 14, 12, 0.9);
         backdrop-filter: blur(14px);
       }
 
@@ -135,7 +135,8 @@
       .brand img {
         width: 38px;
         height: 38px;
-        border: 2px solid var(--ink);
+        border: 1px solid var(--line-strong);
+        border-radius: 9px;
       }
 
       .nav-links,
@@ -167,27 +168,45 @@
         align-items: center;
         min-height: 28px;
         padding: 0 9px;
-        border: 1px solid var(--blue);
+        border: 1px solid var(--line-strong);
         background: var(--paper-strong);
-        color: var(--blue);
+        color: var(--ink-soft);
         font-family: var(--mono);
         font-size: 12px;
         font-weight: 600;
       }
 
       .coffee {
-        color: var(--blue-dark);
+        color: var(--accent-bright);
       }
 
       .hero {
-        border-bottom: 2px solid var(--blue);
-        padding: clamp(72px, 9vw, 132px) 0 64px;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--line-strong);
+        padding: clamp(82px, 10vw, 148px) 0 clamp(72px, 8vw, 110px);
+        background:
+          radial-gradient(circle at 79% 42%, rgba(159, 189, 152, 0.12), transparent 29%),
+          radial-gradient(circle at 20% 18%, rgba(159, 189, 152, 0.055), transparent 25%);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 460px;
+        height: 460px;
+        right: -250px;
+        bottom: -300px;
+        border: 1px solid rgba(159, 189, 152, 0.2);
+        border-radius: 50%;
+        box-shadow: 0 0 0 72px rgba(159, 189, 152, 0.022);
+        pointer-events: none;
       }
 
       .hero-grid {
         display: grid;
-        grid-template-columns: minmax(0, 0.94fr) minmax(420px, 1.06fr);
-        gap: clamp(42px, 8vw, 112px);
+        grid-template-columns: minmax(0, 1.04fr) minmax(430px, 0.96fr);
+        gap: clamp(54px, 8vw, 118px);
         align-items: center;
       }
 
@@ -195,8 +214,8 @@
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 28px;
-        color: var(--blue);
+        margin-bottom: 30px;
+        color: var(--accent);
         font-family: var(--mono);
         font-size: 13px;
         font-weight: 600;
@@ -206,7 +225,8 @@
         content: "";
         width: 26px;
         height: 3px;
-        background: var(--orange);
+        background: currentColor;
+        box-shadow: 0 0 18px rgba(159, 189, 152, 0.34);
       }
 
       h1,
@@ -219,8 +239,8 @@
       h1 {
         max-width: 680px;
         margin-bottom: 26px;
-        font-size: clamp(54px, 7vw, 96px);
-        line-height: 0.94;
+        font-size: clamp(56px, 6.7vw, 94px);
+        line-height: 0.92;
         letter-spacing: -0.055em;
         font-weight: 700;
         text-wrap: balance;
@@ -230,8 +250,37 @@
         max-width: 620px;
         margin-bottom: 0;
         color: var(--ink-soft);
-        font-size: clamp(18px, 2vw, 23px);
+        font-size: clamp(18px, 1.8vw, 22px);
         line-height: 1.48;
+      }
+
+      .thought-path {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 9px;
+        margin: 30px 0 0;
+        padding: 0;
+        color: var(--ink-soft);
+        font-family: var(--mono);
+        font-size: 12px;
+        list-style: none;
+      }
+
+      .thought-path li {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .thought-path li:not(:last-child)::after {
+        content: "/";
+        color: var(--line-strong);
+      }
+
+      .thought-path strong {
+        color: var(--ink);
+        font-weight: 500;
       }
 
       .actions {
@@ -247,7 +296,7 @@
         justify-content: center;
         min-height: 50px;
         padding: 0 20px;
-        border: 2px solid var(--ink);
+        border: 1px solid var(--line-strong);
         background: transparent;
         color: var(--ink);
         font-weight: 700;
@@ -255,21 +304,40 @@
       }
 
       .button.primary {
-        border-color: var(--orange);
-        background: var(--orange);
-        color: #181006;
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #101510;
       }
 
       .button:hover {
-        box-shadow: 5px 5px 0 var(--ink);
-        transform: translate(-2px, -2px);
+        border-color: var(--ink);
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .button.primary:hover {
+        border-color: var(--accent-bright);
+        background: var(--accent-bright);
+        color: #101510;
       }
 
       .trace {
         position: relative;
-        border: 2px solid var(--blue);
+        border: 1px solid rgba(159, 189, 152, 0.48);
         background: var(--paper-strong);
-        box-shadow: 14px 14px 0 rgba(10, 54, 201, 0.14);
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.45),
+          22px 22px 0 rgba(159, 189, 152, 0.04);
+      }
+
+      .trace::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        z-index: -1;
+        background: linear-gradient(135deg, rgba(159, 189, 152, 0.24), transparent 54%);
+        filter: blur(24px);
+        opacity: 0.7;
       }
 
       .trace-head {
@@ -279,9 +347,9 @@
         gap: 18px;
         min-height: 50px;
         padding: 0 16px;
-        border-bottom: 2px solid var(--blue);
-        background: var(--blue);
-        color: white;
+        border-bottom: 1px solid var(--line);
+        background: #0d110e;
+        color: var(--ink-soft);
         font-family: var(--mono);
         font-size: 12px;
       }
@@ -296,7 +364,7 @@
         content: "";
         width: 8px;
         height: 8px;
-        background: #62e0b8;
+        background: var(--positive);
         border-radius: 50%;
       }
 
@@ -306,10 +374,11 @@
         color: var(--ink);
         font-family: var(--mono);
         font-size: 14px;
+        background: rgba(159, 189, 152, 0.035);
       }
 
       .request span {
-        color: var(--blue);
+        color: var(--accent);
         font-weight: 600;
       }
 
@@ -331,7 +400,7 @@
 
       .trace-list li::before {
         content: "✓";
-        color: var(--green);
+        color: var(--positive);
         font-family: var(--mono);
         font-weight: 600;
       }
@@ -352,14 +421,14 @@
         gap: 14px;
         align-items: center;
         padding: 20px 22px;
-        background: #e5f8f2;
-        color: var(--green);
+        background: rgba(120, 169, 137, 0.1);
+        color: var(--positive);
         font-weight: 600;
       }
 
       .verdict b {
         padding: 5px 8px;
-        border: 1px solid var(--green);
+        border: 1px solid var(--positive);
         font-family: var(--mono);
         font-size: 11px;
       }
@@ -367,8 +436,8 @@
       .fact-strip {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        border-bottom: 2px solid var(--blue);
-        background: var(--paper-strong);
+        border-bottom: 1px solid var(--line-strong);
+        background: #0e120f;
       }
 
       .fact {
@@ -383,7 +452,7 @@
       .fact strong {
         display: block;
         margin-bottom: 2px;
-        color: var(--blue);
+        color: var(--ink);
         font-size: 17px;
       }
 
@@ -394,7 +463,7 @@
 
       section {
         padding: clamp(72px, 9vw, 120px) 0;
-        border-bottom: 2px solid var(--blue);
+        border-bottom: 1px solid var(--line-strong);
       }
 
       .section-heading {
@@ -435,7 +504,7 @@
       }
 
       .failure-row .mark {
-        color: var(--orange);
+        color: var(--accent);
         font-family: var(--mono);
         font-size: 19px;
         font-weight: 600;
@@ -452,24 +521,24 @@
       }
 
       .protocol {
-        background: var(--blue);
-        color: white;
+        background: #121914;
+        color: var(--ink);
       }
 
       .protocol .section-heading p {
-        color: #cbd8ff;
+        color: var(--ink-soft);
       }
 
       .protocol-rail {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        border: 1px solid #8fa8f7;
+        border: 1px solid var(--line-strong);
       }
 
       .protocol-step {
         min-height: 290px;
         padding: 22px;
-        border-right: 1px solid #8fa8f7;
+        border-right: 1px solid var(--line-strong);
       }
 
       .protocol-step:last-child {
@@ -479,7 +548,7 @@
       .protocol-step .step-no {
         display: block;
         margin-bottom: 72px;
-        color: #aebfff;
+        color: var(--accent);
         font-family: var(--mono);
         font-size: 13px;
       }
@@ -491,7 +560,7 @@
 
       .protocol-step p {
         margin-bottom: 0;
-        color: #cbd8ff;
+        color: var(--ink-soft);
         font-size: 15px;
       }
 
@@ -514,8 +583,8 @@
       }
 
       .compare-column.with-sage h3 {
-        background: var(--blue);
-        color: white;
+        background: rgba(120, 169, 137, 0.1);
+        color: var(--positive);
       }
 
       .compare-column ul {
@@ -538,14 +607,14 @@
 
       .compare-column li::before {
         content: "×";
-        color: var(--orange);
+        color: var(--accent);
         font-family: var(--mono);
         font-weight: 600;
       }
 
       .compare-column.with-sage li::before {
         content: "✓";
-        color: var(--green);
+        color: var(--positive);
       }
 
       .install-grid {
@@ -569,31 +638,31 @@
       }
 
       .installer {
-        border: 2px solid var(--ink);
-        background: var(--ink);
-        color: white;
+        border: 1px solid var(--line-strong);
+        background: #080b09;
+        color: var(--ink);
       }
 
       .tabs {
         display: flex;
-        border-bottom: 1px solid #57617b;
+        border-bottom: 1px solid var(--line-strong);
       }
 
       .tab {
         min-height: 48px;
         padding: 0 18px;
         border: 0;
-        border-right: 1px solid #57617b;
+        border-right: 1px solid var(--line-strong);
         background: transparent;
-        color: #b8c2da;
+        color: var(--ink-soft);
         cursor: pointer;
         font-family: var(--mono);
         font-size: 13px;
       }
 
       .tab[aria-selected="true"] {
-        background: var(--orange);
-        color: #181006;
+        background: var(--accent);
+        color: #101510;
         font-weight: 600;
       }
 
@@ -615,17 +684,17 @@
       .copy {
         min-height: 40px;
         padding: 0 14px;
-        border: 1px solid #96a4ca;
+        border: 1px solid var(--line-strong);
         background: transparent;
-        color: white;
+        color: var(--ink);
         cursor: pointer;
         font-family: var(--mono);
         font-size: 12px;
       }
 
       .copy:hover {
-        background: white;
-        color: var(--ink);
+        background: var(--ink);
+        color: var(--paper);
       }
 
       .after-install {
@@ -646,7 +715,7 @@
       .after-install code {
         display: block;
         margin-bottom: 8px;
-        color: var(--blue);
+        color: var(--accent);
         font-weight: 600;
       }
 
@@ -669,7 +738,7 @@
       }
 
       .route-row code {
-        color: var(--blue);
+        color: var(--accent);
         font-weight: 600;
       }
 
@@ -686,7 +755,7 @@
         align-items: center;
         gap: 0;
         margin-top: 42px;
-        border: 2px solid var(--blue);
+        border: 2px solid var(--accent);
         background: var(--paper-strong);
       }
 
@@ -698,7 +767,7 @@
       }
 
       .journey i {
-        color: var(--orange);
+        color: var(--accent);
         font-family: var(--mono);
         font-style: normal;
       }
@@ -722,7 +791,7 @@
       }
 
       .file-tree .folder {
-        color: var(--blue);
+        color: var(--accent);
         font-weight: 600;
       }
 
@@ -746,8 +815,10 @@
       }
 
       .closing {
-        background: var(--orange);
-        color: #181006;
+        background:
+          linear-gradient(115deg, rgba(159, 189, 152, 0.1), transparent 42%),
+          #121914;
+        color: var(--ink);
       }
 
       .closing-inner {
@@ -758,14 +829,15 @@
       }
 
       .closing .button {
-        background: var(--ink);
-        color: white;
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #101510;
       }
 
       footer {
         padding: 30px 0;
-        background: var(--ink);
-        color: white;
+        background: #070907;
+        color: var(--ink);
       }
 
       .footer-inner {
@@ -789,19 +861,19 @@
       }
 
       footer .version {
-        border-color: #8592b2;
+        border-color: var(--line-strong);
         background: transparent;
-        color: white;
+        color: var(--ink-soft);
       }
 
       .footer-links a {
-        color: #d6def4;
+        color: var(--ink-soft);
         font-size: 14px;
         text-decoration: none;
       }
 
       .footer-links a:hover {
-        color: white;
+        color: var(--ink);
         text-decoration: underline;
         text-underline-offset: 4px;
       }
@@ -872,7 +944,7 @@
 
         .protocol-step {
           min-height: 230px;
-          border-bottom: 1px solid #8fa8f7;
+          border-bottom: 1px solid var(--line-strong);
         }
 
         .protocol-step:nth-child(2) {
@@ -958,7 +1030,7 @@
         .protocol-step:nth-child(2) {
           min-height: auto;
           border-right: 0;
-          border-bottom: 1px solid #8fa8f7;
+          border-bottom: 1px solid var(--line-strong);
         }
 
         .protocol-step:last-child {
@@ -1065,6 +1137,12 @@
             exists, name the risk, and validate the result before calling the
             work done.
           </p>
+          <ol class="thought-path" aria-label="How Sage thinks before coding">
+            <li><strong>Context</strong></li>
+            <li><strong>Reuse</strong></li>
+            <li><strong>Risk</strong></li>
+            <li><strong>Evidence</strong></li>
+          </ol>
           <div class="actions">
             <a class="button primary" href="#install">Install Sage</a>
             <a
