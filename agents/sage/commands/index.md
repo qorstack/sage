@@ -24,8 +24,12 @@ practice.
 | `sage-setting.md`         | View/change how `/sage` runs (mode + default steps, per machine)   | on demand                          |
 
 The route guard + run contract (`agents/sage/AGENTS.md` §0) are the dispatcher when `/sage` is invoked:
-routes fog to Grill or Wayfinder independently of checklist selection. Specialist
-commands run only when the human explicitly invokes or requests them.
+routes fog to Grill or Wayfinder independently of checklist selection. `AGENTS.md`
+§0 also classifies **posture** (`preserve`/`extend`/`refactor`/`redesign`/
+`greenfield`) — a second axis, not a new command — that re-weights the reuse
+scan (§1.3) and, for `redesign`/`greenfield`, adds a Direction section to
+`/sage-flow`'s output. Specialist commands run only when the human explicitly
+invokes or requests them.
 `automate-test` (run the existing suite and report the real output) is a core
 step of `/sage` itself, not a separate command and never permission to author tests.
 

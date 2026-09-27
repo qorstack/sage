@@ -45,6 +45,35 @@ product/domain decisions. Re-route when new facts change the amount of fog. A
 large/multi-file implementation may still be `clear-single-session`; size alone
 does not make it Wayfinder work.
 
+**Posture is a second, independent axis: how much should existing patterns
+constrain the answer?** Route (above) is about fog; posture is about
+inheritance. Classify one from the request and repo state, state it next to
+the role (step 1.1), and let it re-weight step 1.3's reuse-scan:
+
+- **`preserve`** — bug fix, small correction, targeted maintenance. Existing
+  patterns and composition are strong defaults; only correctness changes.
+- **`extend`** — new capability on an existing surface. Architecture and
+  primitives are strongly preferred; new composition only where the addition
+  genuinely needs it.
+- **`refactor`** — restructure internals with behavior unchanged. Public
+  contracts and observable behavior are the invariant; internal shape is open.
+- **`redesign`** — rework the UX, visual language, or information architecture
+  of something that already exists. Behavior, routes, data, and accessibility
+  stay fixed; layout, hierarchy, and composition are explicitly open. A pattern
+  repeated across many files is evidence it exists, never proof it should
+  survive the redesign — see the reuse levels in step 1.3.
+- **`greenfield`** — a new app/feature/surface with no established convention.
+  Do not inherit a starter template's incidental choices as design intent;
+  define the product/experience before reaching for a component.
+
+Infer posture from the request and the repo — an empty/near-empty surface with
+a "create/build a new …" ask is `greenfield`; "redesign/rework/rethink the
+look of" an existing surface is `redesign`; everything else defaults toward
+whichever of `preserve`/`extend`/`refactor` matches what actually changes. Ask
+only when the answer is genuinely ambiguous between two postures with
+different blast radius (e.g. "clean up this page" — cosmetic tidy vs. full
+redesign); do not add a ceremonial posture question to every run.
+
 **Run a pre-action clarification pass, not a mandatory interview.** Before
 design or implementation, check whether anything missing would materially
 change the outcome. Split repository facts from human-owned decisions: inspect
@@ -268,6 +297,12 @@ failure, or an unresolved race, complex auth/session interaction, or
 cross-service mechanism requires wider inspection. Never capture secrets or
 production PII.
 
+**For a `redesign` posture, before/after screenshots are required evidence, not
+an optional debugging aid.** Capture the changed surface at a small and a large
+breakpoint (e.g. ~390px and ~1440px) and state whether the result still reads
+as the approved direction (`/sage-flow`'s Direction section) or collapsed back
+into a generic composition it was meant to move away from.
+
 ---
 
 ## 1. The pipeline — steps 1–4 before code, steps 1–4 after
@@ -299,6 +334,9 @@ Do these in order. Do not skip. Do not assume you already know the answer.
    Each phase loads the role that owns it. When entering a new phase, output:
    `Role: <new-lens> [loaded] — handoff from <prev-lens>`
 
+   State the posture (§0) alongside the role on the same line:
+   `Role: <lens> [loaded] · Posture: <preserve|extend|refactor|redesign|greenfield>`
+
    **For each role** open `agents/sage/roles/role-<lens>.md`:
    - **Found + `status: approved`** → read and adopt. Output:
      `Role: <lens> [loaded]`. Do not re-derive.
@@ -326,6 +364,25 @@ Do these in order. Do not skip. Do not assume you already know the answer.
    it. Never infer an API from a name or decision description alone — the source
    file is always authoritative. A missing export in a decision file is a
    documentation gap, not proof the export doesn't exist.
+
+   **Reuse has a hierarchy — not everything found deserves the same weight.**
+   Behavior/contracts (APIs, hooks, services, validation, auth, accessibility
+   primitives, tested utilities) are **Level A** — prefer reuse under every
+   posture. Low-level UI/behavior primitives (buttons, dialogs, form controls,
+   design tokens) are **Level B** — prefer when they fit. Composition (cards,
+   grids, section shells, page layouts, dashboards) is **Level C** — reuse when
+   it serves the outcome, optional otherwise. A repeated visual/structural
+   pattern that the request is specifically asking to change is **Level D** —
+   evidence of what exists, not a constraint on what should replace it.
+
+   Under `preserve` / `extend` / `refactor`, weight C and D like A/B — the
+   existing composition is the target, not an obstacle. Under `redesign`, treat
+   C as optional and D as open for reconsideration: do not force new work back
+   into an existing Card/Grid/Section merely because the repo already has one —
+   an existing component is an implementation tool, not a design constraint.
+   Under `greenfield`, there is no C/D to inherit yet; treat any starter/template
+   code the same way, as an available primitive toolkit, never as evidence of
+   the composition the product should have.
 
    **Keep the read phases out of main context (steps 2–3).** These scans can touch
    many files. When the knowledge folder or the reuse surface is large, run the
@@ -548,6 +605,9 @@ source: human # human | ai
 supersedes: "" # id this replaces, if any
 related: [refund-window] # related entry ids
 timestamp: 2026-06-17T00:00:00Z
+maturity: established # optional — provisional | established | canonical
+                       # only for repo-learned composition/visual patterns (§1.3
+                       # Level C/D); see §3's frequency-vs-quality rule
 ---
 
 All payment calls MUST pass an idempotency key. No exceptions.
@@ -619,6 +679,15 @@ merged "summary of what I fixed". For each pattern:
    framework's own docs is noise — skip it. If a better practice exists, propose
    it and capture the _better_ rule (note the dev's intent in the body). Test:
    _"Can a teammate with no context apply this next time?"_
+
+   **Frequency is not quality — especially for composition/visual patterns.** A
+   layout, card, or grid pattern that appears in many files is evidence it's
+   used, not proof it should be preserved or repeated further. When capturing a
+   Level C/D pattern (§1.3), tag it `maturity: provisional` regardless of
+   occurrence count; promote to `established` only once it has survived
+   deliberate reuse across independently-designed surfaces, and to `canonical`
+   only once a human has explicitly ratified it. Occurrence count alone never
+   promotes `status` to `approved` or `maturity` past `provisional`.
 2. **Diff before writing.** Check `agents/sage/<domain>/` — matches reality → do
    nothing; stale → edit that one file in place; never create a near-duplicate.
 3. **Write one file per pattern** at `agents/sage/<domain>/decisions/<slug>.md`

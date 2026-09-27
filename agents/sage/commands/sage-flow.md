@@ -62,6 +62,20 @@ domain role when you reach that system's section and output the handoff line.
 
 ## Step 2 — Ground the flow in reality (do NOT invent)
 
+**Posture (`AGENTS.md` §0) changes what "ground in reality" means before the
+steps below:**
+
+- **`redesign`** — before reuse, diagnose the current experience: what's
+  repeated, generic, or actually part of the complaint. Write the diagnosis and
+  the approved concept as flow section 0 (Step 4) before touching
+  component-level reuse.
+- **`greenfield`** — before architecture, define the product: purpose, users,
+  core journeys, entities, non-goals. Write it as flow section 0 (Step 4)
+  before choosing a stack pattern or component.
+- **`preserve` / `extend` / `refactor`** — proceed directly with the steps
+  below; no Direction section is needed (say "N/A — posture is `<posture>`" in
+  its place).
+
 Before writing a single step, discover what already exists. Source is
 authoritative — never infer an API, table, or contract from a name.
 
@@ -140,6 +154,26 @@ descriptive alt text. On every update, preserve valid relevant embeds, add new
 evidence where it supports a decision or control, and remove or replace stale
 references. Do not embed every capture merely because it exists.
 
+0. **Direction** — only when posture (`AGENTS.md` §0, Step 2 above) is
+   `redesign` or `greenfield`; write
+   "N/A — posture is `<preserve|extend|refactor>`" otherwise:
+   - **`redesign`** — the visual/UX diagnosis of the current surface (what's
+     repeated, generic, or actively part of the complaint), the approved
+     concept in a few sentences (the experience/hierarchy/rhythm, not code or
+     component choices), what stays fixed (behavior, routes, data,
+     accessibility — carried from Actors & Systems below), and what's
+     explicitly open for reconsideration (composition, hierarchy, rhythm).
+   - **`greenfield`** — the product definition (purpose, primary users, core
+     journeys, core entities, non-goals, success criteria) and the foundation
+     it implies (design: type/spacing/color/radius roles; engineering:
+     structure/state/error/test strategy) — enough to scope one representative
+     vertical slice, not the whole surface.
+
+   This section is the source of truth the rest of the flow builds against. A
+   later section that would collapse it back into a generic composition (e.g.
+   force-fitting an existing Card/Grid because it's what the repo has) or into
+   a full build before the slice is validated contradicts this section and
+   must be revised, not implemented as written.
 1. **Header + design decisions** — one-paragraph summary, date, links to related
    `decisions/`. Call out any non-obvious design choice up front (e.g. "record is
    created only at payment, not at review").

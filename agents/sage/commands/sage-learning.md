@@ -48,6 +48,15 @@ conventions the code doesn't follow). Output
    - Good: "Team uses Zod for all API response validation."
    - Bad: "In user-service.ts we used z.string() on line 42."
 
+   **A composition/visual pattern (`AGENTS.md` §1.3 Level C/D — cards, grids,
+   section shells, page layout, spacing rhythm) is not a rule just because it
+   repeats.** Tag it `maturity: provisional` no matter how many files use it —
+   occurrence count is evidence it's common, not proof it's good, and a
+   `redesign` posture is explicitly allowed to reconsider it. Write
+   `status: proposed`, never `approved`, for these. Only Level A/B patterns
+   (behavior, contracts, accessibility, primitives) earn the same confidence
+   their frequency suggests.
+
 ---
 
 ## Phase 2 — Research best practices for the stack
