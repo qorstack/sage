@@ -4,6 +4,33 @@ All notable changes to Sage. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.8.0] — 2026-09-28
+
+### Added
+
+- `AGENTS.md` §0 now classifies **posture** (`preserve` / `extend` / `refactor`
+  / `redesign` / `greenfield`) alongside the existing fog-based route. Posture
+  decides how much existing patterns should constrain the answer, independently
+  of how much ambiguity there is.
+- §1.3's reuse scan now weighs findings by a **reuse hierarchy** (Level A
+  behavior/contracts → Level B primitives → Level C composition → Level D
+  patterns under reconsideration), so a `redesign` no longer has to preserve a
+  repeated Card/Grid/Section merely because the repo already has one.
+- `/sage-flow` gains a **Direction** section (posture `redesign` or
+  `greenfield` only): a visual/UX diagnosis + approved concept for redesigns,
+  or a product definition + foundation for greenfield work, written before the
+  rest of the flow.
+- `/sage-learning` and the knowledge frontmatter gain an optional `maturity`
+  field (`provisional` / `established` / `canonical`) so a composition/visual
+  pattern's repo frequency is never mistaken for its quality.
+- Visual debugging evidence is now required (not optional) for a `redesign`
+  posture: before/after screenshots at a small and large breakpoint.
+
+### Changed
+
+- Refined the landing page's dark hero: charcoal surfaces, restrained sage
+  signal color, and a tightened first-view composition.
+
 ## [1.7.0] — 2026-09-16
 
 ### Added
