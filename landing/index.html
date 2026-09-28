@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#080b10" />
+    <meta name="theme-color" content="#060807" />
     <meta name="sage-version" content="v1.8.0" />
     <meta
       name="description"
@@ -16,25 +16,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
     <style>
       :root {
         color-scheme: dark;
-        --paper: #0b0e0c;
-        --paper-strong: #121713;
-        --ink: #edf2ed;
-        --ink-soft: #9ca69f;
-        --accent: #9fbd98;
-        --accent-bright: #c9dec4;
-        --positive: #78a989;
-        --line: #273029;
-        --line-strong: #414c44;
+        --void: #060807;
+        --panel: rgba(12, 16, 13, 0.72);
+        --panel-solid: #0c100d;
+        --ink: #eef3ee;
+        --ink-soft: #97a29a;
+        --ink-faint: #5d6860;
+        --accent: #a6c49e;
+        --accent-bright: #d3e6cd;
+        --line: rgba(166, 196, 158, 0.14);
+        --line-strong: rgba(166, 196, 158, 0.3);
         --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
         --sans: "IBM Plex Sans", Arial, sans-serif;
-        --max: 1200px;
+        --max: 1240px;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
       }
 
       * {
@@ -48,23 +50,12 @@
       body {
         margin: 0;
         min-width: 320px;
-        background: var(--paper);
+        background: var(--void);
         color: var(--ink);
         font-family: var(--sans);
         line-height: 1.55;
         -webkit-font-smoothing: antialiased;
-      }
-
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background-image:
-          linear-gradient(rgba(159, 189, 152, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(159, 189, 152, 0.03) 1px, transparent 1px);
-        background-size: 32px 32px;
+        overflow-x: hidden;
       }
 
       a {
@@ -81,152 +72,8 @@
       }
 
       :focus-visible {
-        outline: 3px solid var(--accent);
+        outline: 2px solid var(--accent);
         outline-offset: 3px;
-      }
-
-      .skip-link {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 100;
-        padding: 10px 14px;
-        background: var(--accent);
-        color: #101510;
-        transform: translateY(-160%);
-      }
-
-      .skip-link:focus {
-        transform: translateY(0);
-      }
-
-      .wrap {
-        width: min(calc(100% - 40px), var(--max));
-        margin: 0 auto;
-      }
-
-      .site-nav {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        border-bottom: 1px solid rgba(159, 189, 152, 0.2);
-        background: rgba(11, 14, 12, 0.9);
-        backdrop-filter: blur(14px);
-      }
-
-      .nav-inner {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        min-height: 70px;
-        gap: 28px;
-      }
-
-      .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 11px;
-        color: var(--ink);
-        font-size: 20px;
-        font-weight: 700;
-        text-decoration: none;
-      }
-
-      .brand img {
-        width: 38px;
-        height: 38px;
-        border: 1px solid var(--line-strong);
-        border-radius: 9px;
-      }
-
-      .nav-links,
-      .nav-actions {
-        display: flex;
-        align-items: center;
-        gap: 22px;
-      }
-
-      .nav-links a,
-      .nav-actions a {
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-      }
-
-      .nav-links a:hover,
-      .nav-actions a:hover {
-        text-decoration: underline;
-        text-underline-offset: 5px;
-      }
-
-      .nav-actions {
-        justify-content: flex-end;
-      }
-
-      .version {
-        display: inline-flex;
-        align-items: center;
-        min-height: 28px;
-        padding: 0 9px;
-        border: 1px solid var(--line-strong);
-        background: var(--paper-strong);
-        color: var(--ink-soft);
-        font-family: var(--mono);
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .coffee {
-        color: var(--accent-bright);
-      }
-
-      .hero {
-        position: relative;
-        overflow: hidden;
-        border-bottom: 1px solid var(--line-strong);
-        padding: clamp(82px, 10vw, 148px) 0 clamp(72px, 8vw, 110px);
-        background:
-          radial-gradient(circle at 79% 42%, rgba(159, 189, 152, 0.12), transparent 29%),
-          radial-gradient(circle at 20% 18%, rgba(159, 189, 152, 0.055), transparent 25%);
-      }
-
-      .hero::after {
-        content: "";
-        position: absolute;
-        width: 460px;
-        height: 460px;
-        right: -250px;
-        bottom: -300px;
-        border: 1px solid rgba(159, 189, 152, 0.2);
-        border-radius: 50%;
-        box-shadow: 0 0 0 72px rgba(159, 189, 152, 0.022);
-        pointer-events: none;
-      }
-
-      .hero-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.04fr) minmax(430px, 0.96fr);
-        gap: clamp(54px, 8vw, 118px);
-        align-items: center;
-      }
-
-      .release-note {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 30px;
-        color: var(--accent);
-        font-family: var(--mono);
-        font-size: 13px;
-        font-weight: 600;
-      }
-
-      .release-note::before {
-        content: "";
-        width: 26px;
-        height: 3px;
-        background: currentColor;
-        box-shadow: 0 0 18px rgba(159, 189, 152, 0.34);
       }
 
       h1,
@@ -236,108 +83,468 @@
         margin-top: 0;
       }
 
-      h1 {
-        max-width: 680px;
+      /* ---------- scene ---------- */
+
+      #core {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        pointer-events: none;
+      }
+
+      .vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(6, 8, 7, 0.78) 100%),
+          linear-gradient(rgba(166, 196, 158, 0.025) 1px, transparent 1px) 0 0 / 100% 4px;
+      }
+
+      .page {
+        position: relative;
+        z-index: 2;
+      }
+
+      /* ---------- loader ---------- */
+
+      .loader {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: grid;
+        place-items: center;
+        background: var(--void);
+        transition:
+          opacity 0.9s var(--ease),
+          visibility 0.9s;
+      }
+
+      .loader.done {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .loader-inner {
+        display: grid;
+        gap: 14px;
+        width: min(260px, 70vw);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        color: var(--ink-soft);
+        text-transform: uppercase;
+      }
+
+      .loader-bar {
+        height: 1px;
+        background: var(--line);
+        overflow: hidden;
+      }
+
+      .loader-bar i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--accent);
+        transition: width 0.4s var(--ease);
+      }
+
+      /* ---------- cursor ---------- */
+
+      .cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 300;
+        width: 34px;
+        height: 34px;
+        margin: -17px 0 0 -17px;
+        border: 1px solid rgba(211, 230, 205, 0.55);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        transition:
+          width 0.3s var(--ease),
+          height 0.3s var(--ease),
+          margin 0.3s var(--ease),
+          background 0.3s,
+          opacity 0.3s;
+      }
+
+      .cursor::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 3px;
+        height: 3px;
+        margin: -1.5px 0 0 -1.5px;
+        background: var(--accent-bright);
+        border-radius: 50%;
+      }
+
+      .cursor.hover {
+        width: 60px;
+        height: 60px;
+        margin: -30px 0 0 -30px;
+        background: rgba(166, 196, 158, 0.08);
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .has-cursor,
+        .has-cursor a,
+        .has-cursor button {
+          cursor: none;
+        }
+      }
+
+      /* ---------- layout ---------- */
+
+      .skip-link {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 400;
+        padding: 10px 14px;
+        background: var(--accent);
+        color: #0b100b;
+        transform: translateY(-160%);
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .wrap {
+        width: min(calc(100% - 48px), var(--max));
+        margin: 0 auto;
+      }
+
+      .label {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
         margin-bottom: 26px;
-        font-size: clamp(56px, 6.7vw, 94px);
-        line-height: 0.92;
-        letter-spacing: -0.055em;
-        font-weight: 700;
+        color: var(--accent);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .label::before {
+        content: "";
+        width: 28px;
+        height: 1px;
+        background: currentColor;
+      }
+
+      /* ---------- nav ---------- */
+
+      .site-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+        border-bottom: 1px solid transparent;
+      }
+
+      .site-nav.scrolled {
+        background: rgba(6, 8, 7, 0.72);
+        border-color: var(--line);
+        backdrop-filter: blur(14px);
+      }
+
+      .nav-inner {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        min-height: 72px;
+        gap: 28px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+      }
+
+      .brand img {
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+      }
+
+      .nav-links,
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+      }
+
+      .nav-links {
+        justify-content: center;
+      }
+
+      .nav-links a,
+      .nav-actions a {
+        color: var(--ink-soft);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.25s;
+      }
+
+      .nav-links a:hover,
+      .nav-actions a:hover {
+        color: var(--ink);
+      }
+
+      .nav-actions .coffee {
+        color: var(--accent);
+      }
+
+      .version {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border: 1px solid var(--line-strong);
+        border-radius: 99px;
+        color: var(--ink-soft);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      /* ---------- hero ---------- */
+
+      .hero {
+        position: relative;
+        display: flex;
+        align-items: center;
+        min-height: 100vh;
+        min-height: 100svh;
+        padding: 120px 0 80px;
+      }
+
+      .hero-copy {
+        max-width: 640px;
+      }
+
+      h1 {
+        margin-bottom: 28px;
+        font-size: clamp(50px, 7.4vw, 112px);
+        font-weight: 600;
+        line-height: 0.9;
+        letter-spacing: -0.058em;
         text-wrap: balance;
       }
 
-      .hero-copy > p {
-        max-width: 620px;
+      h1 em {
+        font-style: normal;
+        font-weight: 300;
+        color: var(--accent-bright);
+      }
+
+      .lede {
+        max-width: 520px;
         margin-bottom: 0;
         color: var(--ink-soft);
-        font-size: clamp(18px, 1.8vw, 22px);
-        line-height: 1.48;
+        font-size: clamp(17px, 1.6vw, 20px);
+        line-height: 1.55;
       }
 
       .thought-path {
         display: flex;
         flex-wrap: wrap;
-        align-items: center;
-        gap: 9px;
-        margin: 30px 0 0;
+        gap: 8px;
+        margin: 34px 0 0;
         padding: 0;
-        color: var(--ink-soft);
-        font-family: var(--mono);
-        font-size: 12px;
         list-style: none;
       }
 
       .thought-path li {
-        display: inline-flex;
-        align-items: center;
-        gap: 9px;
-      }
-
-      .thought-path li:not(:last-child)::after {
-        content: "/";
-        color: var(--line-strong);
-      }
-
-      .thought-path strong {
+        padding: 6px 12px;
+        border: 1px solid var(--line-strong);
+        border-radius: 99px;
         color: var(--ink);
-        font-weight: 500;
+        font-family: var(--mono);
+        font-size: 12px;
+        background: rgba(6, 8, 7, 0.5);
+      }
+
+      .thought-path li span {
+        color: var(--ink-faint);
+        margin-right: 6px;
       }
 
       .actions {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        margin-top: 34px;
+        margin-top: 38px;
       }
 
       .button {
+        position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 50px;
-        padding: 0 20px;
+        gap: 10px;
+        min-height: 52px;
+        padding: 0 24px;
         border: 1px solid var(--line-strong);
-        background: transparent;
+        border-radius: 99px;
+        background: rgba(6, 8, 7, 0.4);
         color: var(--ink);
-        font-weight: 700;
+        font-size: 15px;
+        font-weight: 600;
         text-decoration: none;
+        transition:
+          background 0.3s var(--ease),
+          border-color 0.3s,
+          color 0.3s,
+          transform 0.3s var(--ease);
+      }
+
+      .button:hover {
+        border-color: var(--ink);
+        transform: translateY(-2px);
       }
 
       .button.primary {
         border-color: var(--accent);
         background: var(--accent);
-        color: #101510;
-      }
-
-      .button:hover {
-        border-color: var(--ink);
-        background: var(--ink);
-        color: var(--paper);
+        color: #0b100b;
       }
 
       .button.primary:hover {
         border-color: var(--accent-bright);
         background: var(--accent-bright);
-        color: #101510;
+      }
+
+      .hint {
+        position: absolute;
+        right: 0;
+        bottom: 36px;
+        left: 0;
+        display: flex;
+        justify-content: space-between;
+        color: var(--ink-faint);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .hint .scroll-line {
+        display: inline-block;
+        width: 1px;
+        height: 28px;
+        margin-left: 10px;
+        vertical-align: middle;
+        background: linear-gradient(var(--accent), transparent);
+        animation: drip 2.2s var(--ease) infinite;
+      }
+
+      @keyframes drip {
+        0% {
+          transform: scaleY(0);
+          transform-origin: top;
+        }
+        50% {
+          transform: scaleY(1);
+          transform-origin: top;
+        }
+        51% {
+          transform-origin: bottom;
+        }
+        100% {
+          transform: scaleY(0);
+          transform-origin: bottom;
+        }
+      }
+
+      /* ---------- panels / sections ---------- */
+
+      section {
+        position: relative;
+        padding: clamp(96px, 12vw, 170px) 0;
+      }
+
+      .section-heading {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.5fr);
+        gap: 48px;
+        align-items: end;
+        margin-bottom: 64px;
+      }
+
+      h2 {
+        max-width: 860px;
+        margin-bottom: 0;
+        font-size: clamp(40px, 5.6vw, 80px);
+        font-weight: 600;
+        line-height: 0.96;
+        letter-spacing: -0.05em;
+        text-wrap: balance;
+      }
+
+      .section-heading p {
+        margin-bottom: 0;
+        color: var(--ink-soft);
+        font-size: 17px;
+      }
+
+      .glass {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+        backdrop-filter: blur(18px) saturate(120%);
+        -webkit-backdrop-filter: blur(18px) saturate(120%);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(34px);
+        transition:
+          opacity 1s var(--ease),
+          transform 1s var(--ease);
+      }
+
+      .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* ---------- trace band ---------- */
+
+      .trace-band {
+        padding-top: 40px;
+      }
+
+      .trace-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        gap: 20px;
       }
 
       .trace {
-        position: relative;
-        border: 1px solid rgba(159, 189, 152, 0.48);
-        background: var(--paper-strong);
-        box-shadow:
-          0 30px 80px rgba(0, 0, 0, 0.45),
-          22px 22px 0 rgba(159, 189, 152, 0.04);
-      }
-
-      .trace::before {
-        content: "";
-        position: absolute;
-        inset: -1px;
-        z-index: -1;
-        background: linear-gradient(135deg, rgba(159, 189, 152, 0.24), transparent 54%);
-        filter: blur(24px);
-        opacity: 0.7;
+        overflow: hidden;
       }
 
       .trace-head {
@@ -345,10 +552,9 @@
         align-items: center;
         justify-content: space-between;
         gap: 18px;
-        min-height: 50px;
-        padding: 0 16px;
+        min-height: 48px;
+        padding: 0 20px;
         border-bottom: 1px solid var(--line);
-        background: #0d110e;
         color: var(--ink-soft);
         font-family: var(--mono);
         font-size: 12px;
@@ -358,28 +564,34 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        color: var(--accent);
       }
 
       .trace-live::before {
         content: "";
-        width: 8px;
-        height: 8px;
-        background: var(--positive);
+        width: 6px;
+        height: 6px;
+        background: var(--accent);
         border-radius: 50%;
+        box-shadow: 0 0 12px var(--accent);
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        50% {
+          opacity: 0.3;
+        }
       }
 
       .request {
-        padding: 22px 22px 18px;
+        padding: 20px;
         border-bottom: 1px solid var(--line);
-        color: var(--ink);
         font-family: var(--mono);
         font-size: 14px;
-        background: rgba(159, 189, 152, 0.035);
       }
 
       .request span {
         color: var(--accent);
-        font-weight: 600;
       }
 
       .trace-list {
@@ -390,25 +602,45 @@
 
       .trace-list li {
         display: grid;
-        grid-template-columns: 26px 120px 1fr;
+        grid-template-columns: 22px 100px 1fr;
         gap: 12px;
         align-items: baseline;
-        padding: 14px 22px;
+        padding: 13px 20px;
         border-bottom: 1px solid var(--line);
         font-size: 14px;
+        opacity: 0;
+        transform: translateX(-10px);
+        transition:
+          opacity 0.6s var(--ease),
+          transform 0.6s var(--ease);
+      }
+
+      .trace.in .trace-list li,
+      .trace.in .verdict {
+        opacity: 1;
+        transform: none;
+      }
+
+      .trace-list li:nth-child(2) {
+        transition-delay: 0.15s;
+      }
+      .trace-list li:nth-child(3) {
+        transition-delay: 0.3s;
+      }
+      .trace-list li:nth-child(4) {
+        transition-delay: 0.45s;
       }
 
       .trace-list li::before {
         content: "✓";
-        color: var(--positive);
+        color: var(--accent);
         font-family: var(--mono);
-        font-weight: 600;
       }
 
       .trace-list strong {
         font-family: var(--mono);
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 500;
       }
 
       .trace-list span {
@@ -420,40 +652,45 @@
         grid-template-columns: auto 1fr;
         gap: 14px;
         align-items: center;
-        padding: 20px 22px;
-        background: rgba(120, 169, 137, 0.1);
-        color: var(--positive);
-        font-weight: 600;
+        padding: 18px 20px;
+        color: var(--accent-bright);
+        font-weight: 500;
+        opacity: 0;
+        transition: opacity 0.6s var(--ease) 0.65s;
       }
 
       .verdict b {
-        padding: 5px 8px;
-        border: 1px solid var(--positive);
+        padding: 4px 9px;
+        border: 1px solid var(--accent);
+        border-radius: 99px;
         font-family: var(--mono);
         font-size: 11px;
       }
 
-      .fact-strip {
+      .facts {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        border-bottom: 1px solid var(--line-strong);
-        background: #0e120f;
+        gap: 20px;
       }
 
       .fact {
-        padding: 20px 22px;
-        border-right: 1px solid var(--line);
+        padding: 26px;
       }
 
-      .fact:last-child {
-        border-right: 0;
+      .fact small {
+        display: block;
+        margin-bottom: 18px;
+        color: var(--ink-faint);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
       }
 
       .fact strong {
         display: block;
-        margin-bottom: 2px;
-        color: var(--ink);
-        font-size: 17px;
+        margin-bottom: 4px;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
       }
 
       .fact span {
@@ -461,130 +698,150 @@
         font-size: 14px;
       }
 
-      section {
-        padding: clamp(72px, 9vw, 120px) 0;
-        border-bottom: 1px solid var(--line-strong);
-      }
-
-      .section-heading {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.58fr);
-        gap: 42px;
-        align-items: end;
-        margin-bottom: 54px;
-      }
-
-      .section-heading h2,
-      .closing h2 {
-        max-width: 820px;
-        margin-bottom: 0;
-        font-size: clamp(42px, 6vw, 76px);
-        line-height: 0.98;
-        letter-spacing: -0.045em;
-        text-wrap: balance;
-      }
-
-      .section-heading p {
-        margin-bottom: 0;
-        color: var(--ink-soft);
-        font-size: 18px;
-      }
-
-      .failure-ledger {
-        border-top: 2px solid var(--ink);
-      }
+      /* ---------- failures ---------- */
 
       .failure-row {
         display: grid;
-        grid-template-columns: 48px minmax(180px, 0.5fr) 1fr;
-        gap: 22px;
-        padding: 22px 0;
+        grid-template-columns: 60px minmax(200px, 0.55fr) 1fr;
+        gap: 24px;
+        padding: 28px 0;
+        border-top: 1px solid var(--line-strong);
+        align-items: baseline;
+        transition: padding 0.4s var(--ease);
+      }
+
+      .failure-row:last-child {
         border-bottom: 1px solid var(--line-strong);
-        align-items: start;
+      }
+
+      .failure-row:hover {
+        padding-left: 12px;
       }
 
       .failure-row .mark {
         color: var(--accent);
         font-family: var(--mono);
-        font-size: 19px;
-        font-weight: 600;
+        font-size: 13px;
       }
 
       .failure-row strong {
-        font-size: 20px;
+        font-size: clamp(20px, 2vw, 26px);
+        font-weight: 500;
+        letter-spacing: -0.02em;
       }
 
       .failure-row p {
-        max-width: 680px;
+        max-width: 620px;
         margin-bottom: 0;
         color: var(--ink-soft);
       }
 
-      .protocol {
-        background: #121914;
-        color: var(--ink);
-      }
-
-      .protocol .section-heading p {
-        color: var(--ink-soft);
-      }
+      /* ---------- protocol ---------- */
 
       .protocol-rail {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        border: 1px solid var(--line-strong);
+        gap: 14px;
       }
 
       .protocol-step {
-        min-height: 290px;
-        padding: 22px;
-        border-right: 1px solid var(--line-strong);
+        min-height: 300px;
+        padding: 24px;
+        transition:
+          border-color 0.6s var(--ease),
+          background 0.6s var(--ease),
+          transform 0.6s var(--ease);
       }
 
-      .protocol-step:last-child {
-        border-right: 0;
+      .protocol-step.lit {
+        border-color: rgba(166, 196, 158, 0.5);
+        background: rgba(20, 28, 21, 0.78);
       }
 
       .protocol-step .step-no {
-        display: block;
-        margin-bottom: 72px;
-        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 84px;
+        color: var(--ink-faint);
         font-family: var(--mono);
-        font-size: 13px;
+        font-size: 12px;
+        transition: color 0.6s;
+      }
+
+      .protocol-step .step-no::after {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+        transition:
+          background 0.6s,
+          box-shadow 0.6s;
+      }
+
+      .protocol-step.lit .step-no {
+        color: var(--accent);
+      }
+
+      .protocol-step.lit .step-no::after {
+        background: var(--accent);
+        box-shadow: 0 0 14px var(--accent);
       }
 
       .protocol-step h3 {
         margin-bottom: 10px;
-        font-size: 24px;
+        font-size: 22px;
+        font-weight: 500;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
       }
 
       .protocol-step p {
         margin-bottom: 0;
         color: var(--ink-soft);
-        font-size: 15px;
+        font-size: 14px;
       }
+
+      /* ---------- compare ---------- */
 
       .compare-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        border: 2px solid var(--ink);
-        background: var(--paper-strong);
+        gap: 20px;
       }
 
-      .compare-column + .compare-column {
-        border-left: 2px solid var(--ink);
+      .compare-column {
+        overflow: hidden;
       }
 
       .compare-column h3 {
+        display: flex;
+        justify-content: space-between;
         margin: 0;
-        padding: 18px 22px;
-        border-bottom: 2px solid var(--ink);
-        font-size: 20px;
+        padding: 22px 26px;
+        border-bottom: 1px solid var(--line);
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .compare-column h3 small {
+        color: var(--ink-faint);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 400;
+      }
+
+      .compare-column.without {
+        opacity: 0.72;
+      }
+
+      .compare-column.with-sage {
+        border-color: rgba(166, 196, 158, 0.45);
       }
 
       .compare-column.with-sage h3 {
-        background: rgba(120, 169, 137, 0.1);
-        color: var(--positive);
+        color: var(--accent-bright);
       }
 
       .compare-column ul {
@@ -595,9 +852,9 @@
 
       .compare-column li {
         display: grid;
-        grid-template-columns: 26px 1fr;
+        grid-template-columns: 24px 1fr;
         gap: 12px;
-        padding: 18px 22px;
+        padding: 18px 26px;
         border-bottom: 1px solid var(--line);
       }
 
@@ -607,63 +864,64 @@
 
       .compare-column li::before {
         content: "×";
-        color: var(--accent);
+        color: var(--ink-faint);
         font-family: var(--mono);
-        font-weight: 600;
       }
 
       .compare-column.with-sage li::before {
         content: "✓";
-        color: var(--positive);
+        color: var(--accent);
       }
+
+      /* ---------- install ---------- */
 
       .install-grid {
         display: grid;
-        grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
-        gap: 52px;
-        align-items: start;
+        grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+        gap: 56px;
+        align-items: center;
       }
 
       .install-copy h2 {
         margin-bottom: 24px;
-        font-size: clamp(42px, 5vw, 70px);
-        line-height: 0.98;
-        letter-spacing: -0.045em;
       }
 
       .install-copy p {
-        max-width: 520px;
+        max-width: 480px;
         color: var(--ink-soft);
-        font-size: 18px;
+        font-size: 17px;
       }
 
       .installer {
-        border: 1px solid var(--line-strong);
-        background: #080b09;
-        color: var(--ink);
+        overflow: hidden;
       }
 
       .tabs {
         display: flex;
-        border-bottom: 1px solid var(--line-strong);
+        gap: 6px;
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
       }
 
       .tab {
-        min-height: 48px;
-        padding: 0 18px;
-        border: 0;
-        border-right: 1px solid var(--line-strong);
+        min-height: 36px;
+        padding: 0 16px;
+        border: 1px solid transparent;
+        border-radius: 99px;
         background: transparent;
         color: var(--ink-soft);
         cursor: pointer;
         font-family: var(--mono);
-        font-size: 13px;
+        font-size: 12px;
+        transition:
+          background 0.3s,
+          color 0.3s;
       }
 
       .tab[aria-selected="true"] {
-        background: var(--accent);
-        color: #101510;
-        font-weight: 600;
+        border-color: var(--line-strong);
+        background: rgba(166, 196, 158, 0.12);
+        color: var(--ink);
       }
 
       .command-line {
@@ -671,52 +929,56 @@
         grid-template-columns: 1fr auto;
         gap: 18px;
         align-items: center;
-        min-height: 148px;
-        padding: 26px;
+        min-height: 150px;
+        padding: 28px;
       }
 
       .command-line code {
-        color: #dce4ff;
-        font-size: clamp(12px, 1.5vw, 15px);
+        color: var(--accent-bright);
+        font-size: clamp(12px, 1.4vw, 15px);
         overflow-wrap: anywhere;
+      }
+
+      .command-line code::before {
+        content: "$ ";
+        color: var(--ink-faint);
       }
 
       .copy {
         min-height: 40px;
-        padding: 0 14px;
+        padding: 0 16px;
         border: 1px solid var(--line-strong);
+        border-radius: 99px;
         background: transparent;
         color: var(--ink);
         cursor: pointer;
         font-family: var(--mono);
         font-size: 12px;
+        transition:
+          background 0.3s,
+          color 0.3s;
       }
 
       .copy:hover {
         background: var(--ink);
-        color: var(--paper);
+        color: var(--void);
       }
 
       .after-install {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        margin-top: 16px;
-        border: 1px solid var(--line-strong);
+        gap: 14px;
+        margin-top: 14px;
       }
 
       .after-install div {
-        padding: 18px;
-      }
-
-      .after-install div + div {
-        border-left: 1px solid var(--line-strong);
+        padding: 20px;
       }
 
       .after-install code {
         display: block;
         margin-bottom: 8px;
         color: var(--accent);
-        font-weight: 600;
       }
 
       .after-install span {
@@ -724,26 +986,30 @@
         font-size: 14px;
       }
 
-      .route-board {
-        border-top: 2px solid var(--ink);
-      }
+      /* ---------- routes ---------- */
 
       .route-row {
         display: grid;
-        grid-template-columns: minmax(160px, 0.42fr) minmax(180px, 0.5fr) 1fr;
+        grid-template-columns: minmax(170px, 0.4fr) minmax(200px, 0.5fr) 1fr;
         gap: 24px;
-        padding: 22px 0;
-        border-bottom: 1px solid var(--line-strong);
+        padding: 26px 0;
+        border-top: 1px solid var(--line-strong);
         align-items: baseline;
+      }
+
+      .route-row:last-child {
+        border-bottom: 1px solid var(--line-strong);
       }
 
       .route-row code {
         color: var(--accent);
-        font-weight: 600;
+        font-size: 13px;
       }
 
       .route-row strong {
-        font-size: 18px;
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
       }
 
       .route-row span {
@@ -753,60 +1019,70 @@
       .journey {
         display: flex;
         align-items: center;
-        gap: 0;
-        margin-top: 42px;
-        border: 2px solid var(--accent);
-        background: var(--paper-strong);
+        margin-top: 48px;
+        padding: 8px;
+        border-radius: 99px;
       }
 
       .journey span {
         flex: 1;
-        padding: 17px 10px;
+        padding: 14px 10px;
+        border-radius: 99px;
         text-align: center;
-        font-weight: 600;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.3s;
+      }
+
+      .journey span:hover {
+        background: rgba(166, 196, 158, 0.12);
       }
 
       .journey i {
-        color: var(--accent);
+        color: var(--ink-faint);
         font-family: var(--mono);
         font-style: normal;
       }
 
+      /* ---------- workspace ---------- */
+
       .workspace-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.72fr);
-        gap: 58px;
+        grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.7fr);
+        gap: 56px;
         align-items: start;
       }
 
       .file-tree {
         margin: 0;
-        padding: 28px;
-        border: 2px solid var(--ink);
-        background: var(--paper-strong);
+        padding: 30px;
         color: var(--ink);
-        font-size: clamp(12px, 1.5vw, 15px);
-        line-height: 1.8;
+        font-size: clamp(12px, 1.4vw, 14px);
+        line-height: 1.9;
         overflow-x: auto;
       }
 
       .file-tree .folder {
         color: var(--accent);
-        font-weight: 600;
       }
 
-      .workspace-notes {
-        border-top: 2px solid var(--ink);
+      .file-tree .dim {
+        color: var(--ink-faint);
       }
 
       .workspace-note {
-        padding: 20px 0;
+        padding: 24px 0;
+        border-top: 1px solid var(--line-strong);
+      }
+
+      .workspace-note:last-child {
         border-bottom: 1px solid var(--line-strong);
       }
 
       .workspace-note h3 {
-        margin-bottom: 7px;
+        margin-bottom: 6px;
         font-size: 19px;
+        font-weight: 500;
       }
 
       .workspace-note p {
@@ -814,30 +1090,25 @@
         color: var(--ink-soft);
       }
 
+      /* ---------- closing ---------- */
+
       .closing {
-        background:
-          linear-gradient(115deg, rgba(159, 189, 152, 0.1), transparent 42%),
-          #121914;
-        color: var(--ink);
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        text-align: center;
       }
 
-      .closing-inner {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 44px;
-        align-items: end;
-      }
-
-      .closing .button {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: #101510;
+      .closing h2 {
+        margin: 0 auto 40px;
+        font-size: clamp(44px, 7vw, 108px);
       }
 
       footer {
+        position: relative;
         padding: 30px 0;
-        background: #070907;
-        color: var(--ink);
+        border-top: 1px solid var(--line);
+        background: rgba(6, 8, 7, 0.85);
       }
 
       .footer-inner {
@@ -854,65 +1125,19 @@
         align-items: center;
         gap: 16px;
         flex-wrap: wrap;
-      }
-
-      .footer-product span:first-child {
-        font-weight: 600;
-      }
-
-      footer .version {
-        border-color: var(--line-strong);
-        background: transparent;
-        color: var(--ink-soft);
+        font-size: 14px;
       }
 
       .footer-links a {
         color: var(--ink-soft);
-        font-size: 14px;
         text-decoration: none;
       }
 
       .footer-links a:hover {
         color: var(--ink);
-        text-decoration: underline;
-        text-underline-offset: 4px;
       }
 
-      @keyframes trace-in {
-        from {
-          opacity: 0;
-          transform: translateX(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-
-      .trace-list li,
-      .verdict {
-        animation: trace-in 0.42s both;
-      }
-
-      .trace-list li:nth-child(1) {
-        animation-delay: 0.1s;
-      }
-
-      .trace-list li:nth-child(2) {
-        animation-delay: 0.22s;
-      }
-
-      .trace-list li:nth-child(3) {
-        animation-delay: 0.34s;
-      }
-
-      .trace-list li:nth-child(4) {
-        animation-delay: 0.46s;
-      }
-
-      .verdict {
-        animation-delay: 0.62s;
-      }
+      /* ---------- responsive ---------- */
 
       @media (max-width: 980px) {
         .nav-links {
@@ -923,19 +1148,11 @@
           grid-template-columns: 1fr auto;
         }
 
-        .hero-grid,
         .section-heading,
         .install-grid,
-        .workspace-grid {
+        .workspace-grid,
+        .trace-grid {
           grid-template-columns: 1fr;
-        }
-
-        .hero-grid {
-          gap: 54px;
-        }
-
-        .hero-copy > p {
-          max-width: 720px;
         }
 
         .protocol-rail {
@@ -943,107 +1160,71 @@
         }
 
         .protocol-step {
-          min-height: 230px;
-          border-bottom: 1px solid var(--line-strong);
-        }
-
-        .protocol-step:nth-child(2) {
-          border-right: 0;
+          min-height: 220px;
         }
 
         .protocol-step:last-child {
           grid-column: 1 / -1;
-          border-bottom: 0;
         }
 
         .protocol-step .step-no {
           margin-bottom: 44px;
         }
+
+        .hero {
+          align-items: flex-end;
+        }
       }
 
       @media (max-width: 700px) {
         .wrap {
-          width: min(calc(100% - 28px), var(--max));
+          width: calc(100% - 32px);
         }
 
-        .coffee,
-        .nav-actions > a:not(.version) {
+        .nav-actions > a {
           display: none;
         }
 
         .hero {
-          padding-top: 58px;
+          padding-bottom: 110px;
         }
 
-        h1 {
-          font-size: clamp(48px, 15vw, 70px);
+        .hint {
+          display: none;
         }
 
         .trace-list li {
-          grid-template-columns: 24px 1fr;
+          grid-template-columns: 22px 1fr;
         }
 
         .trace-list li span {
           grid-column: 2;
         }
 
-        .fact-strip,
         .compare-grid,
-        .after-install {
-          grid-template-columns: 1fr;
-        }
-
-        .fact {
-          border-right: 0;
-          border-bottom: 1px solid var(--line);
-        }
-
-        .fact:last-child {
-          border-bottom: 0;
-        }
-
-        .failure-row,
-        .route-row {
-          grid-template-columns: 32px 1fr;
-          gap: 12px;
-        }
-
-        .failure-row p,
-        .route-row span {
-          grid-column: 2;
-        }
-
-        .route-row code {
-          grid-column: 1 / -1;
-        }
-
-        .route-row strong,
-        .route-row span {
-          grid-column: 1 / -1;
-        }
-
+        .after-install,
         .protocol-rail {
           grid-template-columns: 1fr;
         }
 
         .protocol-step,
-        .protocol-step:nth-child(2) {
-          min-height: auto;
-          border-right: 0;
-          border-bottom: 1px solid var(--line-strong);
-        }
-
         .protocol-step:last-child {
           grid-column: auto;
+          min-height: auto;
         }
 
         .protocol-step .step-no {
           margin-bottom: 28px;
         }
 
-        .compare-column + .compare-column {
-          border-left: 0;
-          border-top: 2px solid var(--ink);
+        .failure-row,
+        .route-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .failure-row:hover {
+          padding-left: 0;
         }
 
         .command-line {
@@ -1054,24 +1235,17 @@
           justify-self: start;
         }
 
-        .after-install div + div {
-          border-left: 0;
-          border-top: 1px solid var(--line-strong);
+        .journey {
+          flex-direction: column;
+          border-radius: 18px;
         }
 
-        .journey {
-          display: grid;
-          grid-template-columns: 1fr;
+        .journey span {
+          width: 100%;
         }
 
         .journey i {
-          text-align: center;
           transform: rotate(90deg);
-        }
-
-        .closing-inner {
-          grid-template-columns: 1fr;
-          align-items: start;
         }
       }
 
@@ -1084,410 +1258,445 @@
         *::before,
         *::after {
           animation-duration: 0.01ms !important;
-          animation-delay: 0ms !important;
-          scroll-behavior: auto !important;
+          animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
+          transition-delay: 0ms !important;
+        }
+
+        .reveal {
+          opacity: 1;
+          transform: none;
         }
       }
     </style>
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-
-    <nav class="site-nav" aria-label="Primary navigation">
-      <div class="wrap nav-inner">
-        <a class="brand" href="#top">
-          <img src="logo.png" alt="" />
-          <span>Sage</span>
-        </a>
-        <div class="nav-links">
-          <a href="#why">Why Sage</a>
-          <a href="#protocol">Protocol</a>
-          <a href="#install">Install</a>
-          <a href="#use">How to use it</a>
-        </div>
-        <div class="nav-actions">
-          <a
-            class="coffee"
-            href="https://www.buymeacoffee.com/satangbuds3"
-            target="_blank"
-            rel="noopener"
-            >Support</a
-          >
-          <a
-            href="https://github.com/qorstack/sage"
-            target="_blank"
-            rel="noopener"
-            >GitHub</a
-          >
-          <span class="version" aria-label="Current Sage version v1.8.0"
-            >v1.8.0</span
-          >
-        </div>
-      </div>
-    </nav>
-
-    <header class="hero" id="top">
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <div class="release-note">A cognition protocol for coding agents</div>
-          <h1>Your coding agent should have a first thought.</h1>
-          <p>
-            Sage makes AI read your team’s decisions, inspect what already
-            exists, name the risk, and validate the result before calling the
-            work done.
-          </p>
-          <ol class="thought-path" aria-label="How Sage thinks before coding">
-            <li><strong>Context</strong></li>
-            <li><strong>Reuse</strong></li>
-            <li><strong>Risk</strong></li>
-            <li><strong>Evidence</strong></li>
-          </ol>
-          <div class="actions">
-            <a class="button primary" href="#install">Install Sage</a>
-            <a
-              class="button"
-              href="https://github.com/qorstack/sage"
-              target="_blank"
-              rel="noopener"
-              >Read the source</a
-            >
-          </div>
-        </div>
-
-        <div class="trace" aria-label="Example Sage decision trace">
-          <div class="trace-head">
-            <span>decision-trace.md</span>
-            <span class="trace-live">protocol active</span>
-          </div>
-          <div class="request">
-            <span>request /</span> add discount coupons to checkout
-          </div>
-          <ol class="trace-list">
-            <li>
-              <strong>context</strong>
-              <span>payment rules and checkout flow loaded</span>
-            </li>
-            <li>
-              <strong>reuse</strong>
-              <span>existing promotion service found</span>
-            </li>
-            <li>
-              <strong>risk</strong>
-              <span>total recalculation must stay idempotent</span>
-            </li>
-            <li>
-              <strong>evidence</strong>
-              <span>build, tests, and diff checked</span>
-            </li>
-          </ol>
-          <div class="verdict">
-            <b>PROCEED</b>
-            <span>reuse the existing boundary; preserve total invariants</span>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <div class="fact-strip" aria-label="Sage product facts">
-      <div class="fact">
-        <strong>Plain Markdown</strong>
-        <span>Review it in the same pull request as your code.</span>
-      </div>
-      <div class="fact">
-        <strong>Agent-agnostic</strong>
-        <span>Works with Codex, Claude Code, Cursor, Copilot, and more.</span>
-      </div>
-      <div class="fact">
-        <strong>No runtime</strong>
-        <span>No server, account, database, or hidden team memory.</span>
+    <div class="loader" id="loader" aria-hidden="true">
+      <div class="loader-inner">
+        <span id="loader-text">Assembling core</span>
+        <div class="loader-bar"><i id="loader-bar"></i></div>
       </div>
     </div>
 
-    <main id="main">
-      <section id="why">
-        <div class="wrap">
-          <div class="section-heading">
-            <h2>Fast code is cheap. Wrong code is expensive.</h2>
-            <p>
-              Agents can produce plausible changes in seconds. The expensive
-              failures happen before typing: missing context, invented patterns,
-              and risks nobody named.
-            </p>
-          </div>
+    <canvas id="core" aria-hidden="true"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="cursor" id="cursor" aria-hidden="true"></div>
 
-          <div class="failure-ledger">
-            <div class="failure-row">
-              <span class="mark">01</span>
-              <strong>Context gets skipped</strong>
-              <p>
-                The agent solves the prompt but misses the architecture,
-                vocabulary, and decisions your team already made.
-              </p>
-            </div>
-            <div class="failure-row">
-              <span class="mark">02</span>
-              <strong>Existing code gets reinvented</strong>
-              <p>
-                A new helper looks reasonable in isolation while duplicating a
-                tested boundary that was already in the repository.
-              </p>
-            </div>
-            <div class="failure-row">
-              <span class="mark">03</span>
-              <strong>Risk stays implicit</strong>
-              <p>
-                Authorization, money, destructive operations, and public
-                contracts need explicit controls—not confident prose.
-              </p>
-            </div>
-            <div class="failure-row">
-              <span class="mark">04</span>
-              <strong>“Done” has no evidence</strong>
-              <p>
-                Sage requires the real build, test, or validation output and
-                reports the residual risk that remains.
-              </p>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="page">
+      <nav class="site-nav" id="nav" aria-label="Primary navigation">
+        <div class="wrap nav-inner">
+          <a class="brand" href="#top">
+            <img src="logo.png" alt="" />
+            <span>Sage</span>
+          </a>
+          <div class="nav-links">
+            <a href="#why">Why Sage</a>
+            <a href="#protocol">Protocol</a>
+            <a href="#install">Install</a>
+            <a href="#use">How to use it</a>
+          </div>
+          <div class="nav-actions">
+            <a
+              class="coffee"
+              href="https://www.buymeacoffee.com/satangbuds3"
+              target="_blank"
+              rel="noopener"
+              >Support</a
+            >
+            <a href="https://github.com/qorstack/sage" target="_blank" rel="noopener"
+              >GitHub</a
+            >
+            <span class="version" aria-label="Current Sage version v1.8.0">v1.8.0</span>
+          </div>
+        </div>
+      </nav>
+
+      <header class="hero" id="top">
+        <div class="wrap">
+          <div class="hero-copy">
+            <div class="label">A cognition protocol for coding agents</div>
+            <h1>Your coding agent should have a <em>first thought.</em></h1>
+            <p class="lede">
+              Sage makes AI read your team’s decisions, inspect what already
+              exists, name the risk, and validate the result before calling the
+              work done.
+            </p>
+            <ol class="thought-path" aria-label="How Sage thinks before coding">
+              <li><span>01</span>Context</li>
+              <li><span>02</span>Reuse</li>
+              <li><span>03</span>Risk</li>
+              <li><span>04</span>Evidence</li>
+            </ol>
+            <div class="actions">
+              <a class="button primary" href="#install">Install Sage</a>
+              <a
+                class="button"
+                href="https://github.com/qorstack/sage"
+                target="_blank"
+                rel="noopener"
+                >Read the source</a
+              >
             </div>
           </div>
         </div>
-      </section>
-
-      <section class="protocol" id="protocol">
-        <div class="wrap">
-          <div class="section-heading">
-            <h2>A repeatable thought before every change.</h2>
-            <p>
-              The protocol turns good engineering judgment into a sequence any
-              compatible coding agent can follow.
-            </p>
-          </div>
-
-          <div class="protocol-rail">
-            <article class="protocol-step">
-              <span class="step-no">01 / Read</span>
-              <h3>Load the team’s context</h3>
-              <p>Use the role, rules, and decisions relevant to this change.</p>
-            </article>
-            <article class="protocol-step">
-              <span class="step-no">02 / Inspect</span>
-              <h3>Find what already exists</h3>
-              <p>Read the actual exports and patterns before proposing another.</p>
-            </article>
-            <article class="protocol-step">
-              <span class="step-no">03 / Judge</span>
-              <h3>Name risk and controls</h3>
-              <p>Separate routine work from changes that need a human decision.</p>
-            </article>
-            <article class="protocol-step">
-              <span class="step-no">04 / Build</span>
-              <h3>Make the smallest coherent change</h3>
-              <p>Preserve contracts and keep the work inside the agreed scope.</p>
-            </article>
-            <article class="protocol-step">
-              <span class="step-no">05 / Prove</span>
-              <h3>Validate and remember</h3>
-              <p>Run real checks, report evidence, and capture durable knowledge.</p>
-            </article>
-          </div>
+        <div class="wrap hint" aria-hidden="true">
+          <span>Click the core to look inside</span>
+          <span>Scroll<i class="scroll-line"></i></span>
         </div>
-      </section>
+      </header>
 
-      <section id="proof">
-        <div class="wrap">
-          <div class="section-heading">
-            <h2>The same agent. A better first move.</h2>
-            <p>
-              Sage does not replace your coding agent. It gives that agent a
-              visible, reviewable operating discipline.
-            </p>
-          </div>
-
-          <div class="compare-grid">
-            <div class="compare-column">
-              <h3>Without Sage</h3>
-              <ul>
-                <li>Starts coding directly from the prompt</li>
-                <li>Guesses internal APIs from filenames</li>
-                <li>Treats every unknown as an implementation detail</li>
-                <li>Reports confidence instead of validation output</li>
-              </ul>
-            </div>
-            <div class="compare-column with-sage">
-              <h3>With Sage</h3>
-              <ul>
-                <li>Reads the relevant team context first</li>
-                <li>Inspects reusable code before adding more</li>
-                <li>Stops only for decisions that genuinely change the outcome</li>
-                <li>Closes with evidence and residual risk</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="install">
-        <div class="wrap install-grid">
-          <div class="install-copy">
-            <h2>One command installs the protocol.</h2>
-            <p>
-              Run the installer in your repository. It adds the Sage protocol,
-              command adapters, and knowledge structure for the coding tools you
-              select.
-            </p>
-          </div>
-
-          <div>
-            <div class="installer" id="installer">
-              <div class="tabs" role="tablist" aria-label="Choose your operating system">
-                <button
-                  class="tab"
-                  type="button"
-                  role="tab"
-                  aria-selected="true"
-                  data-command="bash"
-                >
-                  macOS / Linux
-                </button>
-                <button
-                  class="tab"
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  data-command="pwsh"
-                >
-                  Windows
-                </button>
+      <main id="main">
+        <section class="trace-band" aria-label="Example decision trace">
+          <div class="wrap trace-grid">
+            <div class="trace glass reveal" id="trace" aria-label="Example Sage decision trace">
+              <div class="trace-head">
+                <span>decision-trace.md</span>
+                <span class="trace-live">protocol active</span>
               </div>
-              <div class="command-line">
-                <code id="install-command"
-                  >bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"</code
-                >
-                <button class="copy" type="button" data-copy>Copy command</button>
+              <div class="request"><span>request /</span> add discount coupons to checkout</div>
+              <ol class="trace-list">
+                <li>
+                  <strong>context</strong>
+                  <span>payment rules and checkout flow loaded</span>
+                </li>
+                <li>
+                  <strong>reuse</strong>
+                  <span>existing promotion service found</span>
+                </li>
+                <li>
+                  <strong>risk</strong>
+                  <span>total recalculation must stay idempotent</span>
+                </li>
+                <li>
+                  <strong>evidence</strong>
+                  <span>build, tests, and diff checked</span>
+                </li>
+              </ol>
+              <div class="verdict">
+                <b>PROCEED</b>
+                <span>reuse the existing boundary; preserve total invariants</span>
               </div>
             </div>
 
-            <div class="after-install">
+            <div class="facts" aria-label="Sage product facts">
+              <div class="fact glass reveal">
+                <small>FORMAT</small>
+                <strong>Plain Markdown</strong>
+                <span>Review it in the same pull request as your code.</span>
+              </div>
+              <div class="fact glass reveal">
+                <small>COMPATIBILITY</small>
+                <strong>Agent-agnostic</strong>
+                <span>Works with Codex, Claude Code, Cursor, Copilot, and more.</span>
+              </div>
+              <div class="fact glass reveal">
+                <small>FOOTPRINT</small>
+                <strong>No runtime</strong>
+                <span>No server, account, database, or hidden team memory.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="why" data-layer="1">
+          <div class="wrap">
+            <div class="section-heading reveal">
               <div>
-                <code>/sage-learning</code>
-                <span>Run once to learn the project’s real patterns.</span>
+                <div class="label">The problem</div>
+                <h2>Fast code is cheap. Wrong code is expensive.</h2>
               </div>
+              <p>
+                Agents can produce plausible changes in seconds. The expensive
+                failures happen before typing: missing context, invented patterns,
+                and risks nobody named.
+              </p>
+            </div>
+
+            <div class="failure-ledger">
+              <div class="failure-row reveal">
+                <span class="mark">01</span>
+                <strong>Context gets skipped</strong>
+                <p>
+                  The agent solves the prompt but misses the architecture,
+                  vocabulary, and decisions your team already made.
+                </p>
+              </div>
+              <div class="failure-row reveal">
+                <span class="mark">02</span>
+                <strong>Existing code gets reinvented</strong>
+                <p>
+                  A new helper looks reasonable in isolation while duplicating a
+                  tested boundary that was already in the repository.
+                </p>
+              </div>
+              <div class="failure-row reveal">
+                <span class="mark">03</span>
+                <strong>Risk stays implicit</strong>
+                <p>
+                  Authorization, money, destructive operations, and public
+                  contracts need explicit controls—not confident prose.
+                </p>
+              </div>
+              <div class="failure-row reveal">
+                <span class="mark">04</span>
+                <strong>“Done” has no evidence</strong>
+                <p>
+                  Sage requires the real build, test, or validation output and
+                  reports the residual risk that remains.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="protocol">
+          <div class="wrap">
+            <div class="section-heading reveal">
               <div>
-                <code>/sage your task</code>
-                <span>Then start each code change in plain language.</span>
+                <div class="label">The protocol</div>
+                <h2>A repeatable thought before every change.</h2>
+              </div>
+              <p>
+                The protocol turns good engineering judgment into a sequence any
+                compatible coding agent can follow.
+              </p>
+            </div>
+
+            <div class="protocol-rail">
+              <article class="protocol-step glass reveal">
+                <span class="step-no">01 / Read</span>
+                <h3>Load the team’s context</h3>
+                <p>Use the role, rules, and decisions relevant to this change.</p>
+              </article>
+              <article class="protocol-step glass reveal">
+                <span class="step-no">02 / Inspect</span>
+                <h3>Find what already exists</h3>
+                <p>Read the actual exports and patterns before proposing another.</p>
+              </article>
+              <article class="protocol-step glass reveal">
+                <span class="step-no">03 / Judge</span>
+                <h3>Name risk and controls</h3>
+                <p>Separate routine work from changes that need a human decision.</p>
+              </article>
+              <article class="protocol-step glass reveal">
+                <span class="step-no">04 / Build</span>
+                <h3>Make the smallest coherent change</h3>
+                <p>Preserve contracts and keep the work inside the agreed scope.</p>
+              </article>
+              <article class="protocol-step glass reveal">
+                <span class="step-no">05 / Prove</span>
+                <h3>Validate and remember</h3>
+                <p>Run real checks, report evidence, and capture durable knowledge.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="proof">
+          <div class="wrap">
+            <div class="section-heading reveal">
+              <div>
+                <div class="label">The difference</div>
+                <h2>The same agent. A better first move.</h2>
+              </div>
+              <p>
+                Sage does not replace your coding agent. It gives that agent a
+                visible, reviewable operating discipline.
+              </p>
+            </div>
+
+            <div class="compare-grid">
+              <div class="compare-column without glass reveal">
+                <h3>Without Sage <small>prompt → code</small></h3>
+                <ul>
+                  <li>Starts coding directly from the prompt</li>
+                  <li>Guesses internal APIs from filenames</li>
+                  <li>Treats every unknown as an implementation detail</li>
+                  <li>Reports confidence instead of validation output</li>
+                </ul>
+              </div>
+              <div class="compare-column with-sage glass reveal">
+                <h3>With Sage <small>prompt → thought → code</small></h3>
+                <ul>
+                  <li>Reads the relevant team context first</li>
+                  <li>Inspects reusable code before adding more</li>
+                  <li>Stops only for decisions that genuinely change the outcome</li>
+                  <li>Closes with evidence and residual risk</li>
+                </ul>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="use">
-        <div class="wrap">
-          <div class="section-heading">
-            <h2>Describe the result. Sage chooses the route.</h2>
-            <p>
-              You mostly run <code>/sage</code>. The protocol decides whether to
-              begin, clarify a decision, or map a larger uncertain effort.
-            </p>
-          </div>
-
-          <div class="route-board">
-            <div class="route-row">
-              <code>Clear request</code>
-              <strong>Start the work</strong>
-              <span>Read context, assess risk, implement, and validate.</span>
+        <section id="install">
+          <div class="wrap install-grid">
+            <div class="install-copy reveal">
+              <div class="label">Install</div>
+              <h2>One command installs the protocol.</h2>
+              <p>
+                Run the installer in your repository. It adds the Sage protocol,
+                command adapters, and knowledge structure for the coding tools you
+                select.
+              </p>
             </div>
-            <div class="route-row">
-              <code>One-session fog</code>
-              <strong>Grill the decision</strong>
-              <span>Ask only the questions whose answers change the build.</span>
+
+            <div class="reveal">
+              <div class="installer glass" id="installer">
+                <div class="tabs" role="tablist" aria-label="Choose your operating system">
+                  <button
+                    class="tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    data-command="bash"
+                  >
+                    macOS / Linux
+                  </button>
+                  <button
+                    class="tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    data-command="pwsh"
+                  >
+                    Windows
+                  </button>
+                </div>
+                <div class="command-line">
+                  <code id="install-command"
+                    >bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"</code
+                  >
+                  <button class="copy" type="button" data-copy>Copy command</button>
+                </div>
+              </div>
+
+              <div class="after-install">
+                <div class="glass">
+                  <code>/sage-learning</code>
+                  <span>Run once to learn the project’s real patterns.</span>
+                </div>
+                <div class="glass">
+                  <code>/sage your task</code>
+                  <span>Then start each code change in plain language.</span>
+                </div>
+              </div>
             </div>
-            <div class="route-row">
-              <code>Large uncertainty</code>
-              <strong>Map the frontier</strong>
-              <span>Use Wayfinder to coordinate research and decisions across sessions.</span>
+          </div>
+        </section>
+
+        <section id="use">
+          <div class="wrap">
+            <div class="section-heading reveal">
+              <div>
+                <div class="label">How to use it</div>
+                <h2>Describe the result. Sage chooses the route.</h2>
+              </div>
+              <p>
+                You mostly run <code>/sage</code>. The protocol decides whether to
+                begin, clarify a decision, or map a larger uncertain effort.
+              </p>
+            </div>
+
+            <div class="route-board">
+              <div class="route-row reveal">
+                <code>Clear request</code>
+                <strong>Start the work</strong>
+                <span>Read context, assess risk, implement, and validate.</span>
+              </div>
+              <div class="route-row reveal">
+                <code>One-session fog</code>
+                <strong>Grill the decision</strong>
+                <span>Ask only the questions whose answers change the build.</span>
+              </div>
+              <div class="route-row reveal">
+                <code>Large uncertainty</code>
+                <strong>Map the frontier</strong>
+                <span>Use Wayfinder to coordinate research and decisions across sessions.</span>
+              </div>
+            </div>
+
+            <div class="journey glass reveal" aria-label="Example full feature journey">
+              <span>Idea</span><i>→</i><span>Grill</span><i>→</i><span>Flow</span
+              ><i>→</i><span>Ticket</span><i>→</i><span>Build</span><i>→</i
+              ><span>Review</span>
             </div>
           </div>
+        </section>
 
-          <div class="journey" aria-label="Example full feature journey">
-            <span>Idea</span><i>→</i><span>Grill</span><i>→</i><span>Flow</span
-            ><i>→</i><span>Ticket</span><i>→</i><span>Build</span><i>→</i
-            ><span>Review</span>
-          </div>
-        </div>
-      </section>
+        <section id="workspace">
+          <div class="wrap">
+            <div class="section-heading reveal">
+              <div>
+                <div class="label">Workspace</div>
+                <h2>One effort. One place to look.</h2>
+              </div>
+              <p>
+                Decisions, system design, implementation tickets, and focused
+                evidence stay together under one durable flow workspace.
+              </p>
+            </div>
 
-      <section id="workspace">
-        <div class="wrap">
-          <div class="section-heading">
-            <h2>One effort. One place to look.</h2>
-            <p>
-              Decisions, system design, implementation tickets, and focused
-              evidence stay together under one durable flow workspace.
-            </p>
-          </div>
-
-          <div class="workspace-grid">
-            <pre class="file-tree"><span class="folder">agents/sage/flows/checkout/</span>
-├── index.md          # start here
-├── spec.md           # clarified requirements
-├── flow.md           # end-to-end design
-├── tickets.md        # buildable outcomes
+            <div class="workspace-grid">
+              <pre class="file-tree glass reveal"><span class="folder">agents/sage/flows/checkout/</span>
+├── index.md          <span class="dim"># start here</span>
+├── spec.md           <span class="dim"># clarified requirements</span>
+├── flow.md           <span class="dim"># end-to-end design</span>
+├── tickets.md        <span class="dim"># buildable outcomes</span>
 └── <span class="folder">evidence/</span>
-    ├── index.md      # searchable catalog
-    ├── screenshots/  # smallest useful visual proof
-    ├── traces/       # focused runtime evidence
-    └── logs/         # relevant extracts</pre>
+    ├── index.md      <span class="dim"># searchable catalog</span>
+    ├── screenshots/  <span class="dim"># smallest useful visual proof</span>
+    ├── traces/       <span class="dim"># focused runtime evidence</span>
+    └── logs/         <span class="dim"># relevant extracts</span></pre>
 
-            <div class="workspace-notes">
-              <div class="workspace-note">
-                <h3>Context survives handoffs</h3>
-                <p>Every command reuses the same stable workspace slug.</p>
-              </div>
-              <div class="workspace-note">
-                <h3>Evidence stays focused</h3>
-                <p>Capture the smallest useful screenshot, trace, or log first.</p>
-              </div>
-              <div class="workspace-note">
-                <h3>Humans can review everything</h3>
-                <p>It is all Markdown, ordinary files, and normal Git history.</p>
+              <div class="workspace-notes">
+                <div class="workspace-note reveal">
+                  <h3>Context survives handoffs</h3>
+                  <p>Every command reuses the same stable workspace slug.</p>
+                </div>
+                <div class="workspace-note reveal">
+                  <h3>Evidence stays focused</h3>
+                  <p>Capture the smallest useful screenshot, trace, or log first.</p>
+                </div>
+                <div class="workspace-note reveal">
+                  <h3>Humans can review everything</h3>
+                  <p>It is all Markdown, ordinary files, and normal Git history.</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="closing">
-        <div class="wrap closing-inner">
-          <h2>Make judgment part of the coding workflow.</h2>
-          <a class="button" href="#install">Install Sage</a>
-        </div>
-      </section>
-    </main>
+        <section class="closing">
+          <div class="wrap reveal">
+            <h2>Make judgment part of the coding workflow.</h2>
+            <a class="button primary" href="#install">Install Sage</a>
+          </div>
+        </section>
+      </main>
 
-    <footer>
-      <div class="wrap footer-inner">
-        <div class="footer-product">
-          <span>Sage — cognition for AI software development</span>
-          <span class="version" aria-label="Current Sage version v1.8.0"
-            >v1.8.0</span
-          >
+      <footer>
+        <div class="wrap footer-inner">
+          <div class="footer-product">
+            <span>Sage — cognition for AI software development</span>
+            <span class="version" aria-label="Current Sage version v1.8.0">v1.8.0</span>
+          </div>
+          <div class="footer-links">
+            <a href="#protocol">Protocol</a>
+            <a href="#install">Install</a>
+            <a href="https://github.com/qorstack/sage">GitHub</a>
+          </div>
         </div>
-        <div class="footer-links">
-          <a href="#protocol">Protocol</a>
-          <a href="#install">Install</a>
-          <a href="https://github.com/qorstack/sage">GitHub</a>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </div>
 
+    <!-- UI: installer, reveals, nav, cursor, protocol steps -->
     <script>
       (function () {
         var commands = {
-          bash:
-            'bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"',
-          pwsh:
-            "irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex",
+          bash: 'bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.sh)"',
+          pwsh: "irm https://cdn.jsdelivr.net/gh/qorstack/sage@latest/install.ps1 | iex",
         };
         var command = document.getElementById("install-command");
         var copy = document.querySelector("[data-copy]");
@@ -1510,7 +1719,384 @@
             }, 1400);
           });
         });
+
+        // Reveal on scroll
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                e.target.classList.add("in");
+                io.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.15 }
+        );
+        document.querySelectorAll(".reveal").forEach(function (el) {
+          io.observe(el);
+        });
+
+        // Protocol steps light up in order as they cross the viewport center
+        var steps = Array.prototype.slice.call(document.querySelectorAll(".protocol-step"));
+        window.sageState = { litSteps: 0, scroll: 0, section: 0 };
+        var nav = document.getElementById("nav");
+        var sections = ["top", "why", "protocol", "proof", "install", "use", "workspace"].map(
+          function (id) {
+            return document.getElementById(id);
+          }
+        );
+
+        function onScroll() {
+          var y = window.scrollY;
+          var max = document.documentElement.scrollHeight - innerHeight;
+          sageState.scroll = max > 0 ? y / max : 0;
+          nav.classList.toggle("scrolled", y > 20);
+
+          var mid = innerHeight * 0.62;
+          var lit = 0;
+          steps.forEach(function (s, i) {
+            var on = s.getBoundingClientRect().top < mid;
+            s.classList.toggle("lit", on);
+            if (on) lit = i + 1;
+          });
+          sageState.litSteps = lit;
+
+          var current = 0;
+          sections.forEach(function (s, i) {
+            if (s && s.getBoundingClientRect().top < innerHeight * 0.5) current = i;
+          });
+          sageState.section = current;
+        }
+        addEventListener("scroll", onScroll, { passive: true });
+        addEventListener("resize", onScroll);
+        onScroll();
+
+        // Custom cursor (fine pointers only)
+        var cursor = document.getElementById("cursor");
+        if (matchMedia("(hover: hover) and (pointer: fine)").matches) {
+          document.body.classList.add("has-cursor");
+          var cx = innerWidth / 2,
+            cy = innerHeight / 2,
+            tx = cx,
+            ty = cy;
+          addEventListener("pointermove", function (e) {
+            tx = e.clientX;
+            ty = e.clientY;
+            cursor.style.opacity = 1;
+            cursor.classList.toggle("hover", !!e.target.closest("a, button, .glass"));
+          });
+          document.addEventListener("pointerleave", function () {
+            cursor.style.opacity = 0;
+          });
+          (function follow() {
+            cx += (tx - cx) * 0.2;
+            cy += (ty - cy) * 0.2;
+            cursor.style.transform = "translate(" + cx + "px," + cy + "px)";
+            requestAnimationFrame(follow);
+          })();
+        }
       })();
+    </script>
+
+    <!-- Scene: the cognition core -->
+    <script type="module">
+      const loader = document.getElementById("loader");
+      const bar = document.getElementById("loader-bar");
+      const loaderText = document.getElementById("loader-text");
+      const finish = () => loader.classList.add("done");
+      bar.style.width = "35%";
+      // Never trap the page behind the loader if WebGL or the CDN fails.
+      const failSafe = setTimeout(finish, 4000);
+
+      let THREE;
+      try {
+        THREE = await import("https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js");
+      } catch (e) {
+        clearTimeout(failSafe);
+        finish();
+        throw e;
+      }
+      bar.style.width = "70%";
+      loaderText.textContent = "Calibrating layers";
+
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const mobile = matchMedia("(max-width: 700px)").matches;
+      const canvas = document.getElementById("core");
+
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      } catch (e) {
+        clearTimeout(failSafe);
+        finish();
+        throw e;
+      }
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+      camera.position.set(0, 0, 9);
+
+      const core = new THREE.Group();
+      scene.add(core);
+
+      const ACCENT = new THREE.Color(0xa6c49e);
+      const BRIGHT = new THREE.Color(0xe4f0e0);
+
+      // ---- particle shells: context / reuse / risk / evidence ----
+      const LAYERS = 4;
+      const perLayer = mobile ? 1600 : 3600;
+      const count = LAYERS * perLayer;
+      const pos = new Float32Array(count * 3);
+      const layer = new Float32Array(count);
+      const seed = new Float32Array(count);
+      for (let i = 0; i < count; i++) {
+        const l = Math.floor(i / perLayer);
+        // Fibonacci sphere per layer for even distribution
+        const k = i % perLayer;
+        const y = 1 - (k / (perLayer - 1)) * 2;
+        const r = Math.sqrt(1 - y * y);
+        const t = k * 2.399963 + l * 0.7;
+        pos.set([Math.cos(t) * r, y, Math.sin(t) * r], i * 3);
+        layer[i] = l;
+        seed[i] = Math.random();
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute("aLayer", new THREE.BufferAttribute(layer, 1));
+      geo.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
+
+      const uniforms = {
+        uTime: { value: 0 },
+        uExpand: { value: 0 },
+        uSep: { value: 0 },
+        uMouse: { value: new THREE.Vector3(99, 99, 0) },
+        uPixel: { value: renderer.getPixelRatio() },
+        uAccent: { value: ACCENT },
+        uBright: { value: BRIGHT },
+        uFocus: { value: 0 },
+      };
+
+      const pointsMat = new THREE.ShaderMaterial({
+        uniforms,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        vertexShader: /* glsl */ `
+          uniform float uTime, uExpand, uSep, uPixel, uFocus;
+          uniform vec3 uMouse;
+          attribute float aLayer, aSeed;
+          varying float vAlpha, vLayer;
+
+          float wave(vec3 p, float t) {
+            return sin(p.x * 3.1 + t) * sin(p.y * 2.7 - t * 0.8) * sin(p.z * 3.4 + t * 0.6);
+          }
+
+          void main() {
+            vec3 dir = normalize(position);
+            float base = 0.72 + aLayer * 0.36;
+            float t = uTime * (0.35 + aLayer * 0.08);
+            float r = base + wave(dir * (1.0 + aLayer * 0.4), t) * 0.09;
+            // Layers peel apart on scroll and on click.
+            r += aLayer * (uSep * 0.55 + uExpand * 0.7);
+            vec3 p = dir * r;
+
+            vec4 world = modelMatrix * vec4(p, 1.0);
+            vec3 toMouse = uMouse - world.xyz;
+            float d = length(toMouse);
+            float pull = smoothstep(1.6, 0.0, d) * 0.45;
+            world.xyz += normalize(toMouse + 1e-5) * pull * (0.4 + aSeed);
+
+            vec4 mv = viewMatrix * world;
+            gl_Position = projectionMatrix * mv;
+
+            float focus = 1.0 - smoothstep(0.0, 1.2, abs(aLayer - uFocus));
+            vAlpha = (0.28 + aSeed * 0.5) * (0.45 + focus * 0.75) + pull;
+            vLayer = aLayer;
+            gl_PointSize = (1.4 + aSeed * 2.2 + pull * 4.0) * uPixel * (7.0 / -mv.z);
+          }
+        `,
+        fragmentShader: /* glsl */ `
+          uniform vec3 uAccent, uBright;
+          varying float vAlpha, vLayer;
+          void main() {
+            float d = length(gl_PointCoord - 0.5);
+            if (d > 0.5) discard;
+            float soft = smoothstep(0.5, 0.0, d);
+            vec3 c = mix(uBright, uAccent, vLayer / 3.0);
+            gl_FragColor = vec4(c, soft * vAlpha);
+          }
+        `,
+      });
+      core.add(new THREE.Points(geo, pointsMat));
+
+      // ---- five protocol rings: read / inspect / judge / build / prove ----
+      const rings = [];
+      for (let i = 0; i < 5; i++) {
+        const radius = 1.9 + i * 0.16;
+        const pts = [];
+        const seg = 220;
+        for (let s = 0; s <= seg; s++) {
+          const a = (s / seg) * Math.PI * 2;
+          // leave a small gap, like an instrument scale
+          if (s / seg > 0.94) break;
+          pts.push(new THREE.Vector3(Math.cos(a) * radius, Math.sin(a) * radius, 0));
+        }
+        const g = new THREE.BufferGeometry().setFromPoints(pts);
+        const m = new THREE.LineBasicMaterial({
+          color: ACCENT,
+          transparent: true,
+          opacity: 0.12,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        const ring = new THREE.Line(g, m);
+        ring.rotation.set(Math.PI / 2 + (i - 2) * 0.32, i * 0.6, 0);
+        ring.userData = { speed: 0.05 + i * 0.025, dir: i % 2 ? -1 : 1, lit: 0 };
+        core.add(ring);
+        rings.push(ring);
+      }
+
+      // ---- orbiting data ticks ----
+      const tickCount = 90;
+      const tickPos = new Float32Array(tickCount * 3);
+      for (let i = 0; i < tickCount; i++) {
+        const a = (i / tickCount) * Math.PI * 2;
+        const r = 2.9 + (i % 3) * 0.05;
+        tickPos.set([Math.cos(a) * r, (Math.random() - 0.5) * 0.06, Math.sin(a) * r], i * 3);
+      }
+      const tickGeo = new THREE.BufferGeometry();
+      tickGeo.setAttribute("position", new THREE.BufferAttribute(tickPos, 3));
+      const ticks = new THREE.Points(
+        tickGeo,
+        new THREE.PointsMaterial({
+          color: ACCENT,
+          size: 0.03,
+          transparent: true,
+          opacity: 0.5,
+          depthWrite: false,
+        })
+      );
+      ticks.rotation.x = 0.35;
+      core.add(ticks);
+
+      // ---- inner nucleus ----
+      const nucleus = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.34, 1),
+        new THREE.MeshBasicMaterial({ color: BRIGHT, wireframe: true, transparent: true, opacity: 0.35 })
+      );
+      core.add(nucleus);
+
+      // ---- sizing & layout ----
+      let coreHomeX = 0;
+      function resize() {
+        const w = innerWidth,
+          h = innerHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        const wide = w > 980;
+        coreHomeX = wide ? 2.4 : 0;
+        core.scale.setScalar(wide ? 1 : w > 700 ? 0.85 : 0.7);
+      }
+      addEventListener("resize", resize);
+      resize();
+
+      // ---- input ----
+      const mouseNdc = new THREE.Vector2(0, 0);
+      const mouseTarget = new THREE.Vector2(0, 0);
+      let hasPointer = false;
+      addEventListener("pointermove", (e) => {
+        mouseTarget.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+        hasPointer = true;
+      });
+
+      let expandTarget = 0;
+      addEventListener("click", (e) => {
+        if (e.target.closest("a, button, .glass, pre, code")) return;
+        expandTarget = expandTarget > 0.5 ? 0 : 1;
+      });
+
+      // Project the pointer onto the plane z = 0 in world space.
+      const ray = new THREE.Raycaster();
+      const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+      const hit = new THREE.Vector3();
+
+      // ---- loop ----
+      const clock = new THREE.Clock();
+      const smooth = { x: coreHomeX, y: 0, sep: 0, expand: 0, rotX: 0, rotY: 0, focus: 0 };
+      const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
+
+      function frame() {
+        const dt = Math.min(clock.getDelta(), 0.05);
+        const t = clock.elapsedTime;
+        const st = window.sageState || { scroll: 0, litSteps: 0, section: 0 };
+        const s = st.scroll;
+
+        // Core slides from the hero's right side to center, then drifts back.
+        const toCenter = Math.min(1, s * 7);
+        const targetX = coreHomeX * (1 - toCenter) + (innerWidth > 980 ? Math.sin(s * Math.PI * 2) * 1.6 : 0);
+        smooth.x = damp(smooth.x, targetX, 3, dt);
+        smooth.y = damp(smooth.y, 0, 3, dt);
+        smooth.sep = damp(smooth.sep, Math.sin(Math.min(1, s * 1.4) * Math.PI) * 1.0, 2.5, dt);
+        smooth.expand = damp(smooth.expand, expandTarget, 2.2, dt);
+        smooth.focus = damp(smooth.focus, Math.min(3, Math.max(0, st.section - 1)), 2, dt);
+
+        mouseNdc.x = damp(mouseNdc.x, mouseTarget.x, 4, dt);
+        mouseNdc.y = damp(mouseNdc.y, mouseTarget.y, 4, dt);
+        smooth.rotY = damp(smooth.rotY, mouseNdc.x * 0.55, 2.5, dt);
+        smooth.rotX = damp(smooth.rotX, -mouseNdc.y * 0.35, 2.5, dt);
+
+        core.position.set(smooth.x, smooth.y, 0);
+        core.rotation.y = t * 0.06 + smooth.rotY + s * Math.PI * 1.5;
+        core.rotation.x = smooth.rotX + Math.sin(t * 0.2) * 0.05;
+        camera.position.z = 9 - smooth.expand * 1.2 + s * 1.5;
+
+        if (hasPointer) {
+          ray.setFromCamera(mouseNdc, camera);
+          if (ray.ray.intersectPlane(plane, hit)) uniforms.uMouse.value.copy(hit);
+        }
+
+        uniforms.uTime.value = t;
+        uniforms.uSep.value = smooth.sep;
+        uniforms.uExpand.value = smooth.expand;
+        uniforms.uFocus.value = smooth.focus;
+
+        rings.forEach((ring, i) => {
+          const u = ring.userData;
+          ring.rotation.z += u.speed * u.dir * dt * (1 + smooth.expand * 2);
+          u.lit = damp(u.lit, i < st.litSteps ? 1 : 0, 3, dt);
+          ring.material.opacity = 0.1 + u.lit * 0.6;
+          const sc = 1 + smooth.expand * 0.35 + u.lit * 0.04;
+          ring.scale.setScalar(sc);
+        });
+
+        ticks.rotation.y = -t * 0.08;
+        nucleus.rotation.x = t * 0.4;
+        nucleus.rotation.y = t * 0.3;
+        nucleus.scale.setScalar(1 + Math.sin(t * 1.6) * 0.06 + smooth.expand * 0.6);
+
+        renderer.render(scene, camera);
+      }
+
+      function loop() {
+        frame();
+        requestAnimationFrame(loop);
+      }
+
+      bar.style.width = "100%";
+      loaderText.textContent = "Core online";
+      clearTimeout(failSafe);
+      setTimeout(finish, 350);
+
+      if (reduced) {
+        // Static composition: one frame, re-render only on resize.
+        frame();
+        addEventListener("resize", () => frame());
+      } else {
+        loop();
+      }
     </script>
   </body>
 </html>
