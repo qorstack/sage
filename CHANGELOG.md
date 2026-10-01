@@ -4,6 +4,20 @@ All notable changes to Sage. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-10-01
+
+### Added
+
+- `AGENTS.md` §4 reply header gains a **`Task` · `Done when`** line: the agent
+  restates the ask in one sentence and names checkable acceptance criteria
+  before code, so a misread surfaces early and post-code verification has a
+  concrete target. Applies to the full (MEDIUM+) header; the one-line LOW-risk
+  header is unchanged. Examples in §4 and §7 updated.
+
+### Changed
+
+- Landing page reflects the task/done-criteria step and bumps to v1.9.0.
+
 ## [1.8.0] — 2026-09-28
 
 ### Added
