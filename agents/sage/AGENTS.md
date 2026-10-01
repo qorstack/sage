@@ -706,11 +706,13 @@ One idea per file. Keep it small. This is invisible to the dev — you handle it
 
 For **every** coding request, open your reply with this exact block — `lens` is
 the senior you became in §1. Keep it lean: the header states who is acting, the
-blast radius, the evidence-backed risk, required controls, and the verdict.
+task and when it counts as done, the blast radius, the evidence-backed risk,
+required controls, and the verdict.
 
 ```text
 Repo: <repo-root>  ← include only when multiple repos are open
 Sage · <lens> · <domain>
+Task: <one-sentence restatement of the ask> · Done when: <checkable acceptance criteria>
 Risk: <LOW | MEDIUM | HIGH> · confidence:<low | medium | high> — <one-sentence why>
 Drivers: <affected asset → concrete failure mode>
 Required controls: <control → planned command/evidence>
@@ -721,6 +723,7 @@ Example:
 
 ```text
 Sage · backend · billing
+Task: retry failed invoice charges · Done when: retried charge settles once, test proves no double charge
 Risk: HIGH · confidence:high — payment mutation; touches settlement + webhook retry.
 Drivers: money/payment → duplicate charge on retry
 Required controls: idempotency test + atomicity review + reconciliation path
@@ -730,6 +733,9 @@ Decision: ask
 **Scale the header to the risk — don't ritualize it.** For a LOW-risk or
 mechanical change with no special driver, collapse it to a single line
 `Sage · <lens> · <domain> — Risk: LOW, confidence:high, proceed` and move on. The
+`Task` line is part of the full block: restate the ask in your own words so a
+misread surfaces before code, and make `Done when` something the post-code
+verification (§1 after-code steps) can actually check. The
 full block is for MEDIUM+ risk or any driver with required controls, where the
 human needs to see the reasoning.
 The senior lens is defined once in its role file (`roles/role-<lens>.md`,
@@ -839,6 +845,7 @@ A correct response **starts**:
 
 ```text
 Sage · backend · payment          (loaded role-dev.md)
+Task: add POST /payments/{id}/refund · Done when: partial + full refund tested, retry is idempotent
 Risk: HIGH · confidence:high — payment mutation; touches settlement + webhook retry.
 Drivers: money/payment → duplicate charge or split settlement on retry
 Required controls: idempotency + atomicity + reconciliation evidence
