@@ -12,6 +12,12 @@ accent hues. Preserve
 IBM Plex Sans and Mono because the existing editorial/trace pairing fits the
 product and avoids a new font dependency.
 
+**Superseded 2026-10-14:** palette changed to "Ink & Ember" (warm charcoal,
+single ember accent `#e8a557`) and headlines moved to Instrument Serif at the
+owner's request. The page was restructured as a story — hero (promise + live
+trace + core), facts, problem→fix, 5-step timeline, before/after, 3-step
+install, routes, workspace — with the 3D core confined to the hero.
+
 ## 1. Actors & systems
 
 | System | Responsibility | Ownership |
